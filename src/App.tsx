@@ -19,7 +19,10 @@ import {
   Flame,
   Volume2,
   TrendingUpIcon,
-  HelpCircle
+  HelpCircle,
+  Facebook,
+  Send,
+  MessageSquare
 } from 'lucide-react';
 import { NewsItem, CalendarEvent, VolatilityAnalysis, TickData } from './types';
 import { BURMESE_LEXICON } from './components/BurmeseLexicon';
@@ -1079,10 +1082,50 @@ export default function App() {
           </div>
         </div>
 
-        {/* Centered Copyright Claim status */}
-        <div className="text-[10px] font-mono text-slate-400 font-semibold tracking-wide flex items-center justify-center gap-1 bg-[#101014] border border-slate-900 px-3 py-1 rounded">
-          <span className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse"></span>
-          <span>© 2021 - 2026 COPYRIGHT BY RTFT</span>
+        {/* Centered Copyright Claim status & Social Media Connections */}
+        <div className="flex flex-col xl:flex-row items-center gap-2.5 sm:gap-4 justify-center py-1">
+          <div className="text-[10px] font-mono text-slate-300 font-semibold tracking-wide flex items-center gap-1 bg-[#101014] border border-slate-900 px-3 py-1 rounded shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+            <span>© 2021 - 2026 COPYRIGHT BY RTFT</span>
+          </div>
+          
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            {/* Facebook Connection */}
+            <a 
+              href="https://www.facebook.com/RoadToFundedTrader/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 bg-[#1877F2]/10 hover:bg-[#1877F2]/20 border border-[#1877F2]/30 text-slate-300 hover:text-white px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all"
+              id="social-fb-link"
+            >
+              <Facebook className="w-3 h-3 text-[#1877F2]" />
+              <span>FB PAGE</span>
+            </a>
+
+            {/* Discord Connection */}
+            <a 
+              href="https://discord.gg/zMNgEjNSGm" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 bg-[#5865F2]/10 hover:bg-[#5865F2]/20 border border-[#5865F2]/30 text-slate-300 hover:text-white px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all"
+              id="social-discord-link"
+            >
+              <MessageSquare className="w-3 h-3 text-[#5865F2]" />
+              <span>DISCORD</span>
+            </a>
+
+            {/* Telegram Connection */}
+            <a 
+              href="https://t.me/+qZe0SIoUvkI4NGY1" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 bg-[#26A5E4]/10 hover:bg-[#26A5E4]/20 border border-[#26A5E4]/30 text-slate-300 hover:text-white px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all"
+              id="social-telegram-link"
+            >
+              <Send className="w-3 h-3 text-[#26A5E4]" />
+              <span>TELEGRAM</span>
+            </a>
+          </div>
         </div>
 
         <div className="text-[9px] font-mono text-slate-500 uppercase tracking-tighter text-center md:text-right">
