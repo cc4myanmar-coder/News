@@ -29,6 +29,7 @@ import { BURMESE_LEXICON } from './components/BurmeseLexicon';
 import { LiveFuturesChart } from './components/LiveFuturesChart';
 import { getMacroDetailsForEvent } from './components/MacroExplainerData';
 import { VolatilitySparkline, SparklinePoint } from './components/VolatilitySparkline';
+import { getRtftLogoUrl } from './lib/supabase';
 
 // Helper to generate dynamic volatility series for the D3 sparkline
 const generateInitialVolatilityHistory = (): SparklinePoint[] => {
@@ -485,9 +486,25 @@ export default function App() {
         
         {/* Left corner branding & Mobile clock */}
         <div className="flex items-center justify-between lg:justify-start gap-4 w-full lg:w-auto">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600/15 border border-indigo-500/30 text-indigo-400 shrink-0">
-              <Cpu className="w-4 h-4 animate-pulse" />
+          <div className="flex items-center gap-3 animate-fade-in">
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-indigo-950/45 border-2 border-indigo-500/40 text-indigo-400 shrink-0 overflow-hidden shadow-[0_0_12px_rgba(99,102,241,0.25)] hover:border-indigo-400/80 transition-all duration-300">
+              <img 
+                src={getRtftLogoUrl()} 
+                alt="RTFT Logo" 
+                className="w-full h-full object-cover select-none"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    const fallbackSpan = document.createElement('span');
+                    fallbackSpan.className = 'text-xs font-black tracking-tighter text-indigo-400 font-mono select-none animate-pulse';
+                    fallbackSpan.innerText = 'RTFT';
+                    parent.appendChild(fallbackSpan);
+                  }
+                }}
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -495,7 +512,10 @@ export default function App() {
                 <span className="text-[9px] font-mono tracking-wider text-emerald-400 font-bold uppercase">LIVE FEED ESTABLISHED</span>
               </div>
               <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-white flex items-center gap-1.5 flex-wrap">
-                QUANTUM<span className="text-indigo-400 font-medium font-semibold">TERMINAL</span>
+                QUANTUM <span className="text-indigo-400 font-semibold">TERMINAL</span> 
+                <span className="text-slate-400/90 text-xs sm:text-sm font-semibold tracking-wide font-mono px-1 py-0.2 select-none border-l border-[#1b1b1e] pl-1.5">
+                  BY <span className="text-indigo-300 font-bold">RTFT</span>
+                </span>
                 <span className="text-[9px] bg-indigo-900/35 text-indigo-300 border border-indigo-700/50 px-1.5 py-0.2 rounded font-mono font-normal tracking-normal lowercase">v1.0</span>
               </h1>
             </div>
