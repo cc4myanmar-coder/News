@@ -1,0 +1,6 @@
+{
+  "name": "NQ & ES Live News Feed",
+  "description": "Real-time news feed, economic calendar, and volatility trends for US index futures (NQ, ES) traders, powered by Gemini AI search grounding.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
