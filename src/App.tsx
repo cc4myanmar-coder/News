@@ -22,7 +22,9 @@ import {
   HelpCircle,
   Facebook,
   Send,
-  MessageSquare
+  MessageSquare,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { NewsItem, CalendarEvent, VolatilityAnalysis, TickData } from './types';
 import { BURMESE_LEXICON } from './components/BurmeseLexicon';
@@ -115,6 +117,41 @@ export default function App() {
   const [manualNq, setManualNq] = useState<string>('28883.50');
   const [manualEs, setManualEs] = useState<string>('6432.75'); // Ticked baseline
   const [priceSyncStatus, setPriceSyncStatus] = useState<'idle' | 'fetching' | 'success' | 'error'>('idle');
+
+  // Light/Dark mode state with automatic default to dark and persistent storage
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      const saved = localStorage.getItem('rtft-quantum-theme');
+      return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+    } catch {
+      return 'dark';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('rtft-quantum-theme', theme);
+    } catch (e) {
+      console.warn('Storage permission restricted:', e);
+    }
+  }, [theme]);
+
+  // Synchronize Tab Favicon dynamically with the customized brand/logo image
+  useEffect(() => {
+    try {
+      const logoUrl = getRtftLogoUrl();
+      let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.type = 'image/png';
+      link.href = logoUrl;
+    } catch (e) {
+      console.warn('Favicon synchronization failed:', e);
+    }
+  }, []);
   
   // Real-time custom volatility warnings state
   const [volatilityAlerts, setVolatilityAlerts] = useState<Array<{
@@ -479,7 +516,7 @@ export default function App() {
   });
 
   return (
-    <div id="quantum-app-container" className="min-h-screen bg-[#070708] text-slate-300 font-sans flex flex-col antialiased">
+    <div id="quantum-app-container" className={`min-h-screen bg-[#070708] text-slate-300 font-sans flex flex-col antialiased ${theme === 'light' ? 'theme-light' : ''}`}>
       
       {/* HEADER SECTION - Beautiful dark glowing control panel */}
       <header id="app-header" className="min-h-[74px] lg:h-[74px] bg-[#0c0c0e] border-b border-[#1b1b1e] flex flex-col lg:flex-row lg:items-center justify-between px-4 sm:px-6 py-4 lg:py-0 shrink-0 sticky top-0 z-50 shadow-md gap-4">
@@ -565,6 +602,20 @@ export default function App() {
               <span className="text-sm font-semibold">{new Date().toLocaleTimeString('en-US', { timeZone: 'EST', hour12: false })}</span>
             </div>
           </div>
+
+          {/* Theme Toggler with smooth transition */}
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="flex items-center justify-center w-9 h-9 rounded-lg border border-[#222226] bg-[#101012] hover:bg-slate-900 text-slate-400 hover:text-white transition-all shadow-md shrink-0 cursor-pointer"
+            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            id="theme-toggler-btn"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-indigo-500" />
+            )}
+          </button>
         </div>
 
       </header>

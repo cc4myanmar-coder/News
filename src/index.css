@@ -64,3 +64,166 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.5);
 }
+
+/* ==========================================================================
+   LIGHT THEME DESIGN - SYSTEMATIC DESKTOP-CLASS PROFESSIONAL OVERRIDES
+   ========================================================================== */
+.theme-light {
+  background-color: #f1f5f9 !important;
+  color: #1e293b !important;
+}
+
+/* General Layout Elements */
+.theme-light #quantum-app-container {
+  background-color: #f1f5f9 !important;
+}
+
+.theme-light #app-header,
+.theme-light footer {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Text & Headers Slate mapping */
+.theme-light h1,
+.theme-light h2,
+.theme-light h3,
+.theme-light h4,
+.theme-light h5,
+.theme-light .text-white,
+.theme-light .text-slate-100 {
+  color: #0f172a !important;
+}
+
+.theme-light .text-slate-200,
+.theme-light .text-slate-300 {
+  color: #334155 !important;
+}
+
+.theme-light .text-slate-405, /* Safe margins */
+.theme-light .text-slate-400 {
+  color: #475569 !important;
+}
+
+.theme-light .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Background panel systematic replacements */
+.theme-light div[class*="bg-[#0c0c0e]"],
+.theme-light div[class*="bg-[#070708]"],
+.theme-light div[class*="bg-[#09090b]"],
+.theme-light div[class*="bg-[#0b0c0f]"],
+.theme-light div[class*="bg-[#0b0f19]"] {
+  background-color: #f8fafc !important; 
+  border-color: #e2e8f0 !important;
+}
+
+/* Card components */
+.theme-light div[class*="bg-[#101012]"],
+.theme-light div[class*="bg-[#101014]"],
+.theme-light div[class*="bg-[#0b0c10]"],
+.theme-light div[class*="bg-[#16161a]"],
+.theme-light div[class*="bg-[#121215]"],
+.theme-light div[class*="bg-slate-900"],
+.theme-light #vola-sparkline-card,
+.theme-light #market-visualizer-section,
+.theme-light #calendar-container-panel,
+.theme-light #alerts-marquee-panel,
+.theme-light #gemini-dynamic-analysis-card,
+.theme-light blockquote {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 1px 2px rgb(0, 0, 0, 0.03) !important;
+}
+
+/* List elements, hover actions, and selection blocks */
+.theme-light .border-[#1b1b1e],
+.theme-light .border-[#222226],
+.theme-light .border-[#202024],
+.theme-light .border-slate-800,
+.theme-light .border-slate-850,
+.theme-light .border-slate-900,
+.theme-light section,
+.theme-light div,
+.theme-light li,
+.theme-light p {
+  border-color: #e2e8f0 !important;
+}
+
+/* Interactive form inputs */
+.theme-light input,
+.theme-light select,
+.theme-light textarea {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* Custom interactive active category selection tabs */
+.theme-light button[class*="text-slate-400"]:hover,
+.theme-light button[class*="text-slate-300"]:hover {
+  color: #0f172a !important;
+  background-color: #f1f5f9 !important;
+}
+
+.theme-light .hover\:bg-slate-900\/40:hover,
+.theme-light .hover\:bg-[#141418]:hover,
+.theme-light .hover\:bg-[#121216]:hover,
+.theme-light .hover\:bg-slate-900\/60:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Chart BG inner overrides */
+.theme-light .bg-[#07080a] {
+  background-color: #ffffff !important;
+}
+
+/* Modal layers */
+.theme-light #lexicon-modal-content,
+.theme-light #macro-modal-content {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Info popup under sparkline */
+.theme-light #vola-info-popup {
+  background-color: #ffffff !important;
+  border-color: #c7d2fe !important;
+  box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.08) !important;
+}
+
+.theme-light #vola-info-popup p {
+  color: #334155 !important;
+}
+
+/* Tool buttons & syncing */
+.theme-light #gemini-sync-btn {
+  background-color: #4f46e5 !important;
+  color: #ffffff !important;
+}
+
+.theme-light #gemini-sync-btn:hover {
+  background-color: #4338ca !important;
+}
+
+.theme-light #vola-info-toggle {
+  color: #4338ca !important;
+}
+
+.theme-light ::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+}
+
+.theme-light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+}
+
+.theme-light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
+}
+
