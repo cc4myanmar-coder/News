@@ -32,6 +32,7 @@ import { LiveFuturesChart } from './components/LiveFuturesChart';
 import { getMacroDetailsForEvent } from './components/MacroExplainerData';
 import { VolatilitySparkline, SparklinePoint } from './components/VolatilitySparkline';
 import { getRtftLogoUrl } from './lib/supabase';
+import { motion, AnimatePresence } from 'motion/react';
 
 // Helper to generate dynamic volatility series for the D3 sparkline
 const generateInitialVolatilityHistory = (): SparklinePoint[] => {
@@ -758,111 +759,124 @@ export default function App() {
                 </button>
               </div>
             ) : (
-              filteredNews.map((story) => {
-                // Determine layout styles depending on impact
-                const impactClass = 
-                  story.impact === 'Bullish' ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-400' :
-                  story.impact === 'Bearish' ? 'bg-rose-950/30 border-rose-500/40 text-rose-400' :
-                  'bg-slate-900/35 border-slate-700/40 text-slate-400';
+              <AnimatePresence mode="popLayout">
+                {filteredNews.map((story) => {
+                  // Determine layout styles depending on impact
+                  const impactClass = 
+                    story.impact === 'Bullish' ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-400' :
+                    story.impact === 'Bearish' ? 'bg-rose-950/30 border-rose-500/40 text-rose-400' :
+                    'bg-slate-900/35 border-slate-700/40 text-slate-400';
 
-                const categoryLabelClass =
-                  story.category === 'Tech Sector' ? 'bg-indigo-900/35 text-indigo-300 border-indigo-700/50' :
-                  story.category === 'IPOs' ? 'bg-purple-900/35 text-purple-300 border-purple-700/50' :
-                  story.category === 'Earnings' ? 'bg-teal-900/35 text-teal-300 border-teal-700/50' :
-                  story.category === 'Geopolitical' ? 'bg-amber-900/35 text-amber-300 border-amber-500/50' :
-                  'bg-slate-800/55 text-slate-300 border-slate-600/50';
+                  const categoryLabelClass =
+                    story.category === 'Tech Sector' ? 'bg-indigo-900/35 text-indigo-300 border-indigo-700/50' :
+                    story.category === 'IPOs' ? 'bg-purple-900/35 text-purple-300 border-purple-700/50' :
+                    story.category === 'Earnings' ? 'bg-teal-900/35 text-teal-300 border-teal-700/50' :
+                    story.category === 'Geopolitical' ? 'bg-amber-900/35 text-amber-300 border-amber-500/50' :
+                    'bg-slate-800/55 text-slate-300 border-slate-600/50';
 
-                const pubTime = new Date(story.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  const pubTime = new Date(story.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                return (
-                  <div 
-                    key={story.id} 
-                    className="bg-[#0b0c0f] border border-[#1b1b1e] hover:border-[#2e2f36] p-4 rounded-xl transition-all shadow-sm flex flex-col md:flex-row gap-4 items-start"
-                  >
-                    
-                    {/* Index affected flags & stats metadata */}
-                    <div className="flex md:flex-col gap-2 shrink-0 md:w-32 justify-between md:justify-start">
-                      <div className="flex gap-1.5 flex-wrap">
-                        {story.indicesAffected.map(ind => (
-                          <span 
-                            key={ind} 
-                            onClick={() => {
-                              setFocusedIndex(ind === 'NQ' ? 'NQ' : 'ES');
-                              const element = document.getElementById('ticker-' + ind.toLowerCase());
-                              if (element) element.scrollIntoView({ behavior: 'smooth' });
-                            }}
-                            className={`cursor-pointer px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-tight border ${
-                              ind === 'NQ' ? 'bg-indigo-900/30 text-indigo-300 border-indigo-800/40' : 'bg-rose-950 text-rose-300 border-rose-800/40'
-                            }`}
-                          >
-                            {ind}
-                          </span>
-                        ))}
-                      </div>
+                  return (
+                    <motion.div 
+                      key={story.id} 
+                      layout
+                      initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -20, scale: 0.97 }}
+                      transition={{ 
+                        type: 'spring', 
+                        stiffness: 350, 
+                        damping: 30,
+                        mass: 0.8,
+                        layout: { type: 'spring', stiffness: 350, damping: 32 }
+                      }}
+                      className="bg-[#0b0c0f] border border-[#1b1b1e] hover:border-[#2e2f36] p-4 rounded-xl transition-colors duration-200 shadow-sm flex flex-col md:flex-row gap-4 items-start"
+                    >
                       
-                      {/* Volatility score meter */}
-                      <div className="flex flex-col items-start gap-1 font-mono md:mt-2">
-                        <span className="text-[9px] text-slate-500 font-semibold uppercase">Volatility Risk</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className={`text-xs font-bold ${story.volatilityScore >= 7 ? 'text-red-400' : story.volatilityScore >= 5 ? 'text-amber-400' : 'text-slate-400'}`}>
-                            {story.volatilityScore}/10
-                          </span>
-                          <div className="w-12 h-1.5 bg-slate-800 rounded overflow-hidden">
-                            <div 
-                              className={`h-full ${story.volatilityScore >= 7 ? 'bg-red-500' : story.volatilityScore >= 5 ? 'bg-amber-500' : 'bg-slate-500'}`}
-                              style={{ width: `${story.volatilityScore * 10}%` }}
-                            ></div>
+                      {/* Index affected flags & stats metadata */}
+                      <div className="flex md:flex-col gap-2 shrink-0 md:w-32 justify-between md:justify-start">
+                        <div className="flex gap-1.5 flex-wrap">
+                          {story.indicesAffected.map(ind => (
+                            <span 
+                              key={ind} 
+                              onClick={() => {
+                                setFocusedIndex(ind === 'NQ' ? 'NQ' : 'ES');
+                                const element = document.getElementById('ticker-' + ind.toLowerCase());
+                                if (element) element.scrollIntoView({ behavior: 'smooth' });
+                              }}
+                              className={`cursor-pointer px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-tight border ${
+                                ind === 'NQ' ? 'bg-indigo-900/30 text-indigo-300 border-indigo-800/40' : 'bg-rose-950 text-rose-300 border-rose-800/40'
+                              }`}
+                            >
+                              {ind}
+                            </span>
+                          ))}
+                        </div>
+                        
+                        {/* Volatility score meter */}
+                        <div className="flex flex-col items-start gap-1 font-mono md:mt-2">
+                          <span className="text-[9px] text-slate-500 font-semibold uppercase">Volatility Risk</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-xs font-bold ${story.volatilityScore >= 7 ? 'text-red-400' : story.volatilityScore >= 5 ? 'text-amber-400' : 'text-slate-400'}`}>
+                              {story.volatilityScore}/10
+                            </span>
+                            <div className="w-12 h-1.5 bg-slate-800 rounded overflow-hidden">
+                              <div 
+                                className={`h-full ${story.volatilityScore >= 7 ? 'bg-red-500' : story.volatilityScore >= 5 ? 'bg-amber-500' : 'bg-slate-500'}`}
+                                style={{ width: `${story.volatilityScore * 10}%` }}
+                              ></div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Headline and breakdown info */}
-                    <div className="flex-1">
-                      
-                      {/* Category tag & Timestamp */}
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${categoryLabelClass}`}>
-                            {story.category.toUpperCase()}
-                          </span>
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded border uppercase font-mono font-bold ${impactClass}`}>
-                            {story.impact}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 text-[10px] text-slate-500 font-mono">
-                          <Clock className="w-3 h-3" />
-                          <span>{pubTime}</span>
-                        </div>
-                      </div>
-
-                      {/* Main title */}
-                      <h3 className="text-white font-semibold text-sm leading-snug tracking-tight mb-1.5 hover:text-indigo-300 transition-colors">
-                        {story.title}
-                      </h3>
-
-                      {/* Actionable summary details */}
-                      <p className="text-xs text-slate-400 leading-relaxed">
-                        {story.summary}
-                      </p>
-
-                      {/* Burmese Insight toggle/helper */}
-                      <div className="mt-3 pt-2.5 border-t border-slate-900 flex justify-between items-center">
-                        <span className="text-[10px] text-slate-500 font-mono">SOURCE: {story.source}</span>
+                      {/* Headline and breakdown info */}
+                      <div className="flex-1">
                         
-                        <button 
-                          onClick={() => setSelectedLexiconKey(story.category === 'Geopolitical' ? 'Geopolitical' : (story.category === 'Tech Sector' ? 'NQ' : (story.category === 'Earnings' ? 'Earnings Report' : 'IPO')))}
-                          className="flex items-center gap-1 text-[10px] text-indigo-400 hover:text-indigo-300 font-bold bg-slate-900/80 hover:bg-slate-800/80 px-2 py-1 rounded border border-slate-800"
-                        >
-                          <BookOpen className="w-3 h-3" />
-                          <span>မြန်မာအဓိပ္ပာယ်</span>
-                        </button>
-                      </div>
+                        {/* Category tag & Timestamp */}
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${categoryLabelClass}`}>
+                              {story.category.toUpperCase()}
+                            </span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded border uppercase font-mono font-bold ${impactClass}`}>
+                              {story.impact}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] text-slate-500 font-mono">
+                            <Clock className="w-3 h-3" />
+                            <span>{pubTime}</span>
+                          </div>
+                        </div>
 
-                    </div>
-                  </div>
-                );
-              })
+                        {/* Main title */}
+                        <h3 className="text-white font-semibold text-sm leading-snug tracking-tight mb-1.5 hover:text-indigo-300 transition-colors">
+                          {story.title}
+                        </h3>
+
+                        {/* Actionable summary details */}
+                        <p className="text-xs text-slate-400 leading-relaxed">
+                          {story.summary}
+                        </p>
+
+                        {/* Burmese Insight toggle/helper */}
+                        <div className="mt-3 pt-2.5 border-t border-slate-900 flex justify-between items-center">
+                          <span className="text-[10px] text-slate-500 font-mono">SOURCE: {story.source}</span>
+                          
+                          <button 
+                            onClick={() => setSelectedLexiconKey(story.category === 'Geopolitical' ? 'Geopolitical' : (story.category === 'Tech Sector' ? 'NQ' : (story.category === 'Earnings' ? 'Earnings Report' : 'IPO')))}
+                            className="flex items-center gap-1 text-[10px] text-indigo-400 hover:text-indigo-300 font-bold bg-slate-900/80 hover:bg-slate-800/80 px-2 py-1 rounded border border-slate-800"
+                          >
+                            <BookOpen className="w-3 h-3" />
+                            <span>မြန်မာအဓိပ္ပာယ်</span>
+                          </button>
+                        </div>
+
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             )}
           </div>
 
