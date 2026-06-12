@@ -51,15 +51,108 @@ const roundToCmeTick = (val: number): number => {
   return Math.round(val * 4) / 4;
 };
 
+import { TimezoneDropdown, TIMEZONES } from './components/TimezoneDropdown';
+
+// Conversions assistant to transform static Eastern Time (EST/EDT) records dynamically
+export const convertEstToSelectedTimezone = (dateStr: string, timeStr: string, targetTimezone: string): string => {
+  try {
+    // Standardize and extract hours/minutes and AM/PM if present
+    const clean = timeStr.trim().toUpperCase().replace(/\s+/g, ' ');
+    const match = clean.match(/(\d{1,2}):(\d{2})(?:\s*(AM|PM))?/);
+    if (!match) return timeStr;
+    
+    let hour = parseInt(match[1], 10);
+    const minute = parseInt(match[2], 10);
+    const ampm = match[3];
+    
+    if (ampm === 'PM' && hour < 12) {
+      hour += 12;
+    } else if (ampm === 'AM' && hour === 12) {
+      hour = 0;
+    }
+
+    // Resolve event date components
+    const dateParts = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (!dateParts) return timeStr;
+    const year = parseInt(dateParts[1], 10);
+    const month = parseInt(dateParts[2], 10);
+    const day = parseInt(dateParts[3], 10);
+
+    // Dynamic DST Resolution: New York is either UTC-4 (EDT) or UTC-5 (EST)
+    // We check both possibilities and let the Intl engine tell us which candidate corresponds
+    // to the targeted hour and minute in New York.
+    const candidate1 = new Date(Date.UTC(year, month - 1, day, hour + 4, minute)); // Guess: EDT (UTC-4)
+    const candidate2 = new Date(Date.UTC(year, month - 1, day, hour + 5, minute)); // Guess: EST (UTC-5)
+
+    const verificationFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false
+    });
+
+    const isMatch1 = (() => {
+      try {
+        const parts = verificationFormatter.format(candidate1).split(':');
+        const h1 = parseInt(parts[0], 10);
+        const m1 = parseInt(parts[1], 10);
+        return h1 === hour && m1 === minute;
+      } catch {
+        return false;
+      }
+    })();
+
+    const eventUtcDate = isMatch1 ? candidate1 : candidate2;
+
+    // Finally, format output into local user-selected timezone
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: targetTimezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(eventUtcDate);
+  } catch (error) {
+    console.warn("Time zone automatic DST conversion fallback triggered:", error);
+    // Return original HH:MM if parsing fails in any step
+    const simpleParts = timeStr.match(/(\d{2}):(\d{2})/);
+    return simpleParts ? simpleParts[0] : timeStr;
+  }
+};
+
+
 // Helper to parse dates into human trader-friendly days of the week matching Forex Factory styles
 const formatCalendarDate = (dateStr: string): string => {
-  if (dateStr === '2026-06-10') return 'Wednesday, Jun 10';
-  if (dateStr === '2026-06-11') return 'Thursday, Jun 11 (Today)';
-  if (dateStr === '2026-06-12') return 'Friday, Jun 12 (Tomorrow)';
-  
   try {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    const d = new Date(dateStr + 'T00:00:00');
+    const formatted = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    
+    // Get local today, yesterday, and tomorrow dates in YYYY-MM-DD
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    
+    const toYmd = (dateObj: Date) => {
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    const todayYmd = toYmd(today);
+    const yesterdayYmd = toYmd(yesterday);
+    const tomorrowYmd = toYmd(tomorrow);
+    
+    if (dateStr === todayYmd) {
+      return `${formatted} (Today)`;
+    } else if (dateStr === tomorrowYmd) {
+      return `${formatted} (Tomorrow)`;
+    } else if (dateStr === yesterdayYmd) {
+      return `${formatted} (Yesterday)`;
+    }
+    
+    return formatted;
   } catch {
     return dateStr;
   }
@@ -137,6 +230,24 @@ export default function App() {
       console.warn('Storage permission restricted:', e);
     }
   }, [theme]);
+
+  // Selected Timezone with automatic fallback and storage persistence
+  const [selectedTimezone, setSelectedTimezone] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('rtft-quantum-timezone');
+      return saved || 'America/New_York';
+    } catch {
+      return 'America/New_York';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('rtft-quantum-timezone', selectedTimezone);
+    } catch (e) {
+      console.warn('Storage permission restricted for timezone:', e);
+    }
+  }, [selectedTimezone]);
 
   // Synchronize Tab Favicon dynamically with the customized brand/logo image
   useEffect(() => {
@@ -517,6 +628,8 @@ export default function App() {
     return true;
   });
 
+  const activeZone = TIMEZONES.find(tz => tz.value === selectedTimezone) || TIMEZONES[0];
+
   return (
     <div id="quantum-app-container" className={`min-h-screen bg-[#070708] text-slate-300 font-sans flex flex-col antialiased ${theme === 'light' ? 'theme-light' : ''}`}>
       
@@ -562,9 +675,15 @@ export default function App() {
 
           {/* Clock helper specifically for layout on smaller mobile screens (< sm) */}
           <div className="flex sm:hidden flex-col items-end font-mono shrink-0 select-none">
-            <span className="text-[8px] text-[#5c5d6c] uppercase tracking-wider">EST CLOCK</span>
+            <span className="text-[8px] text-[#5c5d6c] uppercase tracking-wider">{activeZone.abbr} CLOCK</span>
             <span className="text-xs font-semibold text-slate-300">
-              {new Date().toLocaleTimeString('en-US', { timeZone: 'EST', hour12: false, hour: '2-digit', minute: '2-digit' })}
+              {(() => {
+                try {
+                  return new Date().toLocaleTimeString('en-US', { timeZone: selectedTimezone, hour12: false, hour: '2-digit', minute: '2-digit' });
+                } catch {
+                  return new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false, hour: '2-digit', minute: '2-digit' });
+                }
+              })()}
             </span>
           </div>
         </div>
@@ -596,12 +715,20 @@ export default function App() {
             </div>
           </div>
 
-          {/* Digital Clock (shown on screens >= sm) */}
+          {/* Timezone Selector & Digital Clock (shown on screens >= sm) */}
           <div className="hidden sm:flex flex-col items-end shrink-0 select-none px-2 font-mono lg:ml-4 border-l border-slate-800/60 pl-4">
-            <span className="text-[9px] text-slate-500 uppercase tracking-widest">EASTERN TIME (EST)</span>
-            <div className="flex items-center gap-1.5 text-slate-200">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-sm font-semibold">{new Date().toLocaleTimeString('en-US', { timeZone: 'EST', hour12: false })}</span>
+            <TimezoneDropdown value={selectedTimezone} onChange={setSelectedTimezone} />
+            <div className="flex items-center gap-1.5 text-slate-205 mt-1.5">
+              <Clock className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="text-sm font-semibold text-slate-200">
+                {(() => {
+                  try {
+                    return new Date().toLocaleTimeString('en-US', { timeZone: selectedTimezone, hour12: false });
+                  } catch {
+                    return new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false });
+                  }
+                })()}
+              </span>
             </div>
           </div>
 
@@ -981,8 +1108,10 @@ export default function App() {
                       >
                         {/* Hour block */}
                         <div className="w-16 shrink-0 text-center flex flex-col justify-center border-r border-slate-800/40 pr-2">
-                          <span className="block text-xs font-semibold text-slate-200 font-mono">{item.time}</span>
-                          <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider">{item.country}</span>
+                          <span className="block text-xs font-semibold text-slate-200 font-mono">
+                            {convertEstToSelectedTimezone(item.date, item.time, selectedTimezone)}
+                          </span>
+                          <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider">{activeZone.abbr} • {item.country}</span>
                         </div>
 
                         {/* Details */}
@@ -1607,35 +1736,7 @@ export default function App() {
         </div>
       )}
 
-      {/* QUICK FLOATING GLOSSARY SELECTOR ON SCREEN BAR */}
-      <div className="fixed bottom-14 right-4 z-40 flex flex-col items-end gap-1 font-mono">
-        <div className="group relative">
-          <button 
-            id="glossary-floating-btn"
-            onClick={() => setSelectedLexiconKey('NQ')}
-            className="flex items-center gap-1.5 bg-indigo-600/90 hover:bg-indigo-500 hover:scale-105 active:scale-95 text-white font-bold text-xs p-2.5 rounded-full shadow-xl border border-indigo-500/50 transition-all font-sans cursor-pointer"
-            title="မြန်မာ Trading Dictionary"
-          >
-            <BookOpen className="w-4 h-4" />
-            <span className="hidden sm:inline text-[11px]">မြန်မာ Tradepedia</span>
-          </button>
-          
-          {/* Quick links hover dropdown tooltip */}
-          <div className="absolute bottom-11 right-0 hidden group-hover:block hover:block bg-slate-950 border border-slate-800 rounded-lg p-2.5 w-60 shadow-2xl transition-all">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block border-b border-slate-900 pb-1 mb-1.5">အသုံးအနှုန်း ဖွင့်ဆိုချက်များ</span>
-            <div className="grid grid-cols-2 gap-1 text-[11px] text-sky-400 text-left font-sans">
-              <button className="hover:underline py-0.5" onClick={() => setSelectedLexiconKey('NQ')}>• Nasdaq Futures (NQ)</button>
-              <button className="hover:underline py-0.5" onClick={() => setSelectedLexiconKey('ES')}>• S&P Futures (ES)</button>
-              <button className="hover:underline py-0.5" onClick={() => setSelectedLexiconKey('Bullish')}>• Bullish (စျေးတက်)</button>
-              <button className="hover:underline py-0.5" onClick={() => setSelectedLexiconKey('Bearish')}>• Bearish (စျေးကျ)</button>
-              <button className="hover:underline py-0.5" onClick={() => setSelectedLexiconKey('IPO')}>• IPO</button>
-              <button className="hover:underline py-0.5" onClick={() => setSelectedLexiconKey('Earnings Report')}>• Earnings Report</button>
-              <button className="hover:underline py-0.5" onClick={() => setSelectedLexiconKey('Geopolitical')}>• Geopolitical</button>
-              <button className="hover:underline py-0.5" onClick={() => setSelectedLexiconKey('VWAP')}>• VWAP</button>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
     </div>
   );
