@@ -591,6 +591,9 @@ app.get("/api/market-prices", async (req, res) => {
 });
 
 
+// Export app for Vercel Serverless Function context
+export default app;
+
 // Hot Module Replacement config & Static asset router
 async function setupViteMiddleware() {
   if (process.env.NODE_ENV !== "production") {
@@ -614,6 +617,9 @@ async function setupViteMiddleware() {
   });
 }
 
-setupViteMiddleware().catch((err) => {
-  console.error("Vite server initialization error:", err);
-});
+// Only launch standalone listener if not running within a serverless / Vercel cloud runtime
+if (!process.env.VERCEL) {
+  setupViteMiddleware().catch((err) => {
+    console.error("Vite server initialization error:", err);
+  });
+}
