@@ -493,7 +493,7 @@ export default function App() {
               </div>
               <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-white flex items-center gap-1.5 flex-wrap">
                 QUANTUM<span className="text-indigo-400 font-medium font-semibold">TERMINAL</span>
-                <span className="text-[9px] bg-indigo-900/35 text-indigo-300 border border-indigo-700/50 px-1.5 py-0.2 rounded font-mono font-normal tracking-normal lowercase">v1.0 (initial)</span>
+                <span className="text-[9px] bg-indigo-900/35 text-indigo-300 border border-indigo-700/50 px-1.5 py-0.2 rounded font-mono font-normal tracking-normal lowercase">v1.0</span>
               </h1>
             </div>
           </div>
@@ -1063,8 +1063,8 @@ export default function App() {
       </main>
 
       {/* FOOTER BAR WITH BULLET TRADING STATUS CODES */}
-      <footer className="h-10 bg-[#070709] border-t border-[#1b1b1e] flex flex-col sm:flex-row items-center justify-between px-6 shrink-0 py-2 sm:py-0 text-slate-400 text-xs">
-        <div className="flex gap-4 md:gap-7 items-center flex-wrap">
+      <footer className="min-h-10 bg-[#070709] border-t border-[#1b1b1e] flex flex-col md:flex-row items-center justify-between px-6 shrink-0 py-3 md:py-0 text-slate-400 text-xs gap-3">
+        <div className="flex gap-3 sm:gap-4 md:gap-7 items-center flex-wrap justify-center md:justify-start">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
             <span className="text-[10px] font-mono text-slate-500"><span className="text-slate-300">REUTERS</span> FEED: ACTIVE</span>
@@ -1078,8 +1078,15 @@ export default function App() {
             <span className="text-[10px] font-mono text-slate-500"><span className="text-slate-200">GEMINI RETRIEVAL</span>: STANDBY</span>
           </div>
         </div>
-        <div className="text-[9px] font-mono text-slate-500 uppercase tracking-tighter mt-1 sm:mt-0">
-          PRO TERMINAL v1.0 (INITIAL RELEASE) // REGULATED QUANTUM DATASTREAM V1
+
+        {/* Centered Copyright Claim status */}
+        <div className="text-[10px] font-mono text-slate-400 font-semibold tracking-wide flex items-center justify-center gap-1 bg-[#101014] border border-slate-900 px-3 py-1 rounded">
+          <span className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse"></span>
+          <span>© 2021 - 2026 COPYRIGHT BY RTFT</span>
+        </div>
+
+        <div className="text-[9px] font-mono text-slate-500 uppercase tracking-tighter text-center md:text-right">
+          PRO TERMINAL v1.0 // REGULATED QUANTUM DATASTREAM V1
         </div>
       </footer>
 

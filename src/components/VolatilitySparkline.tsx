@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import * as d3 from 'd3';
-import { Activity, TrendingUp, TrendingDown, Eye } from 'lucide-react';
+import { Activity, TrendingUp, TrendingDown, Eye, Info, X } from 'lucide-react';
 
 export interface SparklinePoint {
   time: string;
@@ -19,6 +19,7 @@ export const VolatilitySparkline: React.FC<VolatilitySparklineProps> = ({
   height = 50,
 }) => {
   const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(null);
+  const [showExplanation, setShowExplanation] = useState<boolean>(false);
 
   // Layout boundaries
   const margins = { top: 6, right: 6, bottom: 6, left: 6 };
@@ -116,14 +117,29 @@ export const VolatilitySparkline: React.FC<VolatilitySparklineProps> = ({
   const activePoint = hoveredPointIndex !== null ? points[hoveredPointIndex] : null;
 
   return (
-    <div id="vola-sparkline-card" className="bg-[#0b0c10] border border-slate-900/80 rounded-xl p-3 mb-3.5 flex flex-col gap-2">
-      <div className="flex justify-between items-center">
+    <div id="vola-sparkline-card" className="bg-[#0b0c10] border border-slate-900/80 rounded-xl p-3 mb-3.5 flex flex-col gap-2 relative">
+      <div className="flex justify-between items-center relative">
         <div className="flex items-center gap-1.5">
           <Activity className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
           <span className="text-[10px] font-mono font-bold tracking-wider text-slate-400 uppercase">
-            1H VOLATILITY INDEX
+            1H NQ/ES VOLATILITY INDEX
           </span>
+
+          {/* Interactive Info / Details Trigger */}
+          <div className="relative inline-block">
+            <button
+              type="button"
+              id="vola-info-toggle"
+              onClick={() => setShowExplanation(!showExplanation)}
+              onMouseEnter={() => setShowExplanation(true)}
+              className="p-1 rounded text-slate-500 hover:text-indigo-400 transition-colors focus:outline-none"
+              title="View Volatility Details"
+            >
+              <Info className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
+
         <div className="flex items-center gap-1 text-[11px] font-mono font-bold">
           {trend === 'up' ? (
             <span className="text-rose-400 flex items-center gap-0.5 bg-rose-950/20 border border-rose-900/30 px-1.5 py-0.2 rounded">
@@ -142,6 +158,40 @@ export const VolatilitySparkline: React.FC<VolatilitySparklineProps> = ({
           )}
         </div>
       </div>
+
+      {/* Embedded Details Overlay Tooltip inside Card */}
+      {showExplanation && (
+        <div 
+          id="vola-info-popup" 
+          className="absolute inset-x-2 top-2 bottom-2 bg-[#050608]/98 border border-indigo-950/80 rounded-lg p-3 z-25 flex flex-col justify-between text-left shadow-xl animate-fade-in"
+          onMouseLeave={() => setShowExplanation(false)}
+        >
+          <div className="flex justify-between items-start-center border-b border-indigo-950 pb-1">
+            <span className="text-[10px] font-mono font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1">
+              <Info className="w-3 h-3" /> 1H NQ & ES FUTURES VOLATILITY
+            </span>
+            <button 
+              type="button"
+              onClick={() => setShowExplanation(false)}
+              className="text-slate-500 hover:text-slate-300 p-0.5 rounded transition-colors"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto pr-1 py-1 text-[9px] sm:text-[10px] text-slate-300 space-y-1.5 font-sans leading-relaxed">
+            <p className="font-medium text-slate-200">
+              <strong className="text-white">အဓိပ္ပာယ်</strong> - နောက်ဆုံး ၁ နာရီအတွင်း CME ၏ Nasdaq-100 (NQ) နှင့် S&P 500 (ES) အညွှန်းကိန်း Futures စျေးနှုန်းများ၏ တစ်မိနစ်ချင်း လှုပ်ခတ်မှု အတက်အကျအရှိန် (Rolling standard deviation of price changes) ကို တိုက်ရိုက်တွက်ချက်ပြထားခြင်း ဖြစ်သည်။
+            </p>
+            <p className="text-slate-400">
+              <strong className="text-white">အသုံးဝင်ပုံ</strong> - Volatility % ပိုမြင့်လာပါက စျေးနှုန်းသည် သက်မှတ်ထားသော Support/Resistance Level များကို အလွယ်တကူ breakout ဖြစ်စေနိုင်ပြီး CMT index price tick အလျင် မြန်ဆန်လာမည်။ Volatility % ကျဆင်းနေပါက စျေးကွက်သည် range-bound sideway အပိုင်းအခြားထဲတွင်သာ ငြိမ်သက်နေတတ်သည်။
+            </p>
+            <p className="text-indigo-300/90 font-mono text-[8px] sm:text-[9px] border-t border-indigo-950/50 pt-1">
+              DATA SOURCE: CME Direct live price ticks fed into our standard-deviation aggregator engine.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Sparkline Canvas */}
       <div className="relative h-[55px] w-full flex items-center justify-center bg-[#07080a] border border-slate-950 rounded-lg overflow-hidden py-1">
