@@ -25,6 +25,18 @@ import { NewsItem, CalendarEvent, VolatilityAnalysis, TickData } from './types';
 import { BURMESE_LEXICON } from './components/BurmeseLexicon';
 import { LiveFuturesChart } from './components/LiveFuturesChart';
 import { getMacroDetailsForEvent } from './components/MacroExplainerData';
+import { VolatilitySparkline, SparklinePoint } from './components/VolatilitySparkline';
+
+// Helper to generate dynamic volatility series for the D3 sparkline
+const generateInitialVolatilityHistory = (): SparklinePoint[] => {
+  const now = Date.now();
+  return Array.from({ length: 60 }, (_, i) => {
+    const time = new Date(now - (60 - i) * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    // Core baseline around 4.8% index, with randomized micro-swing wave overlays
+    const value = 4.8 + Math.sin(i * 0.15) * 1.6 + Math.cos(i * 0.08) * 0.9 + Math.random() * 0.5;
+    return { time, value: Math.max(1.8, Math.min(18.5, value)) };
+  });
+};
 
 // Helper to strictly round index futures price to valid CME tick sizes (0.25 minimum increment)
 const roundToCmeTick = (val: number): number => {
@@ -90,6 +102,9 @@ export default function App() {
 
   // Selected calendar event for detailed Myanmar macro explanation and professional scenarios
   const [selectedCalendarEvent, setSelectedCalendarEvent] = useState<CalendarEvent | null>(null);
+
+  // Volatility historical timeline data for the interactive D3 sparkline
+  const [volatilityHistory, setVolatilityHistory] = useState<SparklinePoint[]>(() => generateInitialVolatilityHistory());
 
   // Dynamic feedback sync states for trading layout alignment
   const [showPriceAdjuster, setShowPriceAdjuster] = useState<boolean>(false);
@@ -272,6 +287,31 @@ export default function App() {
         return nextPrice;
       });
 
+      // Live updates to the D3-powered hourly volatility sparkline
+      setVolatilityHistory(prev => {
+        if (prev.length === 0) return prev;
+        const timeMinuteStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        // 15% probability of shifting to a new minute point to represent elapsed time
+        const shouldPushNewPoint = Math.random() < 0.15;
+        
+        if (shouldPushNewPoint) {
+          const lastValue = prev[prev.length - 1].value;
+          const nextValue = Math.max(1.8, Math.min(18.5, lastValue + (Math.random() * 0.8 - 0.4)));
+          return [...prev.slice(1), { time: timeMinuteStr, value: nextValue }];
+        } else {
+          const updated = [...prev];
+          const lastIdx = updated.length - 1;
+          const currentVal = updated[lastIdx].value;
+          const delta = (Math.random() * 0.24 - 0.12);
+          updated[lastIdx] = {
+            ...updated[lastIdx],
+            value: Math.max(1.8, Math.min(18.5, currentVal + delta))
+          };
+          return updated;
+        }
+      });
+
       // Clear blink direction after 400ms
       setTimeout(() => {
         setNqDirection('neutral');
@@ -438,53 +478,64 @@ export default function App() {
     <div id="quantum-app-container" className="min-h-screen bg-[#070708] text-slate-300 font-sans flex flex-col antialiased">
       
       {/* HEADER SECTION - Beautiful dark glowing control panel */}
-      <header id="app-header" className="h-[74px] bg-[#0c0c0e] border-b border-[#1b1b1e] flex items-center justify-between px-6 shrink-0 sticky top-0 z-50 shadow-md">
+      <header id="app-header" className="min-h-[74px] lg:h-[74px] bg-[#0c0c0e] border-b border-[#1b1b1e] flex flex-col lg:flex-row lg:items-center justify-between px-4 sm:px-6 py-4 lg:py-0 shrink-0 sticky top-0 z-50 shadow-md gap-4">
         
-        {/* Left corner branding */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600/15 border border-indigo-500/30 text-indigo-400">
-            <Cpu className="w-4 h-4 animate-pulse" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20 animate-pulse"></span>
-              <span className="text-[10px] font-mono tracking-wider text-emerald-400 font-bold uppercase">LIVE FEED ESTABLISHED</span>
+        {/* Left corner branding & Mobile clock */}
+        <div className="flex items-center justify-between lg:justify-start gap-4 w-full lg:w-auto">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600/15 border border-indigo-500/30 text-indigo-400 shrink-0">
+              <Cpu className="w-4 h-4 animate-pulse" />
             </div>
-            <h1 className="text-lg font-extrabold tracking-tight text-white flex items-center gap-1.5">
-              QUANTUM<span className="text-indigo-400 font-medium">TERMINAL</span>
-              <span className="text-[9px] bg-indigo-900/35 text-indigo-300 border border-indigo-700/50 px-1.5 py-0.2 rounded font-mono font-normal tracking-normal lowercase ml-1">v1.0 (initial)</span>
-            </h1>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20 animate-pulse"></span>
+                <span className="text-[9px] font-mono tracking-wider text-emerald-400 font-bold uppercase">LIVE FEED ESTABLISHED</span>
+              </div>
+              <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-white flex items-center gap-1.5 flex-wrap">
+                QUANTUM<span className="text-indigo-400 font-medium font-semibold">TERMINAL</span>
+                <span className="text-[9px] bg-indigo-900/35 text-indigo-300 border border-indigo-700/50 px-1.5 py-0.2 rounded font-mono font-normal tracking-normal lowercase">v1.0 (initial)</span>
+              </h1>
+            </div>
+          </div>
+
+          {/* Clock helper specifically for layout on smaller mobile screens (< sm) */}
+          <div className="flex sm:hidden flex-col items-end font-mono shrink-0 select-none">
+            <span className="text-[8px] text-[#5c5d6c] uppercase tracking-wider">EST CLOCK</span>
+            <span className="text-xs font-semibold text-slate-300">
+              {new Date().toLocaleTimeString('en-US', { timeZone: 'EST', hour12: false, hour: '2-digit', minute: '2-digit' })}
+            </span>
           </div>
         </div>
 
-        {/* Real-time Tickers: NQ Index & ES Index (Quick view of values & trends) */}
-        <div className="flex items-center gap-5 md:gap-8 overflow-x-auto py-1">
+        {/* Real-time Tickers: Pipeline indicators & Desktop Clock */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full lg:w-auto lg:ml-auto">
           
           {/* Active pipeline status badge indicator */}
-          <div className="flex items-center gap-3 px-4 py-2 rounded-lg border border-[#222226] bg-[#101012] select-none">
-            <div className="relative flex h-2 w-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#222226] bg-[#101012] select-none">
+            <div className="relative flex h-2 w-2 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] text-emerald-400 font-extrabold uppercase tracking-wider font-mono">LIVE MACRO PIPELINE ACTIVE</span>
-              <span className="text-[9px] text-slate-500 font-sans">Scanning Forex Factory & CME releases</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[9px] sm:text-[10px] text-emerald-400 font-extrabold uppercase tracking-wider font-mono truncate">LIVE MACRO PIPELINE ACTIVE</span>
+              <span className="text-[8px] sm:text-[9px] text-slate-500 font-sans truncate">Forex Factory & CME index scanning</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 px-4 py-2 rounded-lg border border-[#222226] bg-[#101012] select-none">
-            <div className="relative flex h-2 w-2">
+          {/* Crawler active status badge indicator */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#222226] bg-[#101012] select-none">
+            <div className="relative flex h-2 w-2 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] text-cyan-400 font-extrabold uppercase tracking-wider font-mono">REAL-TIME NEWS CRAWLER</span>
-              <span className="text-[9px] text-slate-500 font-sans">Parsing live SEC / Bloomberg / Reuters feeds</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[9px] sm:text-[10px] text-cyan-400 font-extrabold uppercase tracking-wider font-mono truncate">REAL-TIME NEWS CRAWLER</span>
+              <span className="text-[8px] sm:text-[9px] text-slate-500 font-sans truncate">Parsing Bloomberg & Reuters feeds</span>
             </div>
           </div>
 
-          {/* Digital Clock */}
-          <div className="hidden sm:flex flex-col items-end shrink-0 select-none px-2 font-mono ml-auto">
+          {/* Digital Clock (shown on screens >= sm) */}
+          <div className="hidden sm:flex flex-col items-end shrink-0 select-none px-2 font-mono lg:ml-4 border-l border-slate-800/60 pl-4">
             <span className="text-[9px] text-slate-500 uppercase tracking-widest">EASTERN TIME (EST)</span>
             <div className="flex items-center gap-1.5 text-slate-200">
               <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -520,7 +571,7 @@ export default function App() {
       </div>
 
       {/* MAIN WORKSPACE GRID */}
-      <main id="terminal-content" className="flex-1 grid grid-cols-1 xl:grid-cols-12 overflow-hidden">
+      <main id="terminal-content" className="flex-1 grid grid-cols-1 xl:grid-cols-12 xl:overflow-hidden overflow-y-auto">
         
         {/* LEFT COLUMN (7 COLS on XL) - Intraday Ticks, Focus Chart, and News Flow */}
         <section className="xl:col-span-7 flex flex-col border-r border-[#1b1b1e] overflow-y-auto">
@@ -949,6 +1000,9 @@ export default function App() {
               </button>
             </div>
 
+            {/* D3-powered hourly volatility trend sparkline chart */}
+            <VolatilitySparkline data={volatilityHistory} />
+
             {isAnalyzing ? (
               <div className="flex-1 flex flex-col items-center justify-center py-6 text-slate-500">
                 <RefreshCw className="w-6 h-6 animate-spin text-indigo-500 mb-2" />
@@ -1201,7 +1255,7 @@ export default function App() {
                           </p>
 
                           {/* Individual asset impact metrics */}
-                          <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[10px] font-mono">
                             <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
                               <span className="text-slate-400 block mb-0.5">NQ Bias</span>
                               <span className={`font-bold ${
@@ -1248,7 +1302,7 @@ export default function App() {
                             {sc.descriptionBurmese}
                           </p>
 
-                          <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[10px] font-mono">
                             <div className="bg-slate-900/40 p-1.5 rounded border border-slate-800/20">
                               <span className="text-slate-500 block mb-0.5">NQ Bias</span>
                               <span className="font-bold text-amber-500/80">🟡 NEUTRAL Calm</span>
@@ -1302,7 +1356,7 @@ export default function App() {
                             {sc.descriptionBurmese}
                           </p>
 
-                          <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[10px] font-mono">
                             <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
                               <span className="text-slate-400 block mb-0.5">NQ Bias</span>
                               <span className={`font-bold ${
