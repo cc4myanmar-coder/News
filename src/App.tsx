@@ -24,6 +24,7 @@ import {
 import { NewsItem, CalendarEvent, VolatilityAnalysis, TickData } from './types';
 import { BURMESE_LEXICON } from './components/BurmeseLexicon';
 import { LiveFuturesChart } from './components/LiveFuturesChart';
+import { getMacroDetailsForEvent } from './components/MacroExplainerData';
 
 // Helper to strictly round index futures price to valid CME tick sizes (0.25 minimum increment)
 const roundToCmeTick = (val: number): number => {
@@ -86,6 +87,9 @@ export default function App() {
 
   // Selected lexicon entry for Burmese explanation modal
   const [selectedLexiconKey, setSelectedLexiconKey] = useState<string | null>(null);
+
+  // Selected calendar event for detailed Myanmar macro explanation and professional scenarios
+  const [selectedCalendarEvent, setSelectedCalendarEvent] = useState<CalendarEvent | null>(null);
 
   // Dynamic feedback sync states for trading layout alignment
   const [showPriceAdjuster, setShowPriceAdjuster] = useState<boolean>(false);
@@ -491,17 +495,7 @@ export default function App() {
 
       </header>
 
-      {geminiStandby && (
-        <div id="gemini-failover-banner" className="bg-amber-950/30 border-b border-amber-500/20 px-6 py-2 flex items-center justify-between text-[11px] text-amber-300 font-mono">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-            <span>
-              <strong>EMERGENCY FAILOVER ACTIVE:</strong> Gemini Model API is rate-limited on your workspace key ({standbyReason === 'rate_limit_exceeded' ? '429 Quota Exhausted' : '503 High-Demand Spike'}). Scaling smoothly to our secure high-grade offline database feed. Live index tickers remain unaffected.
-            </span>
-          </div>
-          <span className="text-[9px] bg-amber-900/40 border border-amber-700/50 px-1.5 py-0.2 rounded uppercase bold shrink-0 ml-4">AUTO-SECURED COVERAGE</span>
-        </div>
-      )}
+
 
       {/* SUB-HEADER INFOBAR */}
       <div className="bg-[#09090b] border-b border-[#1b1b1e] px-6 py-2 flex flex-wrap items-center justify-between gap-4 text-xs">
@@ -841,9 +835,9 @@ export default function App() {
 
                       <div 
                         className={`flex gap-3 p-2.5 rounded-lg border bg-[#0b0c0f] hover:bg-[#101114] transition-all cursor-pointer ${
-                          isHigh ? 'border-red-900/20 hover:border-red-900/40 bg-red-950/5' : 'border-slate-800/40'
+                          isHigh ? 'border-red-900/20 hover:border-red-900/40 bg-red-950/10' : 'border-slate-800/40'
                         }`}
-                        onClick={() => setSelectedLexiconKey('Macroeconomics')}
+                        onClick={() => setSelectedCalendarEvent(item)}
                       >
                         {/* Hour block */}
                         <div className="w-16 shrink-0 text-center flex flex-col justify-center border-r border-slate-800/40 pr-2">
@@ -880,9 +874,15 @@ export default function App() {
             </div>
 
             <div className="mt-2.5 p-2 bg-[#0d0d10] border border-[#1b1b1e] rounded text-[10px] text-slate-500 flex items-center justify-between">
-              <span>* Hover/Click on events for Myanmar macro definition</span>
+              <span>* Click on events to view NQ & ES scenario targets</span>
               <button 
-                onClick={() => setSelectedLexiconKey('Macroeconomics')}
+                onClick={() => {
+                  if (filteredCalendar.length > 0) {
+                    setSelectedCalendarEvent(filteredCalendar[0]);
+                  } else {
+                    setSelectedLexiconKey('Macroeconomics');
+                  }
+                }}
                 className="text-indigo-400 font-bold hover:underline"
               >
                 Explain Macro
@@ -1028,6 +1028,327 @@ export default function App() {
           PRO TERMINAL v4.5 // REGULATED QUANTUM DATASTREAM V12
         </div>
       </footer>
+
+      {/* DETAILED DYNAMIC ECONOMIC CALENDAR SCENARIOS MODAL */}
+      {selectedCalendarEvent && (() => {
+        const details = getMacroDetailsForEvent(selectedCalendarEvent.event);
+        return (
+          <div id="macro-explainer-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+            <div className="bg-[#0b0c10] border border-[#23252f] text-slate-100 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]">
+              
+              {/* Header */}
+              <div className="bg-gradient-to-r from-slate-950 via-[#10121a] to-indigo-950/40 px-6 py-4 border-b border-[#23252f] flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/25">
+                    <Activity className="w-5 h-5 text-indigo-400 animate-pulse" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono font-bold text-indigo-400 tracking-wider uppercase block">
+                      QUANTUM MACRO ANALYSES // GLOBAL INDICATOR
+                    </span>
+                    <h3 className="font-extrabold text-white text-base tracking-wide font-sans mt-0.5">
+                      {selectedCalendarEvent.event}
+                    </h3>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedCalendarEvent(null)}
+                  className="text-slate-400 hover:text-white text-xl font-mono font-bold hover:bg-slate-800/80 w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="p-6 space-y-5 overflow-y-auto flex-1 scrollbar-thin">
+                
+                {/* Metric Summary Scoreboard */}
+                <div className="grid grid-cols-3 gap-3 bg-[#0d0e14] p-3 rounded-xl border border-slate-800/50">
+                  <div className="text-center py-2 border-r border-slate-800/40">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase block tracking-wider">Actual (လက်ရှိ)</span>
+                    <strong className={`text-sm font-mono mt-1 block ${
+                      selectedCalendarEvent.actual 
+                        ? (selectedCalendarEvent.impact === 'High' ? 'text-rose-400' : 'text-emerald-400') 
+                        : 'text-slate-500 font-normal italic'
+                    }`}>
+                      {selectedCalendarEvent.actual || 'Pending Release'}
+                    </strong>
+                  </div>
+                  <div className="text-center py-2 border-r border-slate-800/40">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase block tracking-wider">Forecast (စစ်တမ်း)</span>
+                    <strong className="text-sm font-mono text-slate-300 mt-1 block">
+                      {selectedCalendarEvent.forecast || 'N/A'}
+                    </strong>
+                  </div>
+                  <div className="text-center py-2">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase block tracking-wider">Previous (ယခင်)</span>
+                    <strong className="text-sm font-mono text-slate-400 mt-1 block">
+                      {selectedCalendarEvent.previous || 'N/A'}
+                    </strong>
+                  </div>
+                </div>
+
+                {/* Part A: Indicator Definition */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-mono font-bold text-indigo-400 tracking-wider uppercase block">
+                    📖 Indicator Meaning & Scope / အထောက်အထား အနက်ဖွင့်ချက်
+                  </span>
+                  <div className="bg-[#11131c] rounded-xl p-4 border border-slate-850 space-y-2">
+                    <p className="text-sm text-slate-100 font-semibold leading-relaxed Burmese tracking-wide">
+                      {details.meaningBurmese}
+                    </p>
+                    <p className="text-xs text-slate-400 font-normal leading-relaxed italic border-t border-slate-800/40 pt-2 font-sans">
+                      {details.meaningEnglish}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Part B: Potential Market Volatility / NQ, ES, DXY Weighting */}
+                <div className="space-y-2.5">
+                  <span className="text-[10px] font-mono font-bold text-amber-400 tracking-wider uppercase block">
+                    ⚡ Volatility Impact Heatmap / စျေးကွက် ရိုက်ခတ်နိုင်စွမ်း (NQ / ES / DXY)
+                  </span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* NQ Progress */}
+                    <div className="bg-[#121118]/80 border border-slate-800/50 p-3 rounded-xl flex flex-col justify-between">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-mono font-bold text-indigo-400">NQ Futures</span>
+                        <span className="text-xs font-mono font-bold text-rose-450">{details.nqImpactScore}/10</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-850 rounded-full overflow-hidden mt-1">
+                        <div 
+                          className="h-full bg-rose-500 rounded-full" 
+                          style={{ width: `${details.nqImpactScore * 10}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-[9px] text-slate-500 font-semibold mt-1">Tech / Semis Sensitive</span>
+                    </div>
+
+                    {/* ES Progress */}
+                    <div className="bg-[#111318]/80 border border-slate-800/50 p-3 rounded-xl flex flex-col justify-between">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-mono font-bold text-slate-300">ES Futures</span>
+                        <span className="text-xs font-mono font-bold text-amber-450">{details.esImpactScore}/10</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-850 rounded-full overflow-hidden mt-1">
+                        <div 
+                          className="h-full bg-amber-500 rounded-full" 
+                          style={{ width: `${details.esImpactScore * 10}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-[9px] text-slate-500 font-semibold mt-1">Broad Market S&P Impact</span>
+                    </div>
+
+                    {/* DXY Progress */}
+                    <div className="bg-[#101316]/80 border border-slate-800/50 p-3 rounded-xl flex flex-col justify-between">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-mono font-bold text-emerald-400">DXY Dollar Index</span>
+                        <span className="text-xs font-mono font-bold text-emerald-450">{details.dxyImpactScore}/10</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-850 rounded-full overflow-hidden mt-1">
+                        <div 
+                          className="h-full bg-emerald-500 rounded-full" 
+                          style={{ width: `${details.dxyImpactScore * 10}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-[9px] text-slate-500 font-semibold mt-1">Direct Interest Correlation</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Part C: Scenario Analysis Columns */}
+                <div className="space-y-3">
+                  <span className="text-[10px] font-mono font-bold text-emerald-400 tracking-wider uppercase block">
+                    📊 Professional Expectation Scenarios / ခန့်မှန်းချက်ရလဒ်အလိုက် အတက်အကျ လမ်းညွှန်များ
+                  </span>
+
+                  <div className="space-y-3">
+                    
+                    {/* Scenario 1: Greater than expected (> Forecast) */}
+                    {(() => {
+                      const sc = details.scenarios.greaterThanExpected;
+                      const isBullish = sc.nqBias === 'Bullish';
+                      const isBearish = sc.nqBias === 'Bearish';
+                      
+                      const cardStyle = isBullish 
+                        ? 'border-emerald-900/40 bg-[#0c1510]/50 hover:bg-[#0c1510]/70' 
+                        : isBearish 
+                          ? 'border-rose-950 bg-[#160b0d]/50 hover:bg-[#160b0d]/70' 
+                          : 'border-slate-800 bg-slate-900/10';
+                      
+                      const headerColor = isBullish 
+                        ? 'text-emerald-400' 
+                        : isBearish 
+                          ? 'text-rose-400' 
+                          : 'text-slate-300';
+
+                      return (
+                        <div className={`p-4 rounded-xl border transition-colors ${cardStyle}`}>
+                          <div className="flex flex-wrap justify-between items-center gap-2 mb-2 border-b border-white/5 pb-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`w-2 h-2 rounded-full ${isBullish ? 'bg-emerald-500 animate-pulse' : isBearish ? 'bg-rose-500' : 'bg-slate-500'}`}></span>
+                              <h4 className={`text-xs font-bold font-mono tracking-wide ${headerColor} uppercase`}>
+                                Greater than expected (&gt; Forecast) // မျှော်မှန်းသည်ထက် ပိုထွက်လျှင်
+                              </h4>
+                            </div>
+                            <span className="text-[10px] font-mono font-extrabold text-slate-500 uppercase tracking-tighter">
+                              {sc.marketImpact}
+                            </span>
+                          </div>
+                          
+                          <p className="text-[12px] text-slate-300 font-medium leading-relaxed mb-3 Burmese font-sans">
+                            {sc.descriptionBurmese}
+                          </p>
+
+                          {/* Individual asset impact metrics */}
+                          <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono">
+                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                              <span className="text-slate-400 block mb-0.5">NQ Bias</span>
+                              <span className={`font-bold ${
+                                sc.nqBias === 'Bullish' ? 'text-emerald-400' : sc.nqBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                              }`}>{sc.nqBias === 'Bullish' ? '🟢 BULLISH Surging' : sc.nqBias === 'Bearish' ? '🔴 BEARISH Falling' : '🟡 NEUTRAL Calm'}</span>
+                            </div>
+
+                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                              <span className="text-slate-400 block mb-0.5">ES Bias</span>
+                              <span className={`font-bold ${
+                                sc.esBias === 'Bullish' ? 'text-emerald-400' : sc.esBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                              }`}>{sc.esBias === 'Bullish' ? '🟢 BULLISH Robust' : sc.esBias === 'Bearish' ? '🔴 BEARISH Sluggish' : '🟡 NEUTRAL Calm'}</span>
+                            </div>
+
+                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                              <span className="text-slate-400 block mb-0.5">DXY Bias</span>
+                              <span className={`font-bold ${
+                                sc.dxyBias === 'Bullish' ? 'text-emerald-400' : sc.dxyBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                              }`}>{sc.dxyBias === 'Bullish' ? '🟢 BULLISH Strong' : sc.dxyBias === 'Bearish' ? '🔴 BEARISH Soft' : '🟡 NEUTRAL Calm'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Scenario 2: As Expected (= Forecast) */}
+                    {(() => {
+                      const sc = details.scenarios.asExpected;
+                      return (
+                        <div className="p-4 rounded-xl border border-slate-800 bg-[#0e0f14]/50 hover:bg-[#0e0f14]/75 transition-colors">
+                          <div className="flex flex-wrap justify-between items-center gap-2 mb-2 border-b border-white/5 pb-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+                              <h4 className="text-xs font-bold font-mono tracking-wide text-slate-300 uppercase">
+                                As Expected (= Forecast) // မျှော်မှန်းချက်အတိုင်း ထွက်လျှင်
+                              </h4>
+                            </div>
+                            <span className="text-[10px] font-mono font-extrabold text-slate-500 uppercase tracking-tighter">
+                              {sc.marketImpact}
+                            </span>
+                          </div>
+                          
+                          <p className="text-[12px] text-slate-400 font-normal leading-relaxed mb-3 Burmese font-sans">
+                            {sc.descriptionBurmese}
+                          </p>
+
+                          <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono">
+                            <div className="bg-slate-900/40 p-1.5 rounded border border-slate-800/20">
+                              <span className="text-slate-500 block mb-0.5">NQ Bias</span>
+                              <span className="font-bold text-amber-500/80">🟡 NEUTRAL Calm</span>
+                            </div>
+                            <div className="bg-slate-900/40 p-1.5 rounded border border-slate-800/20">
+                              <span className="text-slate-500 block mb-0.5">ES Bias</span>
+                              <span className="font-bold text-amber-500/80">🟡 NEUTRAL Calm</span>
+                            </div>
+                            <div className="bg-slate-900/40 p-1.5 rounded border border-slate-800/20">
+                              <span className="text-slate-500 block mb-0.5">DXY Bias</span>
+                              <span className="font-bold text-amber-500/80">🟡 NEUTRAL Calm</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Scenario 3: Smaller than expected (< Forecast) */}
+                    {(() => {
+                      const sc = details.scenarios.smallerThanExpected;
+                      const isBullish = sc.nqBias === 'Bullish';
+                      const isBearish = sc.nqBias === 'Bearish';
+                      
+                      const cardStyle = isBullish 
+                        ? 'border-emerald-900/40 bg-[#0c1510]/50 hover:bg-[#0c1510]/70' 
+                        : isBearish 
+                          ? 'border-rose-950 bg-[#160b0d]/50 hover:bg-[#160b0d]/70' 
+                          : 'border-slate-800 bg-slate-900/10';
+                      
+                      const headerColor = isBullish 
+                        ? 'text-emerald-400' 
+                        : isBearish 
+                          ? 'text-rose-400' 
+                          : 'text-slate-300';
+
+                      return (
+                        <div className={`p-4 rounded-xl border transition-colors ${cardStyle}`}>
+                          <div className="flex flex-wrap justify-between items-center gap-2 mb-2 border-b border-white/5 pb-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`w-2 h-2 rounded-full ${isBullish ? 'bg-emerald-500 animate-pulse' : isBearish ? 'bg-rose-500' : 'bg-slate-500'}`}></span>
+                              <h4 className={`text-xs font-bold font-mono tracking-wide ${headerColor} uppercase`}>
+                                Smaller than expected (&lt; Forecast) // မျှော်မှန်းချက်ထက် လျော့နည်းလျှင်
+                              </h4>
+                            </div>
+                            <span className="text-[10px] font-mono font-extrabold text-slate-500 uppercase tracking-tighter">
+                              {sc.marketImpact}
+                            </span>
+                          </div>
+                          
+                          <p className="text-[12px] text-slate-300 font-medium leading-relaxed mb-3 Burmese font-sans">
+                            {sc.descriptionBurmese}
+                          </p>
+
+                          <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono">
+                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                              <span className="text-slate-400 block mb-0.5">NQ Bias</span>
+                              <span className={`font-bold ${
+                                sc.nqBias === 'Bullish' ? 'text-emerald-400' : sc.nqBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                              }`}>{sc.nqBias === 'Bullish' ? '🟢 BULLISH Surging' : sc.nqBias === 'Bearish' ? '🔴 BEARISH Falling' : '🟡 NEUTRAL Calm'}</span>
+                            </div>
+
+                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                              <span className="text-slate-400 block mb-0.5">ES Bias</span>
+                              <span className={`font-bold ${
+                                sc.esBias === 'Bullish' ? 'text-emerald-400' : sc.esBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                              }`}>{sc.esBias === 'Bullish' ? '🟢 BULLISH Robust' : sc.esBias === 'Bearish' ? '🔴 BEARISH Sluggish' : '🟡 NEUTRAL Calm'}</span>
+                            </div>
+
+                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                              <span className="text-slate-400 block mb-0.5">DXY Bias</span>
+                              <span className={`font-bold ${
+                                sc.dxyBias === 'Bullish' ? 'text-emerald-400' : sc.dxyBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                              }`}>{sc.dxyBias === 'Bullish' ? '🟢 BULLISH Strong' : sc.dxyBias === 'Bearish' ? '🔴 BEARISH Soft' : '🟡 NEUTRAL Calm'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Footer */}
+              <div className="bg-[#12141c] px-6 py-4 border-t border-[#23252f] flex justify-between items-center shrink-0">
+                <span className="text-[11px] text-slate-500 font-mono">
+                  Quantum Terminal Pro // Macro scenarios
+                </span>
+                <button 
+                  onClick={() => setSelectedCalendarEvent(null)}
+                  className="text-white bg-indigo-600 hover:bg-indigo-500 font-bold px-5 py-2 rounded-xl transition-all text-xs shadow-lg cursor-pointer"
+                >
+                  Close / ပိတ်ပါ
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* TRADING EDUCATION DRAWER / BURMESE DICTIONARY MODAL & LEXICON TOOLTIPS */}
       {selectedLexiconKey && BURMESE_LEXICON[selectedLexiconKey] && (
