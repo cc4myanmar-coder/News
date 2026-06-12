@@ -24,7 +24,8 @@ import {
   Send,
   MessageSquare,
   Sun,
-  Moon
+  Moon,
+  Youtube
 } from 'lucide-react';
 import { NewsItem, CalendarEvent, VolatilityAnalysis, TickData } from './types';
 import { BURMESE_LEXICON } from './components/BurmeseLexicon';
@@ -1209,6 +1210,18 @@ export default function App() {
             >
               <Send className="w-3 h-3 text-[#26A5E4]" />
               <span>TELEGRAM</span>
+            </a>
+
+            {/* YouTube Connection */}
+            <a 
+              href="https://www.youtube.com/@RTFT-VIP-Channel" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 bg-[#FF0000]/10 hover:bg-[#FF0000]/20 border border-[#FF0000]/30 text-slate-300 hover:text-white px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all"
+              id="social-youtube-link"
+            >
+              <Youtube className="w-3 h-3 text-[#FF0000]" />
+              <span>YOUTUBE</span>
             </a>
           </div>
         </div>
