@@ -788,6 +788,28 @@ export default function App() {
               </div>
             </div>
 
+            {/* Automatic update info and Status */}
+            <div className="mb-3.5 px-3 py-2 rounded-lg bg-indigo-950/20 border border-indigo-500/10 text-[10.5px] leading-relaxed text-slate-300 font-sans">
+              <div className="flex items-center gap-1.5 font-mono text-indigo-400 font-extrabold text-[10px] uppercase mb-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                AUTO-PIPELINE STREAM (အလိုအလျောက် သတင်းတိုက်ရိုက်ရယူမှု)
+              </div>
+              <p>
+                စနစ်သည် <strong className="text-white font-semibold">CME & Forex Factory</strong> မှ ထုတ်ပြန်သော macro data သစ်များကို <strong className="text-indigo-300 font-semibold">Google News Crawl Pipeline</strong> ဖြင့် ၉၀ စက္ကန့်လျှင်တစ်ကြိမ် အလိုအလျောက် live updates ရယူပေးနေပါသည်။ လူကိုယ်တိုင် manually update တောင်းရန် မလိုဘဲ realtime updates ရရှိနေမည် ဖြစ်ပါသည်။
+              </p>
+              {dataSources.calendar === 'gemini_google_search' ? (
+                <div className="mt-1.5 text-[9.5px] font-mono text-emerald-400 flex items-center gap-1 bg-emerald-950/30 px-1.5 py-0.5 rounded border border-emerald-900/20 w-fit">
+                  <span className="w-1 h-1 rounded-full bg-emerald-400 animate-ping"></span>
+                  ● Real-Time API Engine Layer: LIVE ACTIVE
+                </div>
+              ) : (
+                <div className="mt-1.5 text-[9.5px] font-mono text-amber-400 flex items-center gap-1 bg-amber-950/30 px-1.5 py-0.5 rounded border border-amber-900/20 w-fit">
+                  <span className="w-1 h-1 rounded-full bg-amber-400"></span>
+                  ▲ Backup Baseline Stream: Syncing via CME Datapools
+                </div>
+              )}
+            </div>
+
             {/* Calendar Events List */}
             <div className="space-y-2.5 max-h-[290px] overflow-y-auto pr-1">
               {isLoadingCalendar ? (
