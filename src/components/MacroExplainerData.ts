@@ -13,6 +13,7 @@ export interface MacroDetails {
   nqImpactScore: number; // 1 to 10
   esImpactScore: number; 
   dxyImpactScore: number;
+  dxyCorrelation: number; // Percentage of reverse correlation with DXY, e.g., -85 meaning -85%
   scenarios: {
     asExpected: EventScenario;
     greaterThanExpected: EventScenario;
@@ -28,6 +29,7 @@ export const MACRO_EXPLAINERS: Record<string, MacroDetails> = {
     nqImpactScore: 9,
     esImpactScore: 8,
     dxyImpactScore: 9,
+    dxyCorrelation: -94,
     scenarios: {
       asExpected: {
         marketImpact: "Priced-in Neutral Consolidate",
@@ -54,11 +56,12 @@ export const MACRO_EXPLAINERS: Record<string, MacroDetails> = {
   },
   ppi: {
     eventName: "PPI / Core PPI (Producer Price Index - ကုန်ထုတ်လုပ်သူ စျေးညွှန်း)",
-    meaningBurmese: "ထုတ်လုပ်သူစျေးနှုန်းညွှန်းကိန်း (PPI) သည် ကုန်ထုတ်လုပ်သည့် လုပ်ငန်းရှင်များထံမှ ကုန်ကြမ်းစျေးနှုန်း တက်/ကျမှုကို တိုင်းတာသည်။ ၎င်းသည် နောက်ပိုင်းတွင် စားသုံးသူများထံ ရိုက်ခတ်လာမည့် CPI ငွေဖောင်းပွမှု၏ ရှေ့ပြေးနိမိတ် (Leading Indicator) အဖြစ် ယူဆရသည်။",
+    meaningBurmese: "ထုတ်လုပ်သူစျေးနှုန်းညွှန်းကိန်း (PPI) သည် ကုန်ထုတ်လုပ်သည့် လုပ်ငန်းရှင်များထံမှ ကုန်ကြမ်းစျေးနှုန်း တက်/ကျမှုကို တိုင်းတာသည်။ ၎င်းသည် နောက်ပိုင်းတွင် စားသုံးသူများထံ ရိုက်ခတ်လာမည့် CPI ငွေဖောင်းပွမှု၏ ရှေးပြေးနိမိတ် (Leading Indicator) အဖြစ် ယူဆရသည်။",
     meaningEnglish: "Producer Price Index (PPI) measures the average change over time in selling prices received by domestic producers. It is a critical leading indicator that filters into final consumer CPI inflation.",
     nqImpactScore: 8,
     esImpactScore: 7,
     dxyImpactScore: 8,
+    dxyCorrelation: -88,
     scenarios: {
       asExpected: {
         marketImpact: "Inline with target - Normal flows",
@@ -90,6 +93,7 @@ export const MACRO_EXPLAINERS: Record<string, MacroDetails> = {
     nqImpactScore: 7,
     esImpactScore: 7,
     dxyImpactScore: 7,
+    dxyCorrelation: -85,
     scenarios: {
       asExpected: {
         marketImpact: "Stable labor market trend",
@@ -121,6 +125,7 @@ export const MACRO_EXPLAINERS: Record<string, MacroDetails> = {
     nqImpactScore: 6,
     esImpactScore: 7,
     dxyImpactScore: 6,
+    dxyCorrelation: -82,
     scenarios: {
       asExpected: {
         marketImpact: "Moderate consumer health",
@@ -131,17 +136,17 @@ export const MACRO_EXPLAINERS: Record<string, MacroDetails> = {
       },
       greaterThanExpected: {
         marketImpact: "Strong Consumption - Soft Landing Potential",
-        nqBias: "Bullish",
-        esBias: "Bullish",
+        nqBias: "Bearish", // Strict economist setup: High DXY = bearish pressure for stock multiples
+        esBias: "Bearish", // Strict economist setup: High DXY = bearish pressure for stock multiples
         dxyBias: "Bullish",
-        descriptionBurmese: "ယုံကြည်မှု အရမ်းမြင့်တက်သဖြင့် စားသုံးသူများ သုံးစွဲမှု ပိုမိုမြင့်တက်လာကာ စီးပွားရေးကျဆင်းမှုမှ ကင်းဝေးစေမည်။ ကော်ပိုရိတ်အမြတ်များ တိုးတက်လာမည့် အခွင့်အလမ်းကြောင့် Stocks များ (ES/NQ) ရော၊ Yields တက်သဖြင့် Dollar (DXY) ပါ Bullish အားကောင်းနိုင်သည်။"
+        descriptionBurmese: "ယုံကြည်မှု မြင့်တက်သဖြင့် စားသုံးမှု အားကောင်းပြီး အတိုးနှုန်း/Yields ကို ပိုမိုမြင့်တက်စေကာ Dollar (DXY) ကို အားကောင်းစေမည်။ ဒေါ်လာအင်အားတက်လာခြင်းနှင့် strict reverse correlation အရ စတော့ညွှန်းကိန်းများ (NQ/ES) အပေါ် Bearish အရောင်းဖိအား သို့မဟုတ် အမြင့်ပိုင်းတွင် resistance ရိုက်ခတ်မှုဖြစ်စေနိုင်သည်။"
       },
       smallerThanExpected: {
         marketImpact: "Recession Fears - Underconsumption Risk",
-        nqBias: "Bearish",
-        esBias: "Bearish",
+        nqBias: "Bullish", // Strict economist setup: Low DXY due to weak growth / cuts expectations = stock pump
+        esBias: "Bullish", // Strict economist setup: Low DXY due to weak growth / cuts expectations = stock pump
         dxyBias: "Bearish",
-        descriptionBurmese: "ယုံကြည်မှု ကျဆင်းနေသဖြင့် လူများငွေမသုံးရဲဘဲ စုဆောင်းလာရာ စီးပွားရေး နှေးကွေးမှု (Recession) ဖြစ်စေနိုင်သည်။ ကုမ္ပဏီများ ရှယ်ယာရောင်းချမှုများလာနိုင်သဖြင့် Stocks မျာ ကျဆင်းပြီး Dollar တန်ဖိုးပါ လျော့နည်းကျဆင်းသွားနိုင်သည်။"
+        descriptionBurmese: "ယုံကြည်မှုလျော့ကျခြင်းက စီးပွားရေးနှေးကွေးမှုကို ဖြစ်ပေါ်စေပြီး အတိုးနှုန်းလျှော့ချမည့်ခန့်မှန်းချက် ပိုမိုအားကောင်းလာသဖြင့် Dollar (DXY) ကျဆင်းစေသည်။ Dollar ကျဆင်းခြင်းကြောင့် strict reverse correlation (ဒေါ်လာနှင့် ဆန့်ကျင်ဘက် အချိုးကျခြင်း) အရ NQ နှင့် ES ညွှန်းကိန်းများ Bullish အားကောင်းစွာ မြင့်တက်စွမ်းဆောင်နိုင်သည်။"
       }
     }
   },
@@ -152,6 +157,7 @@ export const MACRO_EXPLAINERS: Record<string, MacroDetails> = {
     nqImpactScore: 8,
     esImpactScore: 7,
     dxyImpactScore: 8,
+    dxyCorrelation: -91,
     scenarios: {
       asExpected: {
         marketImpact: "Inflation expectations anchored",
@@ -208,6 +214,7 @@ export function getMacroDetailsForEvent(eventName: string): MacroDetails {
     nqImpactScore: 6,
     esImpactScore: 6,
     dxyImpactScore: 6,
+    dxyCorrelation: -85,
     scenarios: {
       asExpected: {
         marketImpact: "Baseline Priced-in",
@@ -218,17 +225,17 @@ export function getMacroDetailsForEvent(eventName: string): MacroDetails {
       },
       greaterThanExpected: {
         marketImpact: "Higher Economic Activity / Output Pressure",
-        nqBias: "Bullish",
-        esBias: "Bullish",
+        nqBias: "Bearish", // Corrected to sustain Strict Reverse Correlation with Bullish DXY
+        esBias: "Bearish", // Corrected to sustain Strict Reverse Correlation with Bullish DXY
         dxyBias: "Bullish",
-        descriptionBurmese: "မှန်းချက်ထက် ကိန်းဂဏန်း မြင့်မားစွာ ထွက်ပေါ်လာခြင်းဖြစ်သည်။ ယင်းသည် စီးပွားရေးတိုးတက်မှုကို ညွှန်ပြပါက မက်ကရိုစတော့ (NQ & ES) နှင့် ဒေါ်လာ (DXY) တို့ကို အတူတကွ တိုးတက်စေနိုင်သည်။ သို့သော် ငွေဖောင်းပွစေပါက စတော့များကျပြီး ဒေါ်လာတက်နိုင်သည်။"
+        descriptionBurmese: "မှန်းချက်ထက် ကိန်းဂဏန်း မြင့်မားစွာ ထွက်ပေါ်လာခြင်းဖြစ်သည်။ ယင်းသည် အတိုးနှုန်း/Yields မြင့်တက်စေသဖြင့် ဒေါ်လာ (DXY) ကို အားကောင်းစေပြီး (Bullish)၊ ဒေါ်လာနှင့် ဆန့်ကျင်ဘက်ဖြစ်သောကြောင့် စတော့အညွှန်းကိန်းများ (NQ & ES) ကို ကနဦး ကျဆင်းစေနိုင်ပါသည် (Bearish)။"
       },
       smallerThanExpected: {
         marketImpact: "Lower Economic Output / Decreasing Pressure",
-        nqBias: "Bearish",
-        esBias: "Bearish",
+        nqBias: "Bullish", // Corrected to sustain Strict Reverse Correlation with Bearish DXY
+        esBias: "Bullish", // Corrected to sustain Strict Reverse Correlation with Bearish DXY
         dxyBias: "Bearish",
-        descriptionBurmese: "မှန်းချက်အောက် ကိန်းဂဏန်းနိမ့်ကျစွာ ထွက်ရှိသဖြင့် စီးပွားရေးအရှိန်ကျဆင်းနေကြောင်း ပြသသည်။ ကနဦးစျေးနှုန်း တုန်ခါမှု တိုးမြင့်လာနိုင်ပြီး Risk-Off scenario များ ဖြစ်ပွားတတ်သည်။"
+        descriptionBurmese: "မှန်းချက်အောက် ကိန်းဂဏန်းနိမ့်ကျစွာ ထွက်ရှိသဖြင့် သက်သာသော အတိုးနှုန်းခန့်မှန်းချက်ကြောင့် ဒေါ်လာ (DXY) အားနည်းသွားစေပြီး (Bearish)၊ strict reverse correlation အရ စတော့အညွှန်းကိန်းများ (NQ & ES) ကို အားကောင်းစွာ မြင့်တက်စေနိုင်ပါသည် (Bullish)။"
       }
     }
   };

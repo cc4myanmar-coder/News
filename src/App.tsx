@@ -1526,6 +1526,27 @@ export default function App() {
                       <span className="text-[9px] text-slate-500 font-semibold mt-1">Direct Interest Correlation</span>
                     </div>
                   </div>
+
+                  {/* Dynamic DXY Correlation Percentage Gauge */}
+                  <div className="bg-indigo-950/20 border border-indigo-500/15 p-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded bg-indigo-500/10 border border-indigo-500/20 shrink-0">
+                        <span className="text-[10px] font-mono text-indigo-400 font-bold">DXY Correlation</span>
+                      </div>
+                      <div>
+                        <span className="text-[11px] text-slate-300 font-bold block">Dollar Reverse Relationship Status</span>
+                        <span className="text-[9px] text-rose-400/90 block font-medium">NQ & ES move in opposite direction to USD/DXY sentiment // DXY နှင့် ပြောင်းပြန်ဆက်သွယ်ချက်</span>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0 bg-[#0c0d12]/90 border border-slate-800 px-3 py-1 rounded-lg">
+                      <span className="text-xs font-mono font-black text-rose-400 block tracking-wider">
+                        {details.dxyCorrelation}% REVERSE CORRELATION
+                      </span>
+                      <span className="text-[8px] text-slate-500 block font-mono uppercase">
+                        Active Hedge Factor
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Part C: Scenario Analysis Columns */}
@@ -1595,6 +1616,17 @@ export default function App() {
                               }`}>{sc.dxyBias === 'Bullish' ? '🟢 BULLISH Strong' : sc.dxyBias === 'Bearish' ? '🔴 BEARISH Soft' : '🟡 NEUTRAL Calm'}</span>
                             </div>
                           </div>
+
+                          {/* Dynamic Economist Relationship Note */}
+                          <div className="mt-2.5 pt-2 border-t border-white/5 flex gap-2 justify-between items-center text-[9px] text-slate-500 font-mono">
+                            <span className="flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                              <span className="uppercase text-[8px] tracking-wider text-slate-400">CORRELATION METRIC</span>
+                            </span>
+                            <span className="text-rose-400 font-extrabold text-right">
+                              {details.dxyCorrelation}% Negative Tracking (Reverse Correlation with DXY)
+                            </span>
+                          </div>
                         </div>
                       );
                     })()}
@@ -1633,6 +1665,17 @@ export default function App() {
                               <span className="text-slate-500 block mb-0.5">DXY Bias</span>
                               <span className="font-bold text-amber-500/80">🟡 NEUTRAL Calm</span>
                             </div>
+                          </div>
+
+                          {/* Dynamic Economist Relationship Note */}
+                          <div className="mt-2.5 pt-2 border-t border-white/5 flex gap-2 justify-between items-center text-[9px] text-slate-500 font-mono">
+                            <span className="flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-500/60"></span>
+                              <span className="uppercase text-[8px] tracking-wider text-slate-400">CORRELATION METRIC</span>
+                            </span>
+                            <span className="text-amber-500/80 font-extrabold text-right">
+                              {details.dxyCorrelation}% Reverse Link established with DXY
+                            </span>
                           </div>
                         </div>
                       );
@@ -1695,6 +1738,17 @@ export default function App() {
                                 sc.dxyBias === 'Bullish' ? 'text-emerald-400' : sc.dxyBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
                               }`}>{sc.dxyBias === 'Bullish' ? '🟢 BULLISH Strong' : sc.dxyBias === 'Bearish' ? '🔴 BEARISH Soft' : '🟡 NEUTRAL Calm'}</span>
                             </div>
+                          </div>
+
+                          {/* Dynamic Economist Relationship Note */}
+                          <div className="mt-2.5 pt-2 border-t border-white/5 flex gap-2 justify-between items-center text-[9px] text-slate-500 font-mono">
+                            <span className="flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                              <span className="uppercase text-[8px] tracking-wider text-slate-400">CORRELATION METRIC</span>
+                            </span>
+                            <span className="text-emerald-400 font-extrabold text-right">
+                              {details.dxyCorrelation}% Negative Tracking (Reverse Correlation with DXY)
+                            </span>
                           </div>
                         </div>
                       );
