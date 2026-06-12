@@ -452,7 +452,7 @@ export default function App() {
             </div>
             <h1 className="text-lg font-extrabold tracking-tight text-white flex items-center gap-1.5">
               QUANTUM<span className="text-indigo-400 font-medium">TERMINAL</span>
-              <span className="text-[9px] bg-indigo-900/35 text-indigo-300 border border-indigo-700/50 px-1.5 py-0.2 rounded font-mono font-normal tracking-normal lowercase ml-1">v4.5</span>
+              <span className="text-[9px] bg-indigo-900/35 text-indigo-300 border border-indigo-700/50 px-1.5 py-0.2 rounded font-mono font-normal tracking-normal lowercase ml-1">v1.0 (initial)</span>
             </h1>
           </div>
         </div>
@@ -1025,7 +1025,7 @@ export default function App() {
           </div>
         </div>
         <div className="text-[9px] font-mono text-slate-500 uppercase tracking-tighter mt-1 sm:mt-0">
-          PRO TERMINAL v4.5 // REGULATED QUANTUM DATASTREAM V12
+          PRO TERMINAL v1.0 (INITIAL RELEASE) // REGULATED QUANTUM DATASTREAM V1
         </div>
       </footer>
 
