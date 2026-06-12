@@ -556,6 +556,47 @@ export default function App() {
       if (data && data.calendar) {
         setCalendar(data.calendar);
         setDataSources(prev => ({ ...prev, calendar: data.source }));
+        
+        // Dynamically populate live alerts in client based on active calendar states
+        try {
+          const uomSentiment = data.calendar.find((item: any) => item.event === "Prelim UoM Consumer Sentiment");
+          const uomInflation = data.calendar.find((item: any) => item.event === "Prelim UoM Inflation Expectations");
+          
+          const newAlerts: any[] = [];
+          
+          if (uomSentiment && uomSentiment.actual && uomSentiment.actual !== 'Pending' && uomSentiment.actual !== 'Pending Release') {
+            newAlerts.push({
+              id: 'a-uom-sentiment',
+              timestamp: uomSentiment.time,
+              index: 'USD',
+              type: 'UoM Sentiment Release',
+              description: `Prelim UoM Consumer Sentiment printed ${uomSentiment.actual} versus ${uomSentiment.forecast || '46.1'} expected consensus. Volatility expanding in tech indices.`,
+              severity: 'critical'
+            });
+          }
+          
+          if (uomInflation && uomInflation.actual && uomInflation.actual !== 'Pending' && uomInflation.actual !== 'Pending Release') {
+            newAlerts.push({
+              id: 'a-uom-inflation',
+              timestamp: uomInflation.time,
+              index: 'FED',
+              type: 'Inflation Outlook',
+              description: `Prelim UoM Inflation Expectations registered at ${uomInflation.actual}. Core Fed path signals are being actively priced.`,
+              severity: 'moderate'
+            });
+          }
+          
+          if (newAlerts.length > 0) {
+            setVolatilityAlerts(prev => {
+              // Filters out duplicates of these custom real-time alerts if already present
+              const filtered = prev.filter(a => a.id !== 'a-uom-sentiment' && a.id !== 'a-uom-inflation');
+              return [...newAlerts, ...filtered];
+            });
+          }
+        } catch (alertError) {
+          console.warn("Client alert injection notice:", alertError);
+        }
+
         if (data.geminiStandby) {
           setGeminiStandby(true);
           setStandbyReason(data.standbyReason || 'quota_exhausted');

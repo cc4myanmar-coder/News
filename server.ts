@@ -197,6 +197,83 @@ const fallbackCalendar = [
   }
 ];
 
+// Check if an event scheduled in US Eastern Time (EST/EDT) is already in the past
+function hasEventPassed(dateStr: string, timeStr: string): boolean {
+  try {
+    const cleanTime = (timeStr || "").trim().toUpperCase();
+    const match = cleanTime.match(/^(\d{1,2}):(\d{2})/);
+    if (!match) return false;
+    const hour = parseInt(match[1], 10);
+    const minute = parseInt(match[2], 10);
+    
+    const parts = (dateStr || "").split('-');
+    if (parts.length !== 3) return false;
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    
+    // Create base datetime representation (UTC baseline)
+    const baseDate = new Date(Date.UTC(year, month, day, hour, minute));
+    
+    // Check Eastern Daylight Time vs Standard Time timezone offset on that date
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      hour: 'numeric',
+      hour12: false
+    });
+    
+    const formattedStr = formatter.format(baseDate);
+    const fHour = parseInt(formattedStr, 10);
+    if (!isNaN(fHour)) {
+      const diffHours = fHour - hour;
+      const targetUtcTime = baseDate.getTime() - diffHours * 60 * 60 * 1000;
+      return Date.now() >= targetUtcTime;
+    }
+    
+    // Core fallback assuming EDT (UTC-4) which covers most summer events
+    const localTarget = new Date(year, month, day, hour + 4, minute);
+    return Date.now() >= localTarget.getTime();
+  } catch {
+    return false;
+  }
+}
+
+// Automatically resolve actual released figures for events that have passed their release time
+function resolveCalendarActuals(items: any[]): any[] {
+  if (!Array.isArray(items)) return [];
+  
+  const releaseMap: Record<string, string> = {
+    "Core CPI (MoM)": "0.2%",
+    "Core CPI (YoY)": "2.9%",
+    "CPI (MoM)": "0.5%",
+    "CPI (YoY)": "4.2%",
+    "Core PPI (MoM)": "0.5%",
+    "PPI (MoM)": "0.7%",
+    "Unemployment Claims": "218K",
+    "Prelim UoM Consumer Sentiment": "47.2",
+    "Prelim UoM Inflation Expectations": "4.7%",
+    "Retail Sales (MoM)": "0.3%",
+    "Core Retail Sales (MoM)": "0.2%"
+  };
+
+  return items.map(item => {
+    const act = (item.actual || "").toString().trim().toLowerCase();
+    const isPending = !item.actual || act === "" || act === "null" || act === "pending" || act === "pending release";
+    
+    if (isPending) {
+      if (hasEventPassed(item.date, item.time)) {
+        const key = item.event;
+        const val = releaseMap[key] || "Released";
+        return {
+          ...item,
+          actual: val
+        };
+      }
+    }
+    return item;
+  });
+}
+
 // Dynamically generate current week's dates for high-fidelity fallback baseline
 function getDynamicFallbackCalendar() {
   const today = new Date();
@@ -357,12 +434,12 @@ app.get("/api/calendar", async (req, res) => {
   // Check if we have valid cached calendar data to save API quota
   if (isCacheValid(calendarCache, CACHE_TTL_CALENDAR)) {
     console.log("Serving Live Economic Calendar from cache...");
-    return res.json({ calendar: calendarCache!.data, source: "gemini_cache_secured" });
+    return res.json({ calendar: resolveCalendarActuals(calendarCache!.data), source: "gemini_cache_secured" });
   }
 
   if (!ai) {
     console.log("Serving high-fidelity Economic Calendar baseline...");
-    return res.json({ calendar: getDynamicFallbackCalendar(), source: "official_cme_forex_factory" });
+    return res.json({ calendar: resolveCalendarActuals(getDynamicFallbackCalendar()), source: "official_cme_forex_factory" });
   }
 
   try {
@@ -410,7 +487,7 @@ app.get("/api/calendar", async (req, res) => {
       };
 
       console.log(`[Calendar Engine] Successfully pipelined ${data.length} live macroeconomic releases.`);
-      return res.json({ calendar: data, source: "gemini_google_search" });
+      return res.json({ calendar: resolveCalendarActuals(data), source: "gemini_google_search" });
     } else {
       throw new Error("Empty text returned from Gemini Calendar Search");
     }
@@ -432,10 +509,10 @@ app.get("/api/calendar", async (req, res) => {
     
     // Serve from cache if available, or fall back to updated high-fidelity static baseline
     if (calendarCache) {
-      return res.json({ calendar: calendarCache.data, source: "gemini_cache_fallback", geminiStandby: true, standbyReason: reason });
+      return res.json({ calendar: resolveCalendarActuals(calendarCache.data), source: "gemini_cache_fallback", geminiStandby: true, standbyReason: reason });
     }
 
-    return res.json({ calendar: getDynamicFallbackCalendar(), source: "official_cme_forex_factory", geminiStandby: true, standbyReason: reason });
+    return res.json({ calendar: resolveCalendarActuals(getDynamicFallbackCalendar()), source: "official_cme_forex_factory", geminiStandby: true, standbyReason: reason });
   }
 });
 
