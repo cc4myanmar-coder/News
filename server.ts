@@ -147,7 +147,7 @@ const fallbackCalendar = [
     event: "Core PPI (MoM)",
     country: "USD",
     impact: "High",
-    actual: null,
+    actual: "0.5%",
     forecast: "0.5%",
     previous: "1.0%"
   },
@@ -158,7 +158,7 @@ const fallbackCalendar = [
     event: "PPI (MoM)",
     country: "USD",
     impact: "High",
-    actual: null,
+    actual: "0.7%",
     forecast: "0.7%",
     previous: "1.4%"
   },
@@ -169,7 +169,7 @@ const fallbackCalendar = [
     event: "Unemployment Claims",
     country: "USD",
     impact: "Medium",
-    actual: null,
+    actual: "218K",
     forecast: "220K",
     previous: "225K"
   },
