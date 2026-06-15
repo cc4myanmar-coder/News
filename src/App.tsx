@@ -559,29 +559,41 @@ export default function App() {
         
         // Dynamically populate live alerts in client based on active calendar states
         try {
-          const uomSentiment = data.calendar.find((item: any) => item.event === "Prelim UoM Consumer Sentiment");
-          const uomInflation = data.calendar.find((item: any) => item.event === "Prelim UoM Inflation Expectations");
+          const fomcRate = data.calendar.find((item: any) => item.event.toLowerCase().includes("federal funds") || item.event.toLowerCase().includes("fomc"));
+          const retailSales = data.calendar.find((item: any) => item.event.toLowerCase().includes("retail sales"));
+          const joblessClaims = data.calendar.find((item: any) => item.event.toLowerCase().includes("claims") || item.event.toLowerCase().includes("unemployment"));
           
           const newAlerts: any[] = [];
           
-          if (uomSentiment && uomSentiment.actual && uomSentiment.actual !== 'Pending' && uomSentiment.actual !== 'Pending Release') {
+          if (fomcRate && fomcRate.actual && fomcRate.actual !== 'Pending' && fomcRate.actual !== 'Pending Release') {
             newAlerts.push({
-              id: 'a-uom-sentiment',
-              timestamp: uomSentiment.time,
-              index: 'USD',
-              type: 'UoM Sentiment Release',
-              description: `Prelim UoM Consumer Sentiment printed ${uomSentiment.actual} versus ${uomSentiment.forecast || '46.1'} expected consensus. Volatility expanding in tech indices.`,
+              id: 'a-fomc-rate',
+              timestamp: fomcRate.time,
+              index: 'FED',
+              type: 'FOMC Rate Target',
+              description: `FOMC Federal Funds Rate printed at ${fomcRate.actual} versus consensus ${fomcRate.forecast || '3.75%'}. Volatility indexes surged for CME stock products.`,
               severity: 'critical'
             });
           }
           
-          if (uomInflation && uomInflation.actual && uomInflation.actual !== 'Pending' && uomInflation.actual !== 'Pending Release') {
+          if (retailSales && retailSales.actual && retailSales.actual !== 'Pending' && retailSales.actual !== 'Pending Release') {
             newAlerts.push({
-              id: 'a-uom-inflation',
-              timestamp: uomInflation.time,
-              index: 'FED',
-              type: 'Inflation Outlook',
-              description: `Prelim UoM Inflation Expectations registered at ${uomInflation.actual}. Core Fed path signals are being actively priced.`,
+              id: 'a-retail-sales',
+              timestamp: retailSales.time,
+              index: 'USD',
+              type: 'US Retail Sales',
+              description: `US Retail Sales macro indicators published at ${retailSales.actual} versus ${retailSales.forecast || '0.5%'} expectations core consensus.`,
+              severity: 'moderate'
+            });
+          }
+
+          if (joblessClaims && joblessClaims.actual && joblessClaims.actual !== 'Pending' && joblessClaims.actual !== 'Pending Release') {
+            newAlerts.push({
+              id: 'a-jobless-claims',
+              timestamp: joblessClaims.time,
+              index: 'USD',
+              type: 'Jobless Claims',
+              description: `US Unemployment Jobless Claims printed at ${joblessClaims.actual} versus estimated ${joblessClaims.forecast || '225K'}.`,
               severity: 'moderate'
             });
           }
@@ -589,7 +601,7 @@ export default function App() {
           if (newAlerts.length > 0) {
             setVolatilityAlerts(prev => {
               // Filters out duplicates of these custom real-time alerts if already present
-              const filtered = prev.filter(a => a.id !== 'a-uom-sentiment' && a.id !== 'a-uom-inflation');
+              const filtered = prev.filter(a => a.id !== 'a-fomc-rate' && a.id !== 'a-retail-sales' && a.id !== 'a-jobless-claims');
               return [...newAlerts, ...filtered];
             });
           }

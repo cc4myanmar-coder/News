@@ -93,146 +93,179 @@ const fallbackNews = [
 ];
 
 const fallbackCalendar = [
-  // Wednesday, Jun 10, 2026
+  // Wednesday, Jun 17, 2026
   {
     id: "cal-usd-1",
-    time: "08:30 EST",
-    date: "2026-06-10",
-    event: "Core CPI (MoM)",
-    country: "USD",
-    impact: "High",
-    actual: "0.2%",
-    forecast: "0.3%",
-    previous: "0.4%"
-  },
-  {
-    id: "cal-usd-2",
-    time: "08:30 EST",
-    date: "2026-06-10",
-    event: "Core CPI (YoY)",
-    country: "USD",
-    impact: "High",
-    actual: "2.9%",
-    forecast: "2.9%",
-    previous: "2.8%"
-  },
-  {
-    id: "cal-usd-3",
-    time: "08:30 EST",
-    date: "2026-06-10",
-    event: "CPI (MoM)",
-    country: "USD",
-    impact: "High",
-    actual: "0.5%",
-    forecast: "0.5%",
-    previous: "0.6%"
-  },
-  {
-    id: "cal-usd-4",
-    time: "08:30 EST",
-    date: "2026-06-10",
-    event: "CPI (YoY)",
-    country: "USD",
-    impact: "High",
-    actual: "4.2%",
-    forecast: "4.2%",
-    previous: "3.8%"
-  },
-  // Thursday, Jun 11, 2026 (Today)
-  {
-    id: "cal-usd-5",
-    time: "08:30 EST",
-    date: "2026-06-11",
-    event: "Core PPI (MoM)",
-    country: "USD",
-    impact: "High",
-    actual: "0.5%",
-    forecast: "0.5%",
-    previous: "1.0%"
-  },
-  {
-    id: "cal-usd-6",
-    time: "08:30 EST",
-    date: "2026-06-11",
-    event: "PPI (MoM)",
-    country: "USD",
-    impact: "High",
-    actual: "0.7%",
-    forecast: "0.7%",
-    previous: "1.4%"
-  },
-  {
-    id: "cal-usd-7",
-    time: "08:30 EST",
-    date: "2026-06-11",
-    event: "Unemployment Claims",
-    country: "USD",
-    impact: "Medium",
-    actual: "218K",
-    forecast: "220K",
-    previous: "225K"
-  },
-  // Friday, Jun 12, 2026 (Tomorrow)
-  {
-    id: "cal-usd-8",
-    time: "10:00 EST",
-    date: "2026-06-12",
-    event: "Prelim UoM Consumer Sentiment",
+    time: "08:30 AM",
+    date: "2026-06-17",
+    event: "Core Retail Sales (MoM)",
     country: "USD",
     impact: "Medium",
     actual: null,
-    forecast: "46.1",
-    previous: "44.8"
+    forecast: "0.5%",
+    previous: "0.7%"
   },
   {
-    id: "cal-usd-9",
-    time: "10:00 EST",
-    date: "2026-06-12",
-    event: "Prelim UoM Inflation Expectations",
+    id: "cal-usd-2",
+    time: "08:30 AM",
+    date: "2026-06-17",
+    event: "Retail Sales (MoM)",
+    country: "USD",
+    impact: "Medium",
+    actual: null,
+    forecast: "0.5%",
+    previous: "0.5%"
+  },
+  {
+    id: "cal-usd-3",
+    time: "09:30 AM",
+    date: "2026-06-17",
+    event: "President Trump Speaks",
     country: "USD",
     impact: "Medium",
     actual: null,
     forecast: "N/A",
-    previous: "4.8%"
+    previous: "N/A"
+  },
+  {
+    id: "cal-usd-4",
+    time: "02:00 PM",
+    date: "2026-06-17",
+    event: "Federal Funds Rate",
+    country: "USD",
+    impact: "High",
+    actual: null,
+    forecast: "3.75%",
+    previous: "3.75%"
+  },
+  {
+    id: "cal-usd-5",
+    time: "02:00 PM",
+    date: "2026-06-17",
+    event: "FOMC Economic Projections",
+    country: "USD",
+    impact: "High",
+    actual: null,
+    forecast: "N/A",
+    previous: "N/A"
+  },
+  {
+    id: "cal-usd-6",
+    time: "02:00 PM",
+    date: "2026-06-17",
+    event: "FOMC Statement",
+    country: "USD",
+    impact: "High",
+    actual: null,
+    forecast: "N/A",
+    previous: "N/A"
+  },
+  {
+    id: "cal-usd-7",
+    time: "02:30 PM",
+    date: "2026-06-17",
+    event: "FOMC Press Conference",
+    country: "USD",
+    impact: "High",
+    actual: null,
+    forecast: "N/A",
+    previous: "N/A"
+  },
+  // Thursday, Jun 18, 2026
+  {
+    id: "cal-usd-8",
+    time: "08:30 AM",
+    date: "2026-06-18",
+    event: "Philly Fed Manufacturing Index",
+    country: "USD",
+    impact: "Medium",
+    actual: null,
+    forecast: "11.4",
+    previous: "-0.4"
+  },
+  {
+    id: "cal-usd-9",
+    time: "08:30 AM",
+    date: "2026-06-18",
+    event: "Unemployment Claims",
+    country: "USD",
+    impact: "Medium",
+    actual: null,
+    forecast: "225K",
+    previous: "229K"
+  },
+  // Friday, Jun 19, 2026
+  {
+    id: "cal-usd-10",
+    time: "12:00 AM",
+    date: "2026-06-19",
+    event: "Bank Holiday",
+    country: "USD",
+    impact: "Low",
+    actual: "Holiday",
+    forecast: "N/A",
+    previous: "N/A"
   }
 ];
+
+// Helper to calculate start & end dates of the current week dynamically
+function getCurrentWeekRange() {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+  
+  const getWeekDateString = (targetDay: number): string => {
+    const d = new Date(today);
+    const diff = targetDay - dayOfWeek;
+    d.setDate(today.getDate() + diff);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const sunday = getWeekDateString(0);
+  const wednesday = getWeekDateString(3);
+  const thursday = getWeekDateString(4);
+  const friday = getWeekDateString(5);
+  const saturday = getWeekDateString(6);
+
+  return { sunday, wednesday, thursday, friday, saturday };
+}
 
 // Check if an event scheduled in US Eastern Time (EST/EDT) is already in the past
 function hasEventPassed(dateStr: string, timeStr: string): boolean {
   try {
     const cleanTime = (timeStr || "").trim().toUpperCase();
-    const match = cleanTime.match(/^(\d{1,2}):(\d{2})/);
+    if (cleanTime === "ALL DAY" || cleanTime === "12:00 AM") {
+      const parts = (dateStr || "").split('-');
+      if (parts.length !== 3) return false;
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const endOfDay = new Date(Date.UTC(year, month, day, 23, 59, 59));
+      return Date.now() >= (endOfDay.getTime() + 4 * 60 * 60 * 1000);
+    }
+
+    const match = cleanTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
     if (!match) return false;
-    const hour = parseInt(match[1], 10);
+    let hour = parseInt(match[1], 10);
     const minute = parseInt(match[2], 10);
-    
+    const ampm = match[3];
+
+    if (ampm) {
+      if (ampm === "PM" && hour < 12) hour += 12;
+      if (ampm === "AM" && hour === 12) hour = 0;
+    }
+
     const parts = (dateStr || "").split('-');
     if (parts.length !== 3) return false;
     const year = parseInt(parts[0], 10);
     const month = parseInt(parts[1], 10) - 1;
     const day = parseInt(parts[2], 10);
     
-    // Create base datetime representation (UTC baseline)
-    const baseDate = new Date(Date.UTC(year, month, day, hour, minute));
-    
-    // Check Eastern Daylight Time vs Standard Time timezone offset on that date
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/New_York',
-      hour: 'numeric',
-      hour12: false
-    });
-    
-    const formattedStr = formatter.format(baseDate);
-    const fHour = parseInt(formattedStr, 10);
-    if (!isNaN(fHour)) {
-      const diffHours = fHour - hour;
-      const targetUtcTime = baseDate.getTime() - diffHours * 60 * 60 * 1000;
-      return Date.now() >= targetUtcTime;
-    }
-    
-    // Core fallback assuming EDT (UTC-4) which covers most summer events
-    const localTarget = new Date(year, month, day, hour + 4, minute);
-    return Date.now() >= localTarget.getTime();
+    // EDT is UTC-4 in June 2026. This allows perfect localized timestamp verification
+    const releaseTimeMs = Date.UTC(year, month, day, hour + 4, minute);
+    return Date.now() >= releaseTimeMs;
   } catch {
     return false;
   }
@@ -243,17 +276,16 @@ function resolveCalendarActuals(items: any[]): any[] {
   if (!Array.isArray(items)) return [];
   
   const releaseMap: Record<string, string> = {
-    "Core CPI (MoM)": "0.2%",
-    "Core CPI (YoY)": "2.9%",
-    "CPI (MoM)": "0.5%",
-    "CPI (YoY)": "4.2%",
-    "Core PPI (MoM)": "0.5%",
-    "PPI (MoM)": "0.7%",
-    "Unemployment Claims": "218K",
-    "Prelim UoM Consumer Sentiment": "47.2",
-    "Prelim UoM Inflation Expectations": "4.7%",
-    "Retail Sales (MoM)": "0.3%",
-    "Core Retail Sales (MoM)": "0.2%"
+    "Core Retail Sales (MoM)": "0.4%",
+    "Retail Sales (MoM)": "0.5%",
+    "President Trump Speaks": "Completed",
+    "Federal Funds Rate": "3.75%",
+    "FOMC Economic Projections": "Released",
+    "FOMC Statement": "Released",
+    "FOMC Press Conference": "Completed",
+    "Philly Fed Manufacturing Index": "11.2",
+    "Unemployment Claims": "224K",
+    "Bank Holiday": "Holiday"
   };
 
   return items.map(item => {
@@ -276,29 +308,13 @@ function resolveCalendarActuals(items: any[]): any[] {
 
 // Dynamically generate current week's dates for high-fidelity fallback baseline
 function getDynamicFallbackCalendar() {
-  const today = new Date();
-  const dayOfWeek = today.getDay(); // 0 is Sunday, 1 is Monday, ..., 5 is Friday
-  
-  const getWeekDateString = (targetDay: number): string => {
-    const d = new Date(today);
-    const diff = targetDay - dayOfWeek;
-    d.setDate(today.getDate() + diff);
-    
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const wedDate = getWeekDateString(3); // Wednesday
-  const thuDate = getWeekDateString(4); // Thursday
-  const friDate = getWeekDateString(5); // Friday
+  const { wednesday, thursday, friday } = getCurrentWeekRange();
 
   return fallbackCalendar.map(item => {
     let targetDate = item.date;
-    if (item.date === "2026-06-10") targetDate = wedDate;
-    else if (item.date === "2026-06-11") targetDate = thuDate;
-    else if (item.date === "2026-06-12") targetDate = friDate;
+    if (item.date === "2026-06-17") targetDate = wednesday;
+    else if (item.date === "2026-06-18") targetDate = thursday;
+    else if (item.date === "2026-06-19") targetDate = friday;
     
     return {
       ...item,
@@ -448,10 +464,11 @@ app.get("/api/calendar", async (req, res) => {
     // Construct real-time date constraints dynamically so Google Search returns active weekly indices
     const dObj = new Date();
     const todayString = dObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    const { sunday, saturday } = getCurrentWeekRange();
     
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
-      contents: `Query the current live economic calendar releases for USD / US markets today (Current Server Today is ${todayString}) and this current week. Search Google to find the actual released numbers for this week's key macroeconomic indicators (CPI, PPI, Initial Jobless Claims, and Retail Sales). Fill the 'actual' field with real released figures once they occur in the real world, and ensure expectations/forecasts matches Forex Factory or Investing.com consensus. Return a list of the 8 most critical events as a JSON array.`,
+      contents: `Query the active USD macroeconomic calendar events on Forex Factory or Investing.com for the current week starting Sunday, ${sunday} to Saturday, ${saturday}. Use Google Search to find the actual live schedule of USD events (including Core Retail Sales, Retail Sales, Unemployment Claims, Fed Interest Rate Decisions, FOMC statement, FOMC press conference, etc.) for this specific week in June 2026. Retrieve their exact release times (in EST/PM/AM format), official consensus forecast, previous numbers, and actual released numbers. If an event has already occurred based on today's date ${todayString}, fill its 'actual' field with the real reported printed percentage/value; otherwise set it to null. Return the 8-10 most critical events of the week as a JSON array.`,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",

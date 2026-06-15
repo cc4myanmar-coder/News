@@ -181,6 +181,70 @@ export const MACRO_EXPLAINERS: Record<string, MacroDetails> = {
         descriptionBurmese: "ငွေဖောင်းပွမှုအပေါ် လူထုစိုးရိမ်မှု လျော့ကျလာခြင်းက Fed အနေဖြင့် အေးအေးလူလူ အတိုးနှုတ်ယူနိုင်စေသဖြင့် Stock Markets အားလုံး (NQ / ES) အတွက် မီးစိမ်းပြပြီး Dollar တန်ဖိုးကို အားလျော့စေသည်။"
       }
     }
+  },
+  retail_sales: {
+    eventName: "Retail Sales / Core Retail Sales (လက်လီရောင်းအားညွှန်းကိန်း)",
+    meaningBurmese: "စားသုံးသူများ၏ လက်လီဝယ်ယူမှု ပမာဏကို တိုင်းတာခြင်း ဖြစ်သည်။ US စီးပွားရေးလည်ပတ်မှု၏ ၇၀ ရာခိုင်နှုန်းခန့်သည် စားသုံးသူသုံးစွဲမှုအပေါ် အခြေခံသဖြင့် စီးပွားရေးအင်အားကောင်းမွန်မှုကို တိုင်းတာရန် အလွန်ထိရောက်သည်။",
+    meaningEnglish: "Retail Sales measures the total receipts of retail stores. It provides a key gauge of consumer spending, which accounts for approximately 70% of total US GDP.",
+    nqImpactScore: 8,
+    esImpactScore: 8,
+    dxyImpactScore: 8,
+    dxyCorrelation: -85,
+    scenarios: {
+      asExpected: {
+        marketImpact: "Market Stable - Standard Volume Flows",
+        nqBias: "Neutral",
+        esBias: "Neutral",
+        dxyBias: "Neutral",
+        descriptionBurmese: "မျှော်မှန်းထားသည့်အတိုင်း ထွက်ရှိသဖြင့် သမားရိုးကျ Trading Range များအတွင်း စျေးကွက် ဆက်လက်စုစည်းနေပါမည်။"
+      },
+      greaterThanExpected: {
+        marketImpact: "Strong Economy - Higher DXY Pressure",
+        nqBias: "Bearish",
+        esBias: "Bearish",
+        dxyBias: "Bullish",
+        descriptionBurmese: "လက်လီရောင်းအား မျှော်လင့်ထားသည်ထက် ပိုမိုမြင့်မားနေခြင်းက စားသုံးသူ သုံးစွဲနိုင်စွမ်း အလွန် ကောင်းမွန်နေကြောင်း ပြသသည်။ ယင်းက ငွေဖောင်းပွမှု ဖိအားကို မြင့်မားစေနိုင်ပြီး Fed အနေဖြင့် အတိုးနှုန်းကို ဆက်ထိန်းထားရန် လှုံ့ဆော်သဖြင့် NQ နှင့် ES ကို ဖိအားပေး ကျဆင်းစေနိုင်ပြီး Dollar Index (DXY) မြင့်တက်စေသည်။"
+      },
+      smallerThanExpected: {
+        marketImpact: "Cooling Economy - Rate Cut Catalyst",
+        nqBias: "Bullish",
+        esBias: "Bullish",
+        dxyBias: "Bearish",
+        descriptionBurmese: "စားသုံးမှု လျော့ကျခြင်းက စီးပွားရေးအေးစက်လာကြောင်း ဖော်ပြပြီး Fed မှ အတိုးနှုန်း လျှော့ချရန် လမ်းစဖြစ်စေသဖြင့် မက်ကရို reverse correlation အားဖြင့် Dollar ကို ကျဆင်းစေပြီး စတော့အညွှန်းကိန်း futures (NQ, ES) များကို မြင့်တက်စေသည်။"
+      }
+    }
+  },
+  fomc: {
+    eventName: "FOMC Federal Funds Rate / Statement (အတိုးနှုန်းမူဝါဒနှင့် သဘောထားကြေညာချက်)",
+    meaningBurmese: "Federal Open Market Committee (FOMC) အစည်းအဝေးမှ အမေရိကန်၏ အခြေခံအတိုးနှုန်းကို အပြောင်းအလဲပြုလုပ်ရန် ဆုံးဖြတ်ခြင်း ဖြစ်သည်။ Fed ဥက္ကဋ္ဌ၏ စီးပွားရေးအပေါ် သုံးသပ်ချက် မူဝါဒစကားများသည် စျေးကွက်တစ်ခုလုံးအတွက် အလှုပ်ခတ်ဆုံးသော Catalyst ဖြစ်သည်။",
+    meaningEnglish: "The Federal Open Market Committee (FOMC) announces the official US federal funds rate. Its forward-looking statement and subsequent press conference are the most critical drivers of interest rate expectations and financial market liquidity.",
+    nqImpactScore: 10,
+    esImpactScore: 10,
+    dxyImpactScore: 10,
+    dxyCorrelation: -96,
+    scenarios: {
+      asExpected: {
+        marketImpact: "Priced-in Neutral - Watching Statement details",
+        nqBias: "Neutral",
+        esBias: "Neutral",
+        dxyBias: "Neutral",
+        descriptionBurmese: "အတိုးနှုန်းကို မျှော်မှန်းထားသည့်အတိုင်း ပြောင်းလဲခြင်းမရှိဘဲ ထားရှိပါက ကနဦးတွင် ငြိမ်သက်နေနိုင်သော်လည်း Statement ပါ Fed ဥက္ကဋ္ဌ၏ စကားလုံး သုံးနှုန်းပုံ (Dovish / Hawkish tone) အပေါ်မူတည်၍ အတက်/အကျ အလွန် ပြင်းထန်နိုင်သည်။"
+      },
+      greaterThanExpected: {
+        marketImpact: "Hawkish Rate Surge - High Volatility Selloff",
+        nqBias: "Bearish",
+        esBias: "Bearish",
+        dxyBias: "Bullish",
+        descriptionBurmese: "မျှော်လင့်ထားသည်ထက် ပိုမိုမြင့်မားသော အတိုးနှုန်း သတ်မှတ်ခြင်း သို့မဟုတ် Fed ၏ စကားရပ်များက Hawkish (တင်းကြပ်ရန်) ဘက်သို့ တိမ်းညွှတ်နေပါက Equities အကုန် ပြိုကျနိုင်ပြီး Dollar Index (DXY) သည် အရှိန်အဟုန်ပြင်းစွာ ထိုးတက်လာတတ်သည်။"
+      },
+      smallerThanExpected: {
+        marketImpact: "Dovish Rate Cut - Massive Index Rally",
+        nqBias: "Bullish",
+        esBias: "Bullish",
+        dxyBias: "Bearish",
+        descriptionBurmese: "အတိုးနှုန်း လျှော့ချခြင်း သို့မဟုတ် ရှေ့တွင် အမြန်ဆုံး လျှော့ချတော့မည်ဖြစ်ကြောင်း Fed ၏ သဘောထားပျော့ပျောင်းမှု (Dovish tone) ပြသပါက Liquidity အလွန်ကောင်းမွန်လာသဖြင့် စတော့ futures များ NQ နှင့် ES အပြင်းအထန် တဟုန်ထိုး Rally တက်ကာ Dollar ဖိနှိပ်ကျဆင်းသွားသည်။"
+      }
+    }
   }
 };
 
@@ -204,6 +268,12 @@ export function getMacroDetailsForEvent(eventName: string): MacroDetails {
   }
   if (norm.includes('inflation expectation') || norm.includes('uom inflation')) {
     return MACRO_EXPLAINERS.inflation_exp;
+  }
+  if (norm.includes('retail') || norm.includes('sales')) {
+    return MACRO_EXPLAINERS.retail_sales;
+  }
+  if (norm.includes('fomc') || norm.includes('federal funds') || norm.includes('rate decision') || norm.includes('fed interest') || norm.includes('fed funds') || norm.includes('rate')) {
+    return MACRO_EXPLAINERS.fomc;
   }
   
   // Generic / Default details
