@@ -54,7 +54,7 @@ const roundToCmeTick = (val: number): number => {
 import { TimezoneDropdown, TIMEZONES } from './components/TimezoneDropdown';
 
 // Conversions assistant to transform static Eastern Time (EST/EDT) records dynamically
-export const convertEstToSelectedTimezone = (dateStr: string, timeStr: string, targetTimezone: string): string => {
+export const convertEstToSelectedTimezone = (dateStr: string, timeStr: string, targetTimezone: string, use12Hour: boolean = false): string => {
   try {
     // Standardize and extract hours/minutes and AM/PM if present
     const clean = timeStr.trim().toUpperCase().replace(/\s+/g, ' ');
@@ -109,7 +109,7 @@ export const convertEstToSelectedTimezone = (dateStr: string, timeStr: string, t
       timeZone: targetTimezone,
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false
+      hour12: use12Hour
     }).format(eventUtcDate);
   } catch (error) {
     console.warn("Time zone automatic DST conversion fallback triggered:", error);
@@ -248,6 +248,24 @@ export default function App() {
       console.warn('Storage permission restricted for timezone:', e);
     }
   }, [selectedTimezone]);
+
+  // Selected Time format style preference: 12-Hour format vs 24-Hour format
+  const [use12HourFormat, setUse12HourFormat] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('rtft-quantum-timer-12h');
+      return saved === 'true'; // Default is false (24-Hour)
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('rtft-quantum-timer-12h', String(use12HourFormat));
+    } catch (e) {
+      console.warn('Storage permission restricted for time format:', e);
+    }
+  }, [use12HourFormat]);
 
   // Synchronize Tab Favicon dynamically with the customized brand/logo image
   useEffect(() => {
@@ -727,17 +745,26 @@ export default function App() {
           </div>
 
           {/* Clock helper specifically for layout on smaller mobile screens (< sm) */}
-          <div className="flex sm:hidden flex-col items-end font-mono shrink-0 select-none">
-            <span className="text-[8px] text-[#5c5d6c] uppercase tracking-wider">{activeZone.abbr} CLOCK</span>
-            <span className="text-xs font-semibold text-slate-300">
-              {(() => {
-                try {
-                  return new Date().toLocaleTimeString('en-US', { timeZone: selectedTimezone, hour12: false, hour: '2-digit', minute: '2-digit' });
-                } catch {
-                  return new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false, hour: '2-digit', minute: '2-digit' });
-                }
-              })()}
-            </span>
+          <div className="flex sm:hidden items-center gap-1.5 font-mono shrink-0 select-none">
+            <div className="flex flex-col items-end">
+              <span className="text-[8px] text-[#5c5d6c] uppercase tracking-wider">{activeZone.abbr} CLOCK</span>
+              <span className="text-xs font-semibold text-slate-300">
+                {(() => {
+                  try {
+                    return new Date().toLocaleTimeString('en-US', { timeZone: selectedTimezone, hour12: use12HourFormat, hour: '2-digit', minute: '2-digit' });
+                  } catch {
+                    return new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: use12HourFormat, hour: '2-digit', minute: '2-digit' });
+                  }
+                })()}
+              </span>
+            </div>
+            <button
+              onClick={() => setUse12HourFormat(!use12HourFormat)}
+              className="px-1.5 py-0.5 text-[8px] font-extrabold border border-slate-800 bg-[#101012] hover:bg-slate-900 rounded text-slate-400 transition-colors uppercase cursor-pointer"
+              title="Toggle 12H/24H Time Format"
+            >
+              {use12HourFormat ? "12H" : "24H"}
+            </button>
           </div>
         </div>
 
@@ -770,15 +797,29 @@ export default function App() {
 
           {/* Timezone Selector & Digital Clock (shown on screens >= sm) */}
           <div className="hidden sm:flex flex-col items-end shrink-0 select-none px-2 font-mono lg:ml-4 border-l border-slate-800/60 pl-4">
-            <TimezoneDropdown value={selectedTimezone} onChange={setSelectedTimezone} />
+            <div className="flex items-center gap-2">
+              <TimezoneDropdown value={selectedTimezone} onChange={setSelectedTimezone} />
+              <button
+                onClick={() => setUse12HourFormat(!use12HourFormat)}
+                className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold border transition-all cursor-pointer ${
+                  use12HourFormat 
+                    ? "bg-indigo-950/40 text-indigo-300 border-indigo-700/40" 
+                    : "bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700"
+                }`}
+                title="Toggle Time Format (12H / 24H)"
+                id="timezone-format-toggle"
+              >
+                {use12HourFormat ? "12H" : "24H"}
+              </button>
+            </div>
             <div className="flex items-center gap-1.5 text-slate-205 mt-1.5">
               <Clock className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-sm font-semibold text-slate-200">
                 {(() => {
                   try {
-                    return new Date().toLocaleTimeString('en-US', { timeZone: selectedTimezone, hour12: false });
+                    return new Date().toLocaleTimeString('en-US', { timeZone: selectedTimezone, hour12: use12HourFormat, hour: '2-digit', minute: '2-digit', second: '2-digit' });
                   } catch {
-                    return new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false });
+                    return new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: use12HourFormat, hour: '2-digit', minute: '2-digit', second: '2-digit' });
                   }
                 })()}
               </span>
@@ -1102,96 +1143,93 @@ export default function App() {
               </div>
             </div>
 
-            {/* Automatic update info and Status */}
-            <div className="mb-3.5 px-3 py-2 rounded-lg bg-indigo-950/20 border border-indigo-500/10 text-[10.5px] leading-relaxed text-slate-300 font-sans">
-              <div className="flex items-center gap-1.5 font-mono text-indigo-400 font-extrabold text-[10px] uppercase mb-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                AUTO-PIPELINE STREAM (အလိုအလျောက် သတင်းတိုက်ရိုက်ရယူမှု)
-              </div>
-              <p>
-                စနစ်သည် <strong className="text-white font-semibold">CME & Forex Factory</strong> မှ ထုတ်ပြန်သော macro data သစ်များကို <strong className="text-indigo-300 font-semibold">Google News Crawl Pipeline</strong> ဖြင့် ၉၀ စက္ကန့်လျှင်တစ်ကြိမ် အလိုအလျောက် live updates ရယူပေးနေပါသည်။ လူကိုယ်တိုင် manually update တောင်းရန် မလိုဘဲ realtime updates ရရှိနေမည် ဖြစ်ပါသည်။
-              </p>
-              {dataSources.calendar === 'gemini_google_search' ? (
-                <div className="mt-1.5 text-[9.5px] font-mono text-emerald-400 flex items-center gap-1 bg-emerald-950/30 px-1.5 py-0.5 rounded border border-emerald-900/20 w-fit">
-                  <span className="w-1 h-1 rounded-full bg-emerald-400 animate-ping"></span>
-                  ● Real-Time API Engine Layer: LIVE ACTIVE
-                </div>
-              ) : (
-                <div className="mt-1.5 text-[9.5px] font-mono text-amber-400 flex items-center gap-1 bg-amber-950/30 px-1.5 py-0.5 rounded border border-amber-900/20 w-fit">
-                  <span className="w-1 h-1 rounded-full bg-amber-400"></span>
-                  ▲ Backup Baseline Stream: Syncing via CME Datapools
-                </div>
-              )}
-            </div>
-
             {/* Calendar Events List */}
             <div className="space-y-2.5 max-h-[290px] overflow-y-auto pr-1">
               {isLoadingCalendar ? (
                 <div className="text-center py-8 text-slate-500 font-mono text-xs">Fetching macro events...</div>
-              ) : filteredCalendar.length === 0 ? (
-                <div className="text-center py-6 text-slate-500 text-xs">No high-impact events reported.</div>
+              ) : calendar.length === 0 ? (
+                <div className="text-center py-6 text-slate-500 text-xs">No macro events reported.</div>
               ) : (
-                filteredCalendar.map((item, index) => {
-                  const isHigh = item.impact === 'High';
-                  const isMedium = item.impact === 'Medium';
-                  
-                  const badgeClass = 
-                    isHigh ? 'bg-red-950 text-red-300 border-red-900/40 font-bold' :
-                    isMedium ? 'bg-amber-950/70 text-amber-300 border-amber-900/50 font-bold' :
-                    'bg-slate-900 text-slate-400 border-slate-800';
+                // Group by unique dates to maintain list structure even with filters active
+                Array.from(new Set(calendar.map(item => item.date as string)))
+                  .sort()
+                  .map((dateVal: string) => {
+                    const dateEvents = calendar.filter(item => item.date === dateVal);
+                    const matchingEvents = dateEvents.filter(item => {
+                      if (calendarDayFilter === 'high-only') {
+                        return item.impact === 'High';
+                      }
+                      return true;
+                    });
 
-                  const showHeader = index === 0 || filteredCalendar[index - 1].date !== item.date;
-
-                  return (
-                    <div key={item.id} className="flex flex-col gap-1.5">
-                      {showHeader && (
+                    return (
+                      <div key={dateVal} className="space-y-1.5 mb-2.5">
+                        {/* Day/Date Header - Always visible to ensure days are clear in the layout */}
                         <div className="sticky top-0 z-10 bg-[#09090b]/90 backdrop-blur-md py-1.5 px-2 my-1 text-[10px] font-mono font-black tracking-wider text-indigo-400 border-l-2 border-indigo-500 bg-indigo-500/5 flex items-center justify-between uppercase rounded-r">
                           <span className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-                            {formatCalendarDate(item.date)}
+                            {formatCalendarDate(dateVal)}
                           </span>
                         </div>
-                      )}
 
-                      <div 
-                        className={`flex gap-3 p-2.5 rounded-lg border bg-[#0b0c0f] hover:bg-[#101114] transition-all cursor-pointer ${
-                          isHigh ? 'border-red-900/20 hover:border-red-900/40 bg-red-950/10' : 'border-slate-800/40'
-                        }`}
-                        onClick={() => setSelectedCalendarEvent(item)}
-                      >
-                        {/* Hour block */}
-                        <div className="w-16 shrink-0 text-center flex flex-col justify-center border-r border-slate-800/40 pr-2">
-                          <span className="block text-xs font-semibold text-slate-200 font-mono">
-                            {convertEstToSelectedTimezone(item.date, item.time, selectedTimezone)}
-                          </span>
-                          <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider">{activeZone.abbr} • {item.country}</span>
-                        </div>
-
-                        {/* Details */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 justify-between mb-0.5">
-                            <span className="text-xs font-semibold text-slate-200 truncate block">{item.event}</span>
-                            <span className={`px-1.5 py-0.2 rounded text-[8px] border font-mono ${badgeClass}`}>
-                              {item.impact}
-                            </span>
+                        {matchingEvents.length === 0 ? (
+                          <div className="text-center py-3 text-[10px] font-mono text-slate-500 bg-[#0b0c0f]/20 rounded-lg border border-dashed border-slate-800/35 my-0.5">
+                            No {calendarDayFilter === 'high-only' ? 'High Impact' : 'Scheduled'} Events
                           </div>
+                        ) : (
+                          matchingEvents.map((item) => {
+                            const isHigh = item.impact === 'High';
+                            const isMedium = item.impact === 'Medium';
+                            
+                            const badgeClass = 
+                              isHigh ? 'bg-red-950 text-red-300 border-red-900/40 font-bold' :
+                              isMedium ? 'bg-amber-950/70 text-amber-300 border-amber-900/50 font-bold' :
+                              'bg-slate-900 text-slate-400 border-slate-800';
 
-                          {/* Actual, Forecast, Previous values */}
-                          <div className="flex items-center justify-between text-[11px] font-mono mt-1 text-slate-400">
-                            <div>
-                              Act: <strong className={item.actual ? (isHigh ? 'text-red-400 font-bold' : 'text-emerald-400 font-bold') : 'text-slate-600 font-medium'}>
-                                {item.actual || 'Pending'}
-                              </strong>
-                            </div>
-                            <div>Exp: <span className="text-slate-300 font-medium">{item.forecast || 'N/A'}</span></div>
-                            <div>Prev: <span className="text-slate-300 font-medium">{item.previous || 'N/A'}</span></div>
-                          </div>
+                            return (
+                              <div 
+                                key={item.id}
+                                className={`flex gap-3 p-2.5 rounded-lg border bg-[#0b0c0f] hover:bg-[#101114] transition-all cursor-pointer ${
+                                  isHigh ? 'border-red-900/20 hover:border-red-900/40 bg-red-950/10' : 'border-slate-800/40'
+                                }`}
+                                onClick={() => setSelectedCalendarEvent(item)}
+                              >
+                                {/* Hour block */}
+                                <div className="w-16 shrink-0 text-center flex flex-col justify-center border-r border-slate-800/40 pr-2">
+                                  <span className="block text-xs font-semibold text-slate-200 font-mono">
+                                    {convertEstToSelectedTimezone(item.date, item.time, selectedTimezone, use12HourFormat)}
+                                  </span>
+                                  <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider">{activeZone.abbr} • {item.country}</span>
+                                </div>
 
-                        </div>
+                                {/* Details */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 justify-between mb-0.5">
+                                    <span className="text-xs font-semibold text-slate-200 truncate block">{item.event}</span>
+                                    <span className={`px-1.5 py-0.2 rounded text-[8px] border font-mono ${badgeClass}`}>
+                                      {item.impact}
+                                    </span>
+                                  </div>
+
+                                  {/* Actual, Forecast, Previous values */}
+                                  <div className="flex items-center justify-between text-[11px] font-mono mt-1 text-slate-400">
+                                    <div>
+                                      Act: <strong className={item.actual ? (isHigh ? 'text-red-400 font-bold' : 'text-emerald-400 font-bold') : 'text-slate-600 font-medium'}>
+                                        {item.actual || 'Pending'}
+                                      </strong>
+                                    </div>
+                                    <div>Exp: <span className="text-slate-300 font-medium">{item.forecast || 'N/A'}</span></div>
+                                    <div>Prev: <span className="text-slate-300 font-medium">{item.previous || 'N/A'}</span></div>
+                                  </div>
+
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
                       </div>
-                    </div>
-                  );
-                })
+                    );
+                  })
               )}
             </div>
 

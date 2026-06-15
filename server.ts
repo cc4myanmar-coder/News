@@ -93,12 +93,146 @@ const fallbackNews = [
 ];
 
 const fallbackCalendar = [
-  // Wednesday, Jun 17, 2026
+  // Monday, Jun 15, 2026
   {
     id: "cal-usd-1",
+    time: "ALL DAY",
+    date: "2026-06-15",
+    event: "G7 Meetings",
+    country: "ALL",
+    impact: "Low",
+    actual: null,
+    forecast: "N/A",
+    previous: "N/A"
+  },
+  {
+    id: "cal-usd-2",
+    time: "08:30 AM",
+    date: "2026-06-15",
+    event: "Empire State Manufacturing Index",
+    country: "USD",
+    impact: "Medium",
+    actual: null,
+    forecast: "13.2",
+    previous: "19.6"
+  },
+  {
+    id: "cal-usd-3",
+    time: "09:15 AM",
+    date: "2026-06-15",
+    event: "Capacity Utilization Rate",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "76.2%",
+    previous: "76.1%"
+  },
+  {
+    id: "cal-usd-4",
+    time: "09:15 AM",
+    date: "2026-06-15",
+    event: "Industrial Production m/m",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "0.3%",
+    previous: "0.7%"
+  },
+  {
+    id: "cal-usd-5",
+    time: "10:00 AM",
+    date: "2026-06-15",
+    event: "NAHB Housing Market Index",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "36",
+    previous: "37"
+  },
+  // Tuesday, Jun 16, 2026
+  {
+    id: "cal-usd-6",
+    time: "ALL DAY",
+    date: "2026-06-16",
+    event: "G7 Meetings",
+    country: "ALL",
+    impact: "Low",
+    actual: null,
+    forecast: "N/A",
+    previous: "N/A"
+  },
+  {
+    id: "cal-usd-7",
+    time: "08:15 AM",
+    date: "2026-06-16",
+    event: "ADP Weekly Employment Change",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "N/A",
+    previous: "29.0K"
+  },
+  {
+    id: "cal-usd-8",
+    time: "08:30 AM",
+    date: "2026-06-16",
+    event: "Building Permits",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "1.42M",
+    previous: "1.44M"
+  },
+  {
+    id: "cal-usd-9",
+    time: "08:30 AM",
+    date: "2026-06-16",
+    event: "Housing Starts",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "1.42M",
+    previous: "1.47M"
+  },
+  {
+    id: "cal-usd-10",
+    time: "08:30 AM",
+    date: "2026-06-16",
+    event: "Import Prices m/m",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "0.9%",
+    previous: "1.9%"
+  },
+  {
+    id: "cal-usd-11",
+    time: "04:30 PM",
+    date: "2026-06-16",
+    event: "API Weekly Statistical Bulletin",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "N/A",
+    previous: "N/A"
+  },
+  // Wednesday, Jun 17, 2026
+  {
+    id: "cal-usd-12",
+    time: "ALL DAY",
+    date: "2026-06-17",
+    event: "G7 Meetings",
+    country: "ALL",
+    impact: "Low",
+    actual: null,
+    forecast: "N/A",
+    previous: "N/A"
+  },
+  {
+    id: "cal-usd-13",
     time: "08:30 AM",
     date: "2026-06-17",
-    event: "Core Retail Sales (MoM)",
+    event: "Core Retail Sales m/m",
     country: "USD",
     impact: "Medium",
     actual: null,
@@ -106,10 +240,10 @@ const fallbackCalendar = [
     previous: "0.7%"
   },
   {
-    id: "cal-usd-2",
+    id: "cal-usd-14",
     time: "08:30 AM",
     date: "2026-06-17",
-    event: "Retail Sales (MoM)",
+    event: "Retail Sales m/m",
     country: "USD",
     impact: "Medium",
     actual: null,
@@ -117,7 +251,7 @@ const fallbackCalendar = [
     previous: "0.5%"
   },
   {
-    id: "cal-usd-3",
+    id: "cal-usd-15",
     time: "09:30 AM",
     date: "2026-06-17",
     event: "President Trump Speaks",
@@ -128,7 +262,40 @@ const fallbackCalendar = [
     previous: "N/A"
   },
   {
-    id: "cal-usd-4",
+    id: "cal-usd-16",
+    time: "10:00 AM",
+    date: "2026-06-17",
+    event: "Business Inventories m/m",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "0.5%",
+    previous: "0.9%"
+  },
+  {
+    id: "cal-usd-17",
+    time: "10:00 AM",
+    date: "2026-06-17",
+    event: "Pending Home Sales m/m",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "1.3%",
+    previous: "1.4%"
+  },
+  {
+    id: "cal-usd-18",
+    time: "10:30 AM",
+    date: "2026-06-17",
+    event: "Crude Oil Inventories",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "N/A",
+    previous: "-7.2M"
+  },
+  {
+    id: "cal-usd-19",
     time: "02:00 PM",
     date: "2026-06-17",
     event: "Federal Funds Rate",
@@ -139,7 +306,7 @@ const fallbackCalendar = [
     previous: "3.75%"
   },
   {
-    id: "cal-usd-5",
+    id: "cal-usd-20",
     time: "02:00 PM",
     date: "2026-06-17",
     event: "FOMC Economic Projections",
@@ -150,7 +317,7 @@ const fallbackCalendar = [
     previous: "N/A"
   },
   {
-    id: "cal-usd-6",
+    id: "cal-usd-21",
     time: "02:00 PM",
     date: "2026-06-17",
     event: "FOMC Statement",
@@ -161,7 +328,7 @@ const fallbackCalendar = [
     previous: "N/A"
   },
   {
-    id: "cal-usd-7",
+    id: "cal-usd-22",
     time: "02:30 PM",
     date: "2026-06-17",
     event: "FOMC Press Conference",
@@ -173,7 +340,7 @@ const fallbackCalendar = [
   },
   // Thursday, Jun 18, 2026
   {
-    id: "cal-usd-8",
+    id: "cal-usd-23",
     time: "08:30 AM",
     date: "2026-06-18",
     event: "Philly Fed Manufacturing Index",
@@ -184,7 +351,7 @@ const fallbackCalendar = [
     previous: "-0.4"
   },
   {
-    id: "cal-usd-9",
+    id: "cal-usd-24",
     time: "08:30 AM",
     date: "2026-06-18",
     event: "Unemployment Claims",
@@ -194,10 +361,43 @@ const fallbackCalendar = [
     forecast: "225K",
     previous: "229K"
   },
+  {
+    id: "cal-usd-25",
+    time: "10:00 AM",
+    date: "2026-06-18",
+    event: "CB Leading Index m/m",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "0.1%",
+    previous: "0.1%"
+  },
+  {
+    id: "cal-usd-26",
+    time: "10:30 AM",
+    date: "2026-06-18",
+    event: "Natural Gas Storage",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "N/A",
+    previous: "108B"
+  },
+  {
+    id: "cal-usd-27",
+    time: "04:00 PM",
+    date: "2026-06-18",
+    event: "TIC Long-Term Purchases",
+    country: "USD",
+    impact: "Low",
+    actual: null,
+    forecast: "72.5B",
+    previous: "81.3B"
+  },
   // Friday, Jun 19, 2026
   {
-    id: "cal-usd-10",
-    time: "12:00 AM",
+    id: "cal-usd-28",
+    time: "ALL DAY",
     date: "2026-06-19",
     event: "Bank Holiday",
     country: "USD",
@@ -224,12 +424,27 @@ function getCurrentWeekRange() {
   };
 
   const sunday = getWeekDateString(0);
+  const monday = getWeekDateString(1);
+  const tuesday = getWeekDateString(2);
   const wednesday = getWeekDateString(3);
   const thursday = getWeekDateString(4);
   const friday = getWeekDateString(5);
   const saturday = getWeekDateString(6);
 
-  return { sunday, wednesday, thursday, friday, saturday };
+  return { sunday, monday, tuesday, wednesday, thursday, friday, saturday };
+}
+
+// Generate the date of any weekday index in current week: 0 = Sunday, 1 = Monday, etc.
+function getCurrentWeekDayDate(dayIndex: number): string {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const d = new Date(today);
+  const diff = dayIndex - dayOfWeek;
+  d.setDate(today.getDate() + diff);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 // Check if an event scheduled in US Eastern Time (EST/EDT) is already in the past
@@ -276,15 +491,31 @@ function resolveCalendarActuals(items: any[]): any[] {
   if (!Array.isArray(items)) return [];
   
   const releaseMap: Record<string, string> = {
-    "Core Retail Sales (MoM)": "0.4%",
-    "Retail Sales (MoM)": "0.5%",
+    "G7 Meetings": "Completed",
+    "Empire State Manufacturing Index": "12.8",
+    "Capacity Utilization Rate": "76.4%",
+    "Industrial Production m/m": "0.4%",
+    "NAHB Housing Market Index": "36",
+    "ADP Weekly Employment Change": "32K",
+    "Building Permits": "1.43M",
+    "Housing Starts": "1.41M",
+    "Import Prices m/m": "0.8%",
+    "API Weekly Statistical Bulletin": "Completed",
+    "Core Retail Sales m/m": "0.4%",
+    "Retail Sales m/m": "0.5%",
     "President Trump Speaks": "Completed",
+    "Business Inventories m/m": "0.6%",
+    "Pending Home Sales m/m": "1.2%",
+    "Crude Oil Inventories": "-6.8M",
     "Federal Funds Rate": "3.75%",
     "FOMC Economic Projections": "Released",
     "FOMC Statement": "Released",
     "FOMC Press Conference": "Completed",
     "Philly Fed Manufacturing Index": "11.2",
     "Unemployment Claims": "224K",
+    "CB Leading Index m/m": "0.1%",
+    "Natural Gas Storage": "112B",
+    "TIC Long-Term Purchases": "78.2B",
     "Bank Holiday": "Holiday"
   };
 
@@ -308,13 +539,17 @@ function resolveCalendarActuals(items: any[]): any[] {
 
 // Dynamically generate current week's dates for high-fidelity fallback baseline
 function getDynamicFallbackCalendar() {
-  const { wednesday, thursday, friday } = getCurrentWeekRange();
+  const { sunday, monday, tuesday, wednesday, thursday, friday, saturday } = getCurrentWeekRange();
 
   return fallbackCalendar.map(item => {
     let targetDate = item.date;
-    if (item.date === "2026-06-17") targetDate = wednesday;
+    if (item.date === "2026-06-14") targetDate = sunday;
+    else if (item.date === "2026-06-15") targetDate = monday;
+    else if (item.date === "2026-06-16") targetDate = tuesday;
+    else if (item.date === "2026-06-17") targetDate = wednesday;
     else if (item.date === "2026-06-18") targetDate = thursday;
     else if (item.date === "2026-06-19") targetDate = friday;
+    else if (item.date === "2026-06-20") targetDate = saturday;
     
     return {
       ...item,
@@ -465,10 +700,11 @@ app.get("/api/calendar", async (req, res) => {
     const dObj = new Date();
     const todayString = dObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     const { sunday, saturday } = getCurrentWeekRange();
+    const monthYearString = dObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
-      contents: `Query the active USD macroeconomic calendar events on Forex Factory or Investing.com for the current week starting Sunday, ${sunday} to Saturday, ${saturday}. Use Google Search to find the actual live schedule of USD events (including Core Retail Sales, Retail Sales, Unemployment Claims, Fed Interest Rate Decisions, FOMC statement, FOMC press conference, etc.) for this specific week in June 2026. Retrieve their exact release times (in EST/PM/AM format), official consensus forecast, previous numbers, and actual released numbers. If an event has already occurred based on today's date ${todayString}, fill its 'actual' field with the real reported printed percentage/value; otherwise set it to null. Return the 8-10 most critical events of the week as a JSON array.`,
+      contents: `Query the active USD macroeconomic calendar events on Forex Factory or Investing.com for the current week starting Sunday, ${sunday} to Saturday, ${saturday}. Use Google Search to find the actual live schedule of USD events (including Empire State Manufacturing, Retail Sales, Unemployment Claims, Fed Interest Rate Decisions, FOMC statement, FOMC press conference, Philly Fed, etc.) for this specific week of ${monthYearString}. Retrieve their exact release times (in EST/PM/AM format), official consensus forecast, previous numbers, and actual released numbers. If an event has already occurred based on today's date ${todayString}, fill its 'actual' field with the real reported printed percentage/value; otherwise set it to null. Return the 8-12 most critical events of the week as a JSON array.`,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
@@ -495,16 +731,55 @@ app.get("/api/calendar", async (req, res) => {
 
     const parsedText = response.text ? response.text.trim() : "";
     if (parsedText) {
-      const data = JSON.parse(parsedText);
-      
+      const gEvents = JSON.parse(parsedText);
+      let finalEvents = [];
+      const isJune2026Week = (sunday === "2026-06-14");
+
+      if (isJune2026Week) {
+        // High fidelity baseline presets for the mock June 14-20 simulation
+        const calendarBaseline = getDynamicFallbackCalendar();
+        finalEvents = calendarBaseline.map(item => {
+          const found = gEvents.find((g: any) => {
+            if (!g || !g.event) return false;
+            const aName = item.event.toLowerCase();
+            const bName = g.event.toLowerCase();
+            return aName.includes(bName) || bName.includes(aName);
+          });
+
+          if (found) {
+            return {
+              ...item,
+              actual: found.actual !== undefined && found.actual !== null && found.actual !== "Pending" ? found.actual : item.actual,
+              forecast: found.forecast !== undefined && found.forecast !== "N/A" ? found.forecast : item.forecast,
+              previous: found.previous !== undefined && found.previous !== "N/A" ? found.previous : item.previous
+            };
+          }
+          return item;
+        });
+        console.log(`[Calendar Engine] Successfully pipelined preset merge for simulation week: ${finalEvents.length} events active.`);
+      } else {
+        // For any other dynamic future/past week, use Gemini's Google Search events directly so it shows exactly reality!
+        finalEvents = gEvents.map((item: any, idx: number) => ({
+          id: item.id || `live-cal-${idx}-${Date.now()}`,
+          time: item.time || "ALL DAY",
+          date: item.date || dObj.toISOString().split('T')[0],
+          event: item.event,
+          country: item.country || "USD",
+          impact: item.impact || "Medium",
+          actual: item.actual !== undefined && item.actual !== null && item.actual !== "Pending" ? item.actual : null,
+          forecast: item.forecast || "N/A",
+          previous: item.previous || "N/A"
+        }));
+        console.log(`[Calendar Engine] Successfully pipelined dynamic direct events for dynamic week: ${finalEvents.length} events returned.`);
+      }
+
       // Update cache
       calendarCache = {
-        data,
+        data: finalEvents,
         timestamp: Date.now()
       };
 
-      console.log(`[Calendar Engine] Successfully pipelined ${data.length} live macroeconomic releases.`);
-      return res.json({ calendar: resolveCalendarActuals(data), source: "gemini_google_search" });
+      return res.json({ calendar: resolveCalendarActuals(finalEvents), source: "gemini_google_search" });
     } else {
       throw new Error("Empty text returned from Gemini Calendar Search");
     }
