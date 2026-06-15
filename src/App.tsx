@@ -25,7 +25,10 @@ import {
   MessageSquare,
   Sun,
   Moon,
-  Youtube
+  Youtube,
+  GripVertical,
+  ArrowLeftRight,
+  LayoutGrid
 } from 'lucide-react';
 import { NewsItem, CalendarEvent, VolatilityAnalysis, TickData } from './types';
 import { BURMESE_LEXICON } from './components/BurmeseLexicon';
@@ -266,6 +269,28 @@ export default function App() {
       console.warn('Storage permission restricted for time format:', e);
     }
   }, [use12HourFormat]);
+
+  // Column alignment / layout order preference: Standard (News on Left, Calendar on Right) vs Swapped (Calendar on Left, News on Right)
+  const [isColumnSwapped, setIsColumnSwapped] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('rtft-quantum-columns-swapped');
+      return saved === 'true'; // Default is false (Standard)
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('rtft-quantum-columns-swapped', String(isColumnSwapped));
+    } catch (e) {
+      console.warn('Storage permission restricted for column config:', e);
+    }
+  }, [isColumnSwapped]);
+
+  // Drag-and-drop state trackers for workspace columns
+  const [draggedColumn, setDraggedColumn] = useState<'news' | 'calendar' | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<'news' | 'calendar' | null>(null);
 
   // Synchronize Tab Favicon dynamically with the customized brand/logo image
   useEffect(() => {
@@ -857,7 +882,26 @@ export default function App() {
             <span>Click any highlighted word in headers to see <span className="text-indigo-300 font-semibold underline cursor-pointer" onClick={() => setSelectedLexiconKey('Macroeconomics')}>Burmese explanations (မြန်မာဖွင့်ဆိုချက်)</span>.</span>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
+          {/* Workspace Grid Alignment Reorder controller */}
+          <div className="flex items-center gap-2 bg-[#101014] border border-slate-800/80 rounded px-2.5 py-1 text-slate-400 font-mono text-[10px] select-none">
+            <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="text-[10px] text-slate-400">ALIGNMENT:</span>
+            <div className="flex items-center gap-1.5 bg-[#09090b] rounded px-2 py-0.5 border border-slate-800/60">
+              <span className={`font-bold transition-colors ${!isColumnSwapped ? 'text-indigo-400' : 'text-slate-500'}`}>NEWS FIRST</span>
+              <button 
+                onClick={() => setIsColumnSwapped(!isColumnSwapped)}
+                className="p-1 bg-slate-900 border border-slate-700/40 hover:border-slate-500/60 rounded text-slate-300 hover:text-white transition-all cursor-pointer flex items-center justify-center shadow-sm"
+                title="Swap main column ordering (or drag and drop column headers)"
+                id="column-swap-toggle-btn"
+              >
+                <ArrowLeftRight className={`w-3 h-3 transition-transform duration-500 ${isColumnSwapped ? 'rotate-180' : ''}`} />
+              </button>
+              <span className={`font-bold transition-colors ${isColumnSwapped ? 'text-indigo-400' : 'text-slate-500'}`}>CALENDAR FIRST</span>
+            </div>
+            <span className="text-slate-600 hidden md:inline">• Drag columns to reorder</span>
+          </div>
+
           <span className="text-slate-500 text-[10px] font-mono hidden lg:inline">
             NEWS API SOURCE: <span className="text-indigo-400 font-semibold uppercase">{dataSources.news}</span>
           </span>
@@ -871,7 +915,39 @@ export default function App() {
       <main id="terminal-content" className="flex-1 grid grid-cols-1 xl:grid-cols-12 xl:overflow-hidden overflow-y-auto">
         
         {/* LEFT COLUMN (7 COLS on XL) - Intraday Ticks, Focus Chart, and News Flow */}
-        <section className="xl:col-span-7 flex flex-col border-r border-[#1b1b1e] overflow-y-auto">
+        <section 
+          onDragOver={(e) => {
+            if (draggedColumn === 'calendar') {
+              e.preventDefault();
+              setDragOverColumn('news');
+            }
+          }}
+          onDragLeave={() => {
+            setDragOverColumn(null);
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            const source = e.dataTransfer.getData('text/plain');
+            if (source === 'calendar' || draggedColumn === 'calendar') {
+              setIsColumnSwapped(!isColumnSwapped);
+            }
+            setDraggedColumn(null);
+            setDragOverColumn(null);
+          }}
+          className={`xl:col-span-7 flex flex-col overflow-y-auto relative transition-all duration-300 ${
+            isColumnSwapped 
+              ? 'xl:order-2 border-l border-[#1b1b1e]' 
+              : 'xl:order-1 border-r border-[#1b1b1e]'
+          } ${dragOverColumn === 'news' ? 'ring-2 ring-indigo-500/60 ring-inset bg-indigo-950/5' : ''}`}
+        >
+          {/* Column swapping Drop-Drop interactive visual feedback overlay */}
+          {dragOverColumn === 'news' && (
+            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] border-2 border-dashed border-indigo-500/50 flex flex-col items-center justify-center z-50 animate-fade-in pointer-events-none">
+              <ArrowLeftRight className="w-10 h-10 text-indigo-400 animate-pulse mb-3" />
+              <span className="text-sm font-mono font-bold text-white uppercase tracking-wider">Drop here to swap positions</span>
+              <span className="text-xs font-sans text-slate-400">Rearrange workspace alignment</span>
+            </div>
+          )}
 
           {/* MAIN NEWS HEADER & FILTER CONTROLS */}
           <div className="bg-[#0b0c0f] border-b border-[#1b1b1e] p-4 font-mono">
@@ -879,6 +955,24 @@ export default function App() {
               
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
+                  {/* Grip Handle for Drag and Drop Swapping */}
+                  <div 
+                    draggable={true}
+                    onDragStart={(e) => {
+                      setDraggedColumn('news');
+                      e.dataTransfer.setData('text/plain', 'news');
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onDragEnd={() => {
+                      setDraggedColumn(null);
+                      setDragOverColumn(null);
+                    }}
+                    onClick={() => setIsColumnSwapped(!isColumnSwapped)}
+                    className="p-1 rounded bg-[#101014] border border-slate-800 hover:border-indigo-500/50 text-slate-500 hover:text-indigo-400 cursor-grab active:cursor-grabbing transition-all flex items-center justify-center mr-1"
+                    title="Drag this handle to swap columns or click to swap instantly"
+                  >
+                    <GripVertical className="w-3.5 h-3.5" />
+                  </div>
                   <Activity className="w-4 h-4 text-cyan-400 animate-spin" />
                   <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">LIVE SEC/REUTERS NEWS FLOW</span>
                 </div>
@@ -1105,12 +1199,62 @@ export default function App() {
         </section>
 
         {/* RIGHT COLUMN (5 COLS on XL) - Economic Calendar, Alerts, and Burmese Dictionary */}
-        <aside className="xl:col-span-5 bg-[#09090b] flex flex-col divide-y divide-[#1b1b1e]">
+        <aside 
+          onDragOver={(e) => {
+            if (draggedColumn === 'news') {
+              e.preventDefault();
+              setDragOverColumn('calendar');
+            }
+          }}
+          onDragLeave={() => {
+            setDragOverColumn(null);
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            const source = e.dataTransfer.getData('text/plain');
+            if (source === 'news' || draggedColumn === 'news') {
+              setIsColumnSwapped(!isColumnSwapped);
+            }
+            setDraggedColumn(null);
+            setDragOverColumn(null);
+          }}
+          className={`xl:col-span-5 bg-[#09090b] flex flex-col divide-y divide-[#1b1b1e] relative transition-all duration-300 ${
+            isColumnSwapped 
+              ? 'xl:order-1' 
+              : 'xl:order-2'
+          } ${dragOverColumn === 'calendar' ? 'ring-2 ring-indigo-500/60 ring-inset bg-indigo-950/5' : ''}`}
+        >
+          {/* Column swapping Drop-Drop interactive visual feedback overlay */}
+          {dragOverColumn === 'calendar' && (
+            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] border-2 border-dashed border-indigo-500/50 flex flex-col items-center justify-center z-50 animate-fade-in pointer-events-none">
+              <ArrowLeftRight className="w-10 h-10 text-indigo-400 animate-pulse mb-3" />
+              <span className="text-sm font-mono font-bold text-white uppercase tracking-wider">Drop here to swap positions</span>
+              <span className="text-xs font-sans text-slate-400">Rearrange workspace alignment</span>
+            </div>
+          )}
           
           {/* SEC 1: REAL-TIME ECONOMIC CALENDAR */}
           <div className="p-4 flex flex-col">
             <div className="flex items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2">
+                {/* Grip Handle for Drag and Drop Swapping */}
+                <div 
+                  draggable={true}
+                  onDragStart={(e) => {
+                    setDraggedColumn('calendar');
+                    e.dataTransfer.setData('text/plain', 'calendar');
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragEnd={() => {
+                    setDraggedColumn(null);
+                    setDragOverColumn(null);
+                  }}
+                  onClick={() => setIsColumnSwapped(!isColumnSwapped)}
+                  className="p-1 rounded bg-[#101014] border border-slate-800 hover:border-indigo-500/50 text-slate-500 hover:text-indigo-400 cursor-grab active:cursor-grabbing transition-all flex items-center justify-center mr-1"
+                  title="Drag this handle to swap columns or click to swap instantly"
+                >
+                  <GripVertical className="w-3.5 h-3.5" />
+                </div>
                 <Calendar className="w-4 h-4 text-rose-500" />
                 <span className="text-xs font-mono font-extrabold text-slate-300 uppercase tracking-widest">LIVE ECONOMIC CALENDAR</span>
               </div>
@@ -1372,7 +1516,7 @@ export default function App() {
       </main>
 
       {/* FOOTER BAR WITH BULLET TRADING STATUS CODES */}
-      <footer className="min-h-10 bg-[#070709] border-t border-[#1b1b1e] flex flex-col md:flex-row items-center justify-between px-6 shrink-0 py-3 md:py-0 text-slate-400 text-xs gap-3">
+      <footer className="min-h-12 bg-[#070709] border-t border-[#1b1b1e] flex flex-col md:flex-row items-center justify-between px-6 shrink-0 py-3 md:py-0 text-slate-400 text-xs gap-3">
         <div className="flex gap-3 sm:gap-4 md:gap-7 items-center flex-wrap justify-center md:justify-start">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
@@ -1389,23 +1533,32 @@ export default function App() {
         </div>
 
         {/* Centered Copyright Claim status & Social Media Connections */}
-        <div className="flex flex-col xl:flex-row items-center gap-2.5 sm:gap-4 justify-center py-1">
-          <div className="text-[10px] font-mono text-slate-300 font-semibold tracking-wide flex items-center gap-1 bg-[#101014] border border-slate-900 px-3 py-1 rounded shrink-0">
+        <div className="flex flex-col xl:flex-row items-center gap-3.5 sm:gap-6 justify-center py-2">
+          <div className="text-[10px] font-mono text-slate-300 font-semibold tracking-wide flex items-center gap-1.5 bg-[#101014] border border-slate-900/80 px-3.5 py-1.5 rounded-full shrink-0 shadow-inner">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-            <span>© 2021 - 2026 COPYRIGHT BY RTFT</span>
+            <span>© 2019 - 2026 COPYRIGHT BY RTFT</span>
           </div>
           
-          <div className="flex items-center gap-2 flex-wrap justify-center">
+          <div className="flex items-center gap-3 flex-wrap justify-center">
             {/* Facebook Connection */}
             <a 
               href="https://www.facebook.com/RoadToFundedTrader/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 bg-[#1877F2]/10 hover:bg-[#1877F2]/20 border border-[#1877F2]/30 text-slate-300 hover:text-white px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all"
+              className="group relative flex items-center gap-2.5 bg-[#1877F2]/8 hover:bg-[#1877F2]/15 border border-[#1877F2]/25 hover:border-[#1877F2]/60 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl transition-all duration-300 hover:shadow-[0_0_12px_rgba(24,119,242,0.25)] hover:-translate-y-0.5"
               id="social-fb-link"
             >
-              <Facebook className="w-3 h-3 text-[#1877F2]" />
-              <span>FB PAGE</span>
+              <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1877F2] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1877F2]"></span>
+              </span>
+              <div className="p-1 rounded bg-[#1877F2]/10 group-hover:bg-[#1877F2]/25 transition-colors">
+                <Facebook className="w-3.5 h-3.5 text-[#1877F2] group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="flex flex-col items-start text-xs leading-none font-mono">
+                <span className="text-[9px] font-black tracking-wider text-slate-105 group-hover:text-[#1877F2]">FB PAGE</span>
+                <span className="text-[7px] text-slate-500 font-medium group-hover:text-slate-400 mt-0.5">@roadtofundedtrader</span>
+              </div>
             </a>
 
             {/* Discord Connection */}
@@ -1413,11 +1566,20 @@ export default function App() {
               href="https://discord.gg/zMNgEjNSGm" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 bg-[#5865F2]/10 hover:bg-[#5865F2]/20 border border-[#5865F2]/30 text-slate-300 hover:text-white px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all"
+              className="group relative flex items-center gap-2.5 bg-[#5865F2]/8 hover:bg-[#5865F2]/15 border border-[#5865F2]/25 hover:border-[#5865F2]/60 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl transition-all duration-300 hover:shadow-[0_0_12px_rgba(88,101,242,0.25)] hover:-translate-y-0.5"
               id="social-discord-link"
             >
-              <MessageSquare className="w-3 h-3 text-[#5865F2]" />
-              <span>DISCORD</span>
+              <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#5865F2] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#5865F2]"></span>
+              </span>
+              <div className="p-1 rounded bg-[#5865F2]/10 group-hover:bg-[#5865F2]/25 transition-colors">
+                <MessageSquare className="w-3.5 h-3.5 text-[#5865F2] group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="flex flex-col items-start text-xs leading-none font-mono">
+                <span className="text-[9px] font-black tracking-wider text-slate-105 group-hover:text-[#5865F2]">DISCORD</span>
+                <span className="text-[7px] text-slate-500 font-medium group-hover:text-slate-400 mt-0.5">join community</span>
+              </div>
             </a>
 
             {/* Telegram Connection */}
@@ -1425,11 +1587,20 @@ export default function App() {
               href="https://t.me/+qZe0SIoUvkI4NGY1" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 bg-[#26A5E4]/10 hover:bg-[#26A5E4]/20 border border-[#26A5E4]/30 text-slate-300 hover:text-white px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all"
+              className="group relative flex items-center gap-2.5 bg-[#26A5E4]/8 hover:bg-[#26A5E4]/15 border border-[#26A5E4]/25 hover:border-[#26A5E4]/60 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl transition-all duration-300 hover:shadow-[0_0_12px_rgba(38,165,228,0.25)] hover:-translate-y-0.5"
               id="social-telegram-link"
             >
-              <Send className="w-3 h-3 text-[#26A5E4]" />
-              <span>TELEGRAM</span>
+              <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#26A5E4] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#26A5E4]"></span>
+              </span>
+              <div className="p-1 rounded bg-[#26A5E4]/10 group-hover:bg-[#26A5E4]/25 transition-colors">
+                <Send className="w-3.5 h-3.5 text-[#26A5E4] group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="flex flex-col items-start text-xs leading-none font-mono">
+                <span className="text-[9px] font-black tracking-wider text-slate-105 group-hover:text-[#26A5E4]">TELEGRAM</span>
+                <span className="text-[7px] text-slate-500 font-medium group-hover:text-slate-400 mt-0.5">vip alerts channel</span>
+              </div>
             </a>
 
             {/* YouTube Connection */}
@@ -1437,11 +1608,20 @@ export default function App() {
               href="https://www.youtube.com/@RTFT-VIP-Channel" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 bg-[#FF0000]/10 hover:bg-[#FF0000]/20 border border-[#FF0000]/30 text-slate-300 hover:text-white px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all"
+              className="group relative flex items-center gap-2.5 bg-[#FF0000]/8 hover:bg-[#FF0000]/15 border border-[#FF0000]/25 hover:border-[#FF0000]/60 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl transition-all duration-300 hover:shadow-[0_0_12px_rgba(255,0,0,0.25)] hover:-translate-y-0.5"
               id="social-youtube-link"
             >
-              <Youtube className="w-3 h-3 text-[#FF0000]" />
-              <span>YOUTUBE</span>
+              <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF0000] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF0000]"></span>
+              </span>
+              <div className="p-1 rounded bg-[#FF0000]/10 group-hover:bg-[#FF0000]/25 transition-colors">
+                <Youtube className="w-3.5 h-3.5 text-[#FF0000] group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="flex flex-col items-start text-xs leading-none font-mono">
+                <span className="text-[9px] font-black tracking-wider text-slate-105 group-hover:text-[#FF0000]">YOUTUBE</span>
+                <span className="text-[7px] text-slate-500 font-medium group-hover:text-slate-400 mt-0.5">free lessons</span>
+              </div>
             </a>
           </div>
         </div>
