@@ -28,7 +28,11 @@ import {
   Youtube,
   GripVertical,
   ArrowLeftRight,
-  LayoutGrid
+  LayoutGrid,
+  DollarSign,
+  BarChart2,
+  Users,
+  LineChart
 } from 'lucide-react';
 import { NewsItem, CalendarEvent, VolatilityAnalysis, TickData } from './types';
 import { BURMESE_LEXICON } from './components/BurmeseLexicon';
@@ -291,6 +295,11 @@ export default function App() {
   // Drag-and-drop state trackers for workspace columns
   const [draggedColumn, setDraggedColumn] = useState<'news' | 'calendar' | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<'news' | 'calendar' | null>(null);
+
+  // FOMC meeting analysis state and modal display toggling
+  const [fomcAnalysis, setFomcAnalysis] = useState<any>(null);
+  const [isLoadingFomc, setIsLoadingFomc] = useState<boolean>(false);
+  const [showFomcModal, setShowFomcModal] = useState<boolean>(false);
 
   // Synchronize Tab Favicon dynamically with the customized brand/logo image
   useEffect(() => {
@@ -694,6 +703,27 @@ export default function App() {
       console.log('Telemetry Notice: analytical fallback active.');
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  // Trigger FOMC Macro economic result & Burmese analyst report
+  const triggerFomcAnalysis = async () => {
+    setIsLoadingFomc(true);
+    setShowFomcModal(true);
+    try {
+      const response = await fetch('/api/fomc-analysis');
+      const data = await response.json();
+      if (data && data.analysis) {
+        setFomcAnalysis(data.analysis);
+        if (data.geminiStandby) {
+          setGeminiStandby(true);
+          setStandbyReason(data.standbyReason || 'quota_exhausted');
+        }
+      }
+    } catch (err) {
+      console.log('Telemetry Notice: FOMC analyst fallback active.', err);
+    } finally {
+      setIsLoadingFomc(false);
     }
   };
 
@@ -1268,6 +1298,41 @@ export default function App() {
               </button>
             </div>
 
+            {/* FOMC MEETING PORTAL */}
+            <div className="mb-4.5 p-3.5 bg-gradient-to-r from-indigo-950/15 via-[#0c0d12]/95 to-[#050608]/95 border border-indigo-500/25 rounded-lg shadow-lg relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none"></div>
+              <div className="flex items-center justify-between gap-1 mb-2">
+                <div className="flex items-center gap-1.5 font-mono">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-450 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500 animate-pulse"></span>
+                  </span>
+                  <span className="text-[10px] font-bold tracking-widest text-slate-300">FOMC PORTAL</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[9px] font-mono bg-indigo-950/80 border border-indigo-800/40 text-indigo-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                    MEETING: JUN 16-17, 2026
+                  </span>
+                </div>
+              </div>
+              
+              <h4 className="text-xs font-black text-slate-100 mb-1.5 flex items-center gap-1 font-sans">
+                FOMC Meeting Result & Analytical Bias
+              </h4>
+              <p className="text-[11px] text-slate-400 leading-relaxed mb-3.5 font-sans">
+                ဒီနေ့ FOMC (Federal Open Market Committee) အတိုးနှုန်း ဆုံးဖြတ်ချက်များ၊ FED ဥက္ကဋ္ဌ (FED Chair) ၏ အမြင်နှင့် Dot Plot ကို မြန်မာလို အသေးစိတ် ရလဒ်များ ဆန်းစစ်သုံးသပ်ချက်။
+              </p>
+              
+              <button
+                id="fomc-analysis-trigger-btn"
+                onClick={triggerFomcAnalysis}
+                className="w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] transition-all rounded text-[11px] font-bold text-white flex items-center justify-center gap-1.5 cursor-pointer shadow-sm hover:shadow-indigo-500/10 font-sans"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-indigo-200" />
+                FOMC Result & Analysis (မြန်မာလိုဆန်းစစ်ချက်ဖတ်ရန်)
+              </button>
+            </div>
+
             {/* Filter by impact level */}
             <div className="flex justify-between items-center mb-3">
               <span className="text-[11px] text-slate-500 font-mono">Today & Tomorrow US Metrics</span>
@@ -1630,6 +1695,159 @@ export default function App() {
           PRO TERMINAL v1.0 // REGULATED QUANTUM DATASTREAM V1
         </div>
       </footer>
+
+      {/* FOMC MEETING ANALYSES BURMESE DIALOG */}
+      {showFomcModal && (
+        <div id="fomc-analysis-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in animate-duration-200">
+          <div className="bg-[#0b0c10] border border-[#23252f] text-slate-100 rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]">
+            
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-950 via-[#10121a] to-indigo-950/40 px-6 py-4 border-b border-[#23252f] flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/25">
+                  <Sparkles className="w-5 h-5 text-indigo-400 animate-pulse" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono font-bold text-indigo-450 tracking-wider uppercase block">
+                    FOMC ANALYSES // CHRONOS MACRO INTELLIGENCE
+                  </span>
+                  <h3 className="font-extrabold text-white text-base tracking-wide font-sans mt-0.5">
+                    FOMC Result & Comprehensive Trading Analysis (မြန်မာလို)
+                  </h3>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowFomcModal(false)}
+                className="text-slate-400 hover:text-white text-xl font-mono font-bold hover:bg-slate-800/80 w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="p-6 space-y-5 overflow-y-auto flex-1 scrollbar-thin font-sans">
+              
+              {isLoadingFomc || !fomcAnalysis ? (
+                <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+                  <div className="relative mb-6">
+                    <div className="w-14 h-14 border-4 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <TrendingUp className="w-5 h-5 text-indigo-400 animate-pulse" />
+                    </div>
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-200 uppercase tracking-widest font-mono mb-2">
+                    Retrieving SEC/FED Database & Grounding Search...
+                  </h4>
+                  <p className="text-xs text-slate-400 max-w-md leading-relaxed">
+                    Gemini AI က လက်ရှိ FOMC ဆုံးဖြတ်ချက်များ၊ အတိုးနှုန်း Dot Plot များနှင့် ဗဟိုဘဏ်ဥက္ကဋ္ဌ (FED Chair) ၏ သတင်းစာရှင်းလင်းပွဲအချက်အလက်များကို ရှာဖွေပြီး မြန်မာလို အသေးစိတ် ရေးသားဆန်းစစ်နေပါသည်။ ခေတ္တစောင့်ဆိုင်းပေးပါ။
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Meeting Metadata Banner */}
+                  <div className="bg-[#0e0f15] border border-slate-800/50 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                    <div>
+                      <span className="text-[10px] font-mono text-slate-500 block uppercase">Meeting Date / ရက်စွဲ</span>
+                      <strong className="text-sm text-indigo-455 font-mono">{fomcAnalysis.meetingDate}</strong>
+                    </div>
+                    <div className="flex items-center gap-2 bg-indigo-950/40 px-3 py-1.5 rounded border border-indigo-900/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span className="text-[10px] font-mono font-bold text-indigo-300">DATA GROUNDING VERIFIED</span>
+                    </div>
+                  </div>
+
+                  {/* Core Result Sections */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Rate Decision Card */}
+                    <div className="p-4 bg-slate-950/40 border border-slate-800/60 rounded-xl flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2.5 pb-2 border-b border-slate-800/40">
+                          <DollarSign className="w-4 h-4 text-emerald-450 shrink-0" />
+                          <h4 className="text-xs font-mono font-black text-slate-300 uppercase">အတိုးနှုန်း ဆုံးဖြတ်ချက်</h4>
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed font-sans">{fomcAnalysis.interestRateDecision}</p>
+                      </div>
+                    </div>
+
+                    {/* Dot-Plot Sentiment Card */}
+                    <div className="p-4 bg-slate-950/40 border border-slate-800/60 rounded-xl flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2.5 pb-2 border-b border-slate-800/40">
+                          <BarChart2 className="w-4 h-4 text-cyan-450 shrink-0" />
+                          <h4 className="text-xs font-mono font-black text-slate-300 uppercase">အတိုးနှုန်း မျှော်မှန်းချက် (Dot Plot)</h4>
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed font-sans">{fomcAnalysis.dotPlotSentiment}</p>
+                      </div>
+                    </div>
+
+                    {/* Members Stance Card */}
+                    <div className="p-4 bg-slate-950/40 border border-slate-800/60 rounded-xl flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2.5 pb-2 border-b border-slate-800/40">
+                          <Users className="w-4 h-4 text-purple-450 shrink-0" />
+                          <h4 className="text-xs font-mono font-black text-slate-300 uppercase">အဖွဲ့ဝင်များ၏ သဘောထားနှင့် မဲခွဲမှု</h4>
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed font-sans">{fomcAnalysis.voterStance}</p>
+                      </div>
+                    </div>
+
+                    {/* Chairman Statement Card */}
+                    <div className="p-4 bg-slate-950/40 border border-slate-800/60 rounded-xl flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2.5 pb-2 border-b border-slate-800/40">
+                          <MessageSquare className="w-4 h-4 text-indigo-450 shrink-0" />
+                          <h4 className="text-xs font-mono font-black text-slate-300 uppercase">ဗဟိုဘဏ်ဥက္ကဋ္ဌ (FED Chair) ၏ သုံးသပ်ချက်</h4>
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed font-sans">{fomcAnalysis.powellExpectations}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary Segment - Full Width */}
+                  <div className="p-4.5 bg-[#0a0b10] border border-slate-800 rounded-xl">
+                    <h4 className="text-xs font-mono font-black text-indigo-400 tracking-widest uppercase mb-2.5 pb-2 border-b border-slate-800/60 flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-indigo-405" /> အထွေထွေ စီးပွားရေးအနှစ်ချုပ် (FOMC Summary)
+                    </h4>
+                    <p className="text-xs text-slate-300 leading-relaxed font-sans">{fomcAnalysis.summaryBurmese}</p>
+                  </div>
+
+                  {/* Strategic Projections - DXY vs NQ/MNQ */}
+                  <div className="border border-indigo-500/20 bg-indigo-950/10 rounded-xl overflow-hidden divide-y divide-indigo-900/20">
+                    {/* DXY Outlook */}
+                    <div className="p-4.5">
+                      <h4 className="text-xs font-mono font-bold text-amber-500 uppercase mb-2 flex items-center gap-2 tracking-wider">
+                        <TrendingDown className="w-4 h-4" /> DXY (US Dollar Index) ၏ လားရာဗျူဟာ
+                      </h4>
+                      <p className="text-xs text-slate-300 leading-relaxed font-sans">{fomcAnalysis.dxyOutlook}</p>
+                    </div>
+
+                    {/* NQ/MNQ bias */}
+                    <div className="p-4.5">
+                      <h4 className="text-xs font-mono font-bold text-indigo-455 uppercase mb-2 flex items-center gap-2 tracking-wider">
+                        <LineChart className="w-4 h-4 text-indigo-455" /> NQ / MNQ TRADERS STRATEGIC BIAS (Nasdaq 100)
+                      </h4>
+                      <div className="bg-[#0b0c10]/95 border border-indigo-500/15 p-3.5 rounded-lg text-xs leading-relaxed text-slate-300 font-sans">
+                        {fomcAnalysis.traderBiasNqMnq}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer Disclaimer */}
+                  <div className="p-3 bg-[#110e11] border border-red-950/30 rounded text-[10px] font-mono text-slate-500 flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-slate-600 shrink-0" />
+                    <p className="leading-tight font-sans text-slate-500">{fomcAnalysis.riskDisclaimer}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="bg-[#08090d] border-t border-[#23252f] px-6 py-3 shrink-0 flex justify-end font-mono">
+              <span className="text-[10px] text-slate-600">RTFT QUANTUM SYSTEM DECISIONS v1.0.0</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* DETAILED DYNAMIC ECONOMIC CALENDAR SCENARIOS MODAL */}
       {selectedCalendarEvent && (() => {

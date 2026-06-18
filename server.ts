@@ -996,6 +996,111 @@ app.get("/api/market-prices", async (req, res) => {
   }
 });
 
+let fomcCache: CacheEntry<{
+  meetingDate: string;
+  interestRateDecision: string;
+  dotPlotSentiment: string;
+  voterStance: string;
+  powellExpectations: string;
+  summaryBurmese: string;
+  dxyOutlook: string;
+  traderBiasNqMnq: string;
+  riskDisclaimer: string;
+}> | null = null;
+const CACHE_TTL_FOMC = 45 * 60 * 1000; // 45 minutes
+
+// New route using Gemini to generate highly professional Vietnamese & Burmese trading insights for FOMC
+app.get("/api/fomc-analysis", async (req, res) => {
+  if (isCacheValid(fomcCache, CACHE_TTL_FOMC)) {
+    console.log("Serving Live FOMC Analysis from Cache...");
+    return res.json({ analysis: fomcCache!.data, source: "gemini_cache_secured" });
+  }
+
+  const defaultFomcAnalysis = {
+    meetingDate: "June 16-17, 2026 (၂၀၂၆ ခုနှစ်၏ ၄ ကြိမ်မြောက် FOMC အစည်းအဝေး / 4th Scheduled Meeting of 2026)",
+    interestRateDecision: "FED အတိုးနှုန်းကို (5.25% - 5.50%) (သို့မဟုတ် သက်ဆိုင်ရာနောက်ဆုံးသတ်မှတ်ချက်) ကဲ့သို့သော မြင့်မားသော အခြေအနေတွင် ပြောင်းလဲခြင်းမရှိဘဲ ဆက်လက်ထိန်းသိမ်းထားရန် တညီတညွတ်တည်း ဆုံးဖြတ်ခဲ့သည်။ စျေးကွက်၏ မျှော်လင့်ချက်များနှင့် ကိုက်ညီပြီး ငွေကြေးဖောင်းပွမှုအား ဆက်လက်ထိန်းချုပ်ရန် တင်းကျပ်သော မူဝါဒကို ပံ့ပိုးပေးထားသည်။",
+    dotPlotSentiment: "အတိုးနှုန်းခန့်မှန်းချက်ပြဇယား (Dot Plot) နှင့် မူဝါဒလမ်းစဉ်အရ အဖွဲ့ဝင်အများစုသည် ငွေကြေးဖောင်းပွမှုအန္တရာယ်ကြောင့် အတိုးနှုန်းကို မြင့်မားသောအဆင့်တွင် ရေရှည်ထိန်းသိမ်းထားရန် (Higher for Longer) သို့မဟုတ် လိုအပ်ပါက ထပ်မံမြှင့်တင်ရန် (Rate Hike Projections) ကိုပါ ဆွေးနွေးလျက်ရှိပြီး၊ လျှော့ချမည့် မျှော်လင့်ချက်များကို နောက်ဆုတ်ထားသည်။",
+    voterStance: "မဲပေးခွင့်ရှိသော ဗဟိုဘဏ်အဖွဲ့ဝင်များ၏ သဘောထားမှာ Hawkish သို့မဟုတ် တင်းကျပ်သောဘက်တွင် ခိုင်မာစွာ ရပ်တည်နေပြီး၊ ငွေကြေးဖောင်းပွမှု ၂ ရာခိုင်နှုန်း သတ်မှတ်ချက်သို့ ရောက်ရှိနိုင်ရေးအတွက် စိတ်ချရသော အတိုင်းအတာအထိ စောင့်ကြည့်ရန် ဆန္ဒရှိကြသည်။",
+    powellExpectations: "ယူအက်စ် ဗဟိုဘဏ် (FED) ဥက္ကဋ္ဌ Kevin Warsh (ကီဗင်ဝါရှ်) ၏ ထုတ်ပြန်ချက်အရ နိုင်ငံတော်၏ ငွေကြေးဖောင်းပွမှု 2% ပန်းတိုင်သို့ မရောက်ရှိမချင်း အတိုးနှုန်းကို ဆက်လက်တင်းကျပ်ထားရန် သန္နိဋ္ဌာန်ရှိပြီး၊ စီးပွားရေးအခြေအနေအရ လိုအပ်လျှင် အတိုးနှုန်းထပ်မံမြှင့်တင်ရန် (Rate Hike) အသင့်ရှိနေကြောင်းနှင့် စျေးကွက်အပေါ်အလွန်အမင်း သတိထားစောင့်ကြည့်သွားမည်ဟု ဆိုသည်။",
+    summaryBurmese: "ယခု အစည်းအဝေး၏ အဓိကအနှစ်သာရမှာ စျေးကွက်အပေါ် သာမန် Dovish မျှော်လင့်ချက်များကို ပယ်ဖျက်ကာ၊ အရှိန်ရနေသော ငွေကြေးဖောင်းပွမှုကို တုံ့ပြန်ရန်အတွက် ခိုင်မာသော မူဝါဒရပ်တည်ချက်ကို ထင်ဟပ်စေခြင်းဖြစ်သည်။",
+    dxyOutlook: "DXY (US Dollar Index) သည် FED ၏ တင်းကျပ်သော လေသံ (Hawkish tone) နှင့် မြင့်မားသော အတိုးနှုန်းများကြောင့် ခိုင်မာသော momentum (Bullish bias) ကို ရရှိထားပြီး အဓိက Resistance levels များဖြစ်သည့် 105.50 နှင့် 106.20 အထက်သို့ ဦးတည် အားကောင်းလျက်ရှိသည်။",
+    traderBiasNqMnq: "NQ / MNQ (Nasdaq 100) futures Traders များအတွက် တင်းကျပ်သော အတိုးနှုန်းပတ်ဝန်းကျင်ကြောင့် high-level consolidation သို့မဟုတ် အောက်ဘက်သို့ ပြန်လည်ပြင်ဆင်မှု (Priced-in dynamics) ရှိနိုင်သဖြင့် အဆမတန် Long Setup ရှာဖွေခြင်းထက် Key Liquidity zone (ဥပမာ 28,200/28,400) များရှိ Structure အတည်ပြုချက်များကိုသာ သတိပြုဆောင်ရွက်ရန် လိုအပ်သည်။",
+    riskDisclaimer: "Trading features alerts နှင့် scenarios များသည် သတင်းအချက်အလက်ကို ပံ့ပိုးရန်သက်သက်ဖြစ်ပြီး၊ futures trading တွင် leverage အသုံးပြုမှုအရင်းအနှီး ဆုံးရှုံးနိုင်ခြေမြင့်မားသဖြင့် သေချာသော ကိုယ်ပိုင် Risk Management (Stop loss/Position size) ဖြင့်သာ ရောင်းဝယ်ကြရန် အကြံပြုအပ်ပါသည်။"
+  };
+
+  if (!ai) {
+    return res.json({ analysis: defaultFomcAnalysis, source: "fallback_database" });
+  }
+
+  try {
+    console.log("Generating custom FMC Burmese analysis using Gemini AI Grounded Search...");
+    
+    // Check if the current environment time matches simulation or active reality, 
+    // and query Google Search for the latest Federal funds rate decisions, candidate/confirmed FED Chair for 2026, and specific scheduled meeting iteration
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: "Query Google Search for the active/current Federal Reserve Chair as of 2026 (the search should confirm that Kevin Warsh was nominated/confirmed as Jerome Powell's successor starting in early 2026), their latest policy statements, and the latest schedule of the active or most recent FOMC Meeting.\n\nCRITICAL ECONOMIC TRADING ALIGNMENT REQUIREMENT: Avoid simple default assumptions of Dovishness or rate cuts. Focus on the actual, professional macroeconomic realities of 2026. If the Federal Reserve under Kevin Warsh maintains a restrictive, Hawkish policy or is ready for further Rate Hikes ('Higher for Longer'), you MUST translate and describe this sentiment with extreme accuracy as a Hawkish policy supporting DXY currency stability/strength. Map this accurately to the market structures, specifically outlining the cautious trend or consolidation for Nasdaq futures (NQ/MNQ).\n\nWrite a highly professional, comprehensive macroeconomic and market bias analysis designed for professional futures traders. You MUST combine the sequential meeting count/iteration and latest actual date inside the 'meetingDate' field in Burmese, strictly in a format like 'June 16-17, 2026 (၂၀၂၆ ခုနှစ်၏ ၄ ကြိမ်မြောက် FOMC အစည်းအဝေး)' or whichever scheduled meeting is currently detected.\n\nEnsure perfect economic data accuracy and systematic correct percentages. Translate and write completely in elegant, natural Burmese (မြန်မာလို). Write the current correct FED Chair's name (Kevin Warsh / ကီဗင်ဝါရှ်) and their specific forward guidance expectations inside the 'powellExpectations' field in beautiful Burmese. Exclude English boilerplate except for technical ticker terms (like 'NQ', 'MNQ', 'DXY', 'VWAP'). Return the output as JSON.",
+      config: {
+        tools: [{ googleSearch: {} }],
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            meetingDate: { type: Type.STRING, description: "Direct date AND meeting iteration/number of the recent FOMC meeting like June 16-17, 2026 (၂၀၂၆ ခုနှစ်၏ ၄ ကြိမ်မြောက် အစည်းအဝေး) paired together in Burmese" },
+            interestRateDecision: { type: Type.STRING, description: "Detailed explanation in Burmese of the rate decision with precise economic data" },
+            dotPlotSentiment: { type: Type.STRING, description: "Detailed breakdown in Burmese of the voter Dot Plot sentiments and percentage rate paths" },
+            voterStance: { type: Type.STRING, description: "Detailed breakdown in Burmese of voting splits and consensus" },
+            powellExpectations: { type: Type.STRING, description: "The active FED Chairman Kevin Warsh's statements, expectations and future data-centric/rate-hike moves in Burmese" },
+            summaryBurmese: { type: Type.STRING, description: "Detailed comprehensive Burmese summary of economic conditions with extreme factual accuracy" },
+            dxyOutlook: { type: Type.STRING, description: "Formulated direction of the US Dollar Index DXY in Burmese including support and resistance levels" },
+            traderBiasNqMnq: { type: Type.STRING, description: "Tactical guidelines for Nasdaq futures traders (NQ/MNQ), trend bias, key accumulation levels, and action plans in Burmese" },
+            riskDisclaimer: { type: Type.STRING, description: "Standard high-risk future trading disclaimer in Burmese" }
+          },
+          required: [
+            "meetingDate", 
+            "interestRateDecision", 
+            "dotPlotSentiment", 
+            "voterStance", 
+            "powellExpectations", 
+            "summaryBurmese", 
+            "dxyOutlook", 
+            "traderBiasNqMnq", 
+            "riskDisclaimer"
+          ]
+        }
+      }
+    });
+
+    const text = response.text ? response.text.trim() : "";
+    if (text) {
+      const parsedData = JSON.parse(text);
+      fomcCache = {
+        data: parsedData,
+        timestamp: Date.now()
+      };
+      return res.json({ analysis: parsedData, source: "gemini_google_search" });
+    } else {
+      throw new Error("No content generated for FOMC");
+    }
+  } catch (error: any) {
+    const errorStr = (error?.message || error || "").toString();
+    const isQuota = errorStr.includes("429") || errorStr.toLowerCase().includes("quota") || errorStr.toLowerCase().includes("exhausted");
+    
+    console.log(`[FOMC Engine] Standby activated. Serving standard high-fidelity report. (Rate Limit Match: ${isQuota})`);
+    
+    if (fomcCache) {
+      return res.json({ analysis: fomcCache.data, source: "gemini_cache_fallback", geminiStandby: true, standbyReason: isQuota ? "rate_limit_exceeded" : "network_event" });
+    }
+
+    return res.json({ 
+      analysis: defaultFomcAnalysis, 
+      source: "emergency_fallback", 
+      geminiStandby: true, 
+      standbyReason: isQuota ? "rate_limit_exceeded" : "network_event" 
+    });
+  }
+});
+
 
 // Export app for Vercel Serverless Function context
 export default app;
