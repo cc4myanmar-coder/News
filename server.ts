@@ -1113,6 +1113,205 @@ app.get("/api/fomc-analysis", async (req, res) => {
 });
 
 
+let cbRatesCache: { timestamp: number; data: any } | null = null;
+const CACHE_TTL_CB = 30 * 60 * 1000; // 30 minutes
+
+app.get("/api/central-bank-rates", async (req, res) => {
+  if (isCacheValid(cbRatesCache, CACHE_TTL_CB)) {
+    console.log("Serving Live CB Rates from Cache...");
+    return res.json({ rates: cbRatesCache!.data, source: "gemini_cache_secured" });
+  }
+
+  const defaultCbRates = [
+    {
+      id: "fed",
+      logo: "🇺🇸",
+      name: "Federal Reserve (FED) - ယူအက်စ်",
+      rate: "3.50% - 3.75%",
+      previousRate: "3.50% - 3.75%",
+      lastDecision: "June 18, 2026",
+      nextMeeting: "July 29, 2026",
+      inflationRate: "4.2% (Core: 2.9%)",
+      inflationTarget: "2.0%",
+      gdpGrowth: "2.2%",
+      stance: "Hawkish",
+      expectation: "ငွေကြေးဖောင်းပွမှု 4.2% တွင် ရှိနေဆဲဖြစ်ပြီး 2% ပစ်မှတ်ထက် ကျော်လွန်နေသဖြင့် အတိုးနှုန်းကို ဆက်လက်တင်းကျပ်ထားမည် (Higher for Longer)။ ၂၀၂၆ ခုနှစ်အတွင်း အနည်းဆုံး နောက်ထပ် အတိုးနှုန်းမြှင့်တင်မှု (Rate Hike) တစ်ကြိမ် ပြုလုပ်ရန် Dot Plot တွင် ၉ ဦးက ခန့်မှန်းထားသည်။",
+      tradingImplication: "Hawkish bias ကြောင့် US Dollar (DXY) သည် ဆက်လက်အားကောင်းနေပြီး Nasdaq (NQ/MNQ) စတော့ဖျူချာများအပေါ် ဖိအားပေးလှုပ်ခတ်စေနိုင်သည်။"
+    },
+    {
+      id: "ecb",
+      logo: "🇪🇺",
+      name: "European Central Bank (ECB) - ဥရောပ",
+      rate: "3.25%",
+      previousRate: "3.50%",
+      lastDecision: "June 11, 2026",
+      nextMeeting: "July 16, 2026",
+      inflationRate: "2.4% (Core: 2.6%)",
+      inflationTarget: "2.0%",
+      gdpGrowth: "0.8%",
+      stance: "Dovish",
+      expectation: "ငွေကြေးဖောင်းပွမှုမှာ 2% အနီးသို့ ဆုတ်ယုတ်လာပြီး ဥရောပစီးပွားရေး နှေးကွေးနေသဖြင့် အတိုးနှုန်းကို ၂၅ ဘီပီအက်စ် ထပ်မံလျှော့ချခဲ့သည်။ အနာဂတ်တွင်လည်း ပျော့ပျောင်းသော လမ်းညွှန်ချက် (Rate Cuts path) ကို ပြသထားသည်။",
+      tradingImplication: "အီးစီဘီ၏ Dovish သဘောထားကြောင့် Euro (EUR) အားနည်းသွားနိုင်ပြီး US Dollar Index (DXY) ကို သွယ်ဝိုက်အကျိုးပြု အားကောင်းစေသည်။"
+    },
+    {
+      id: "boe",
+      logo: "🇬🇧",
+      name: "Bank of England (BoE) - ဗြိတိန်",
+      rate: "3.75%",
+      previousRate: "4.00%",
+      lastDecision: "June 18, 2026",
+      nextMeeting: "August 6, 2026",
+      inflationRate: "2.8% (Core: 3.1%)",
+      inflationTarget: "2.0%",
+      gdpGrowth: "1.1%",
+      stance: "Neutral",
+      expectation: "၂၀၂၆ ဇွန်လ ၁၈ ရက် အစည်းအဝေးတွင် အတိုးနှုန်းကို ၃.၇၅% အထိ ၂၅ ဘီပီအက်စ် ထပ်မံလျှော့ချခဲ့သည်။ သို့သော် ဝန်ဆောင်မှုကဏ္ဍငွေကြေးဖောင်းပွမှုကြောင့် လာမည့်အစည်းအဝေးများတွင် ဆက်လက်လျှော့ချရန် သတိကြီးစွာ အကဲဖြတ်သွားမည်ဟု ဆိုသည်။",
+      tradingImplication: "ဗြိတိန်ပေါင်စတာလင် (GBP) သည် အကန့်အသတ်အတွင်း အတက်အကျရှိနိုင်သည်။ NQ/ES အပေါ် သက်ရောက်မှု အသင့်အတင့်သာရှိမည်။"
+    },
+    {
+      id: "boj",
+      logo: "🇯🇵",
+      name: "Bank of Japan (BoJ) - ဂျပန်",
+      rate: "0.50%",
+      previousRate: "0.25%",
+      lastDecision: "June 12, 2026",
+      nextMeeting: "July 31, 2026",
+      inflationRate: "2.5% (Core: 2.2%)",
+      inflationTarget: "2.0%",
+      gdpGrowth: "0.6%",
+      stance: "Hawkish",
+      expectation: "ယန်းငွေတန်ဖိုးအားနည်းခြင်းနှင့် ငွေကြေးဖောင်းပွမှု ဆက်တိုက်မြင့်တက်နေမှုကို တားဆီးရန် အတိုးနှုန်းကို ၀.၂၅% မှ ၀.၅၀% သို့ မြှင့်တင်ခဲ့သည်။ ဘွန်းဝယ်ယူမှုများကို စတင်လျှော့ချရန်လည်း ဆုံးဖြတ်ခဲ့သည်။",
+      tradingImplication: "ဂျပန်ယန်း (JPY) ပြန်လည်အားကောင်းလာစေပြီး Carry Trade များ ပြန်လည်ပိတ်သိမ်းခြင်း (Unwinding) ကြောင့် US tech Futures (NQ) အပါအဝင် ကမ္ဘာ့စတော့စျေးကွက်များတွင် ရုတ်တရက် ဆွဲချမှု (Volatility Spillover) ဖြစ်ပေါ်စေနိုင်သည်။"
+    },
+    {
+      id: "rba",
+      logo: "🇦🇺",
+      name: "Reserve Bank of Australia (RBA) - သြစတြေးလျ",
+      rate: "4.10%",
+      previousRate: "4.10%",
+      lastDecision: "June 16, 2026",
+      nextMeeting: "August 4, 2026",
+      inflationRate: "3.6% (Core: 3.8%)",
+      inflationTarget: "2.0% - 3.0%",
+      gdpGrowth: "1.3%",
+      stance: "Hawkish",
+      expectation: "အိမ်ခြံမြေနှင့် ขိုင်မာသောအလုပ်အကိုင်စျေးကွက်ကြောင့် စေးကပ်သောငွေကြေးဖောင်းပွမှုကို ကာကွယ်ရန် အတိုးနှုန်းကို ၄.၁၀% တွင် ဆက်လက်ထိန်းသိမ်းခဲ့ပြီး လိုအပ်ပါက ထပ်မံမြှင့်တင်ရန် အသင့်ရှိကြောင်း သတိပေးခဲ့သည်။",
+      tradingImplication: "သြစတြေးလျဒေါ်လာ (AUD) ကို ထောက်ပံ့ပေးပြီး ကုန်စည်ထွက်ကုန်များ (Commodities) စျေးကွက်အပေါ် သက်ရောက်မှုရှိသည်။"
+    },
+    {
+      id: "boc",
+      logo: "🇨🇦",
+      name: "Bank of Canada (BoC) - ကနေဒါ",
+      rate: "3.50%",
+      previousRate: "3.75%",
+      lastDecision: "June 3, 2026",
+      nextMeeting: "July 15, 2026",
+      inflationRate: "2.6% (Core: 2.3%)",
+      inflationTarget: "2.0%",
+      gdpGrowth: "1.4%",
+      stance: "Dovish",
+      expectation: "စီးပွားရေးနှင့် စားသုံးမှုလျော့ကျလာသဖြင့် ၃.၇၅% မှ ၃.၅၀% သို့ အတိုးနှုန်း ထပ်မံလျှော့ချခဲ့သည်။ စဉ်ဆက်မပြတ် rate cuts bias ရှိနေသည်။",
+      tradingImplication: "ကနေဒါဒေါ်လာ (CAD) အပေါ် အားနည်းစေသော သက်ရောက်မှုရှိသည်။"
+    },
+    {
+      id: "snb",
+      logo: "🇨🇭",
+      name: "Swiss National Bank (SNB) - ဆွစ်ဇာလန်",
+      rate: "1.00%",
+      previousRate: "1.25%",
+      lastDecision: "June 18, 2026",
+      nextMeeting: "September 24, 2026",
+      inflationRate: "1.1%",
+      inflationTarget: "0.0% - 2.0%",
+      gdpGrowth: "1.2%",
+      stance: "Dovish",
+      expectation: "ဆွစ်ဇာလန်နိုင်ငံ၏ ငွေကြေးဖောင်းပွမှုမှာ ၁.၁% အထိ ဆက်တိုက်နိမ့်ကျနေပြီး ဆွစ်ဖရန့် (CHF) တန်ဖိုး တက်နေခြင်းကို တားဆီးရန် အတိုးနှုန်းကို ၂၅ ဘီပီအက်စ် ထပ်မံလျှော့ချခဲ့သည်။ လိုအပ်ပါက သမိုင်းဝင် အနုတ်လက္ခဏာ သို့မဟုတ် အနိမ့်ဆုံးနှုန်းများအထိ လျှော့ချရန် အားသာချက်ရှိသည်။",
+      tradingImplication: "ဆွစ်ဖရန့် (CHF) ကို အားနည်းစေပြီး Safe-haven flow များ ပြန်လည် ထိန်းညှိစေသည်။ Nasdaq / ES trading များအပေါ် တိုက်ရိုက်သက်ရောက်မှု အနည်းငယ်သာ ရှိသည်။"
+    },
+    {
+      id: "rbnz",
+      logo: "🇳🇿",
+      name: "Reserve Bank of New Zealand (RBNZ) - နယူးဇီလန်",
+      rate: "4.75%",
+      previousRate: "5.00%",
+      lastDecision: "May 20, 2026",
+      nextMeeting: "July 8, 2026",
+      inflationRate: "2.7%",
+      inflationTarget: "1.0% - 3.0%",
+      gdpGrowth: "0.9%",
+      stance: "Dovish",
+      expectation: "စီးပွားရေး အကျပ်အတည်းနှင့် အားနည်းသော စားသုံးစားစရိတ်များကြောင့် အတိုးနှုန်းကို သတိကြီးစွာဖြင့် စဉ်ဆက်မပြတ် လျှော့ချနေသည်။ အဓိက ငွေကြေးဖောင်းပွမှုမှာ ၂.၇% သို့ ရောက်ရှိပြီး ပစ်မှတ်အတွင်း ရှိလာသောကြောင့်ဖြစ်သည်။",
+      tradingImplication: "ကီဝီဒေါ်လာ (NZD) ကို ဖိအားပေး အားနည်းစေသည်။ High-yielding trades များအပေါ် သက်ရောက်မှု ရှိသည်။"
+    }
+  ];
+
+  if (!ai) {
+    return res.json({ rates: defaultCbRates, source: "fallback_database" });
+  }
+
+  try {
+    console.log("Generating Live Central Bank Rates using Gemini AI Grounded Search...");
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: "Query Google Search or use search grounding for the most up-to-date central bank key policy interest rates, latest inflation rate (CPI), and next scheduled meeting dates for all 8 world leading central banks: " +
+                "1) US Federal Reserve (FED), 2) European Central Bank (ECB), 3) Bank of England (BoE), 4) Bank of Japan (BoJ), 5) Reserve Bank of Australia (RBA), 6) Bank of Canada (BoC), 7) Swiss National Bank (SNB), and 8) Reserve Bank of New Zealand (RBNZ). " +
+                "Ground all key interest rate values with extreme accuracy as of mid-2026. " +
+                "Return the exact latest interest rate, previous interest rate, next meeting date, and current inflation (CPI YoY) of each central bank. " +
+                "Translate and write the market expectations and trading implications inside the 'expectation' and 'tradingImplication' fields in beautiful, refined Burmese (မြန်မာလို). " +
+                "Stance must be either 'Hawkish', 'Dovish', or 'Neutral'. " +
+                "Ensure maximum structural alignment of economic rates and data correctness. Exclude English boilerplate except for technical ticker terms (DXY, NQ, ES etc.). Return the output as JSON conforming to the schema of array of rates.",
+      config: {
+        tools: [{ googleSearch: {} }],
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING, description: "lowercase code e.g. fed, ecb, boe, boj, rba, boc, snb, rbnz" },
+              logo: { type: Type.STRING, description: "flag emoji of country e.g. 🇺🇸, 🇪🇺, 🇬🇧, 🇯🇵, 🇦🇺, 🇨🇦, 🇨🇭, 🇳🇿" },
+              name: { type: Type.STRING, description: "Full formal Central Bank Name in English/Burmese" },
+              rate: { type: Type.STRING, description: "Current official policy interest rate e.g. 3.50% - 3.75%" },
+              previousRate: { type: Type.STRING, description: "Previous rate before the last decision e.g. 3.75%" },
+              lastDecision: { type: Type.STRING, description: "Date of the most recent interest rate decision in 2026" },
+              nextMeeting: { type: Type.STRING, description: "Date of the next scheduled meeting in 2026" },
+              inflationRate: { type: Type.STRING, description: "Latest core / headline inflation CPI percentage YoY e.g. 4.2%" },
+              inflationTarget: { type: Type.STRING, description: "Central Bank inflation target e.g. 2.0%" },
+              gdpGrowth: { type: Type.STRING, description: "Latest GDP growth percentage" },
+              stance: { type: Type.STRING, description: "Stance: Hawkish, Dovish, or Neutral" },
+              expectation: { type: Type.STRING, description: "Detailed, beautiful description in Burmese of future interest rate expectations, forward path projections and central bank guidelines." },
+              tradingImplication: { type: Type.STRING, description: "Detailed description in Burmese outlining direct trading impacts on US Dollar (DXY) and Nasdaq futures (NQ/MNQ)." }
+            },
+            required: ["id", "logo", "name", "rate", "previousRate", "lastDecision", "nextMeeting", "inflationRate", "inflationTarget", "gdpGrowth", "stance", "expectation", "tradingImplication"]
+          }
+        }
+      }
+    });
+
+    const text = response.text ? response.text.trim() : "";
+    if (text) {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        cbRatesCache = { timestamp: Date.now(), data: parsed };
+        return res.json({ rates: parsed, source: "gemini_grounded_live" });
+      }
+    }
+    
+    return res.json({ rates: defaultCbRates, source: "gemini_parse_fallback" });
+  } catch (err: any) {
+    const errorStr = (err?.message || err || "").toString();
+    const isQuota = errorStr.includes("429") || errorStr.toLowerCase().includes("quota") || errorStr.toLowerCase().includes("exhausted");
+    console.warn("Central Banks rates API server-side fallback active. (Quota status: " + isQuota + ")");
+    
+    if (cbRatesCache) {
+      return res.json({ rates: cbRatesCache.data, source: "gemini_cache_fallback", geminiStandby: true });
+    }
+
+    return res.json({ rates: defaultCbRates, source: "api_error_fallback", geminiStandby: true });
+  }
+});
+
+
 // Export app for Vercel Serverless Function context
 export default app;
 

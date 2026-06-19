@@ -35,3 +35,20 @@ export interface TickData {
   time: string;
   price: number;
 }
+
+export interface CentralBankRate {
+  id: string;
+  logo: string;
+  name: string;
+  rate: string;
+  previousRate: string;
+  lastDecision: string;
+  nextMeeting: string;
+  inflationRate: string;
+  inflationTarget: string;
+  gdpGrowth: string;
+  stance: 'Hawkish' | 'Dovish' | 'Neutral';
+  expectation: string;
+  tradingImplication: string;
+}
+

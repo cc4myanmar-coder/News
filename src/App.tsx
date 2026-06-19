@@ -37,6 +37,7 @@ import {
 import { NewsItem, CalendarEvent, VolatilityAnalysis, TickData } from './types';
 import { BURMESE_LEXICON } from './components/BurmeseLexicon';
 import { LiveFuturesChart } from './components/LiveFuturesChart';
+import { CentralBankRatesPanel } from './components/CentralBankRatesPanel';
 import { getMacroDetailsForEvent } from './components/MacroExplainerData';
 import { VolatilitySparkline, SparklinePoint } from './components/VolatilitySparkline';
 import { getRtftLogoUrl } from './lib/supabase';
@@ -964,7 +965,7 @@ export default function App() {
             setDraggedColumn(null);
             setDragOverColumn(null);
           }}
-          className={`xl:col-span-7 flex flex-col overflow-y-auto relative transition-all duration-300 ${
+          className={`xl:col-span-4 flex flex-col overflow-y-auto relative transition-all duration-300 ${
             isColumnSwapped 
               ? 'xl:order-2 border-l border-[#1b1b1e]' 
               : 'xl:order-1 border-r border-[#1b1b1e]'
@@ -1136,11 +1137,11 @@ export default function App() {
                         mass: 0.8,
                         layout: { type: 'spring', stiffness: 350, damping: 32 }
                       }}
-                      className="bg-[#0b0c0f] border border-[#1b1b1e] hover:border-[#2e2f36] p-4 rounded-xl transition-colors duration-200 shadow-sm flex flex-col md:flex-row gap-4 items-start"
+                      className="bg-[#0b0c0f] border border-[#1b1b1e] hover:border-[#2e2f36] p-4 rounded-xl transition-colors duration-200 shadow-sm flex flex-col md:flex-row xl:flex-col gap-4 items-start"
                     >
                       
                       {/* Index affected flags & stats metadata */}
-                      <div className="flex md:flex-col gap-2 shrink-0 md:w-32 justify-between md:justify-start">
+                      <div className="flex md:flex-col xl:flex-row xl:w-full xl:justify-between xl:items-center gap-2 shrink-0 md:w-32 justify-between md:justify-start">
                         <div className="flex gap-1.5 flex-wrap">
                           {story.indicesAffected.map(ind => (
                             <span 
@@ -1160,7 +1161,7 @@ export default function App() {
                         </div>
                         
                         {/* Volatility score meter */}
-                        <div className="flex flex-col items-start gap-1 font-mono md:mt-2">
+                        <div className="flex flex-col items-start gap-1 font-mono md:mt-2 xl:mt-0">
                           <span className="text-[9px] text-slate-500 font-semibold uppercase">Volatility Risk</span>
                           <div className="flex items-center gap-1.5">
                             <span className={`text-xs font-bold ${story.volatilityScore >= 7 ? 'text-red-400' : story.volatilityScore >= 5 ? 'text-amber-400' : 'text-slate-400'}`}>
@@ -1248,7 +1249,7 @@ export default function App() {
             setDraggedColumn(null);
             setDragOverColumn(null);
           }}
-          className={`xl:col-span-5 bg-[#09090b] flex flex-col divide-y divide-[#1b1b1e] relative transition-all duration-300 ${
+          className={`xl:col-span-8 bg-[#09090b] flex flex-col divide-y divide-[#1b1b1e] relative transition-all duration-300 ${
             isColumnSwapped 
               ? 'xl:order-1' 
               : 'xl:order-2'
@@ -1457,6 +1458,11 @@ export default function App() {
                 Explain Macro
               </button>
             </div>
+          </div>
+
+          {/* SEC 1.5: GLOBAL CENTRAL BANKS INTEREST RATE EXPECTATIONS & RESULTS */}
+          <div className="p-4 flex flex-col">
+            <CentralBankRatesPanel onLexiconOpen={(key) => setSelectedLexiconKey(key)} />
           </div>
 
           {/* SEC 2: REAL-TIME VOLATILITY ALERTS */}
