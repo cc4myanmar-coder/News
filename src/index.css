@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Inter", "Noto Sans Myanmar", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
@@ -226,4 +226,359 @@
 .theme-light ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8 !important;
 }
+
+/* ==========================================================================
+   DYNAMIC FONTS & SIZES STYLING
+   ========================================================================== */
+.font-jakarta {
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif !important;
+}
+.font-inter {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important;
+}
+.font-grotesk {
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif !important;
+}
+.font-jetbrains {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace !important;
+}
+.font-myanmar {
+  font-family: "Noto Sans Myanmar", "Plus Jakarta Sans", sans-serif !important;
+}
+
+/* Dynamic font size proportional scaling */
+.size-small {
+  font-size: 0.85rem !important;
+}
+.size-small p, 
+.size-small span:not(.font-mono), 
+.size-small button, 
+.size-small td, 
+.size-small th, 
+.size-small h4, 
+.size-small h5, 
+.size-small li,
+.size-small input,
+.size-small select,
+.size-small textarea {
+  font-size: 0.90em !important;
+}
+
+.size-medium {
+  /* standard sizes */
+}
+
+.size-large {
+  font-size: 1.05rem !important;
+}
+.size-large p, 
+.size-large span:not(.font-mono), 
+.size-large button, 
+.size-large td, 
+.size-large th, 
+.size-large h4, 
+.size-large h5, 
+.size-large li,
+.size-large input,
+.size-large select,
+.size-large textarea {
+  font-size: 1.08em !important;
+}
+
+.size-xlarge {
+  font-size: 1.15rem !important;
+}
+.size-xlarge p, 
+.size-xlarge span:not(.font-mono), 
+.size-xlarge button, 
+.size-xlarge td, 
+.size-xlarge th, 
+.size-xlarge h4, 
+.size-xlarge h5, 
+.size-xlarge li,
+.size-xlarge input,
+.size-xlarge select,
+.size-xlarge textarea {
+  font-size: 1.18em !important;
+}
+
+/* ==========================================================================
+   THEME EMERALD (EMERALD FOREST) OVERRIDES
+   ========================================================================== */
+.theme-emerald {
+  background-color: #040805 !important;
+  color: #e2f5e7 !important;
+}
+.theme-emerald #quantum-app-container {
+  background-color: #040805 !important;
+}
+.theme-emerald #app-header,
+.theme-emerald footer {
+  background-color: #07150c !important;
+  border-color: #122c19 !important;
+}
+.theme-emerald div[class*="bg-[#0c0c0e]"],
+.theme-emerald div[class*="bg-[#070708]"],
+.theme-emerald div[class*="bg-[#09090b]"],
+.theme-emerald div[class*="bg-[#0b0c0f]"],
+.theme-emerald div[class*="bg-[#0b0f19]"] {
+  background-color: #050d08 !important;
+  border-color: #0e2416 !important;
+}
+.theme-emerald div[class*="bg-[#101012]"],
+.theme-emerald div[class*="bg-[#101014]"],
+.theme-emerald div[class*="bg-[#0b0c10]"],
+.theme-emerald div[class*="bg-[#16161a]"],
+.theme-emerald div[class*="bg-[#121215]"],
+.theme-emerald div[class*="bg-slate-900"],
+.theme-emerald #vola-sparkline-card,
+.theme-emerald #market-visualizer-section,
+.theme-emerald #calendar-container-panel,
+.theme-emerald #alerts-marquee-panel,
+.theme-emerald #gemini-dynamic-analysis-card,
+.theme-emerald blockquote,
+.theme-emerald #lexicon-modal-content,
+.theme-emerald #macro-modal-content {
+  background-color: #07150c !important;
+  border-color: #122c19 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+.theme-emerald .border-[#1b1b1e],
+.theme-emerald .border-[#222226],
+.theme-emerald .border-[#202024],
+.theme-emerald .border-slate-800,
+.theme-emerald .border-slate-850,
+.theme-emerald .border-slate-900,
+.theme-emerald section,
+.theme-emerald div,
+.theme-emerald li,
+.theme-emerald p {
+  border-color: #122c19 !important;
+}
+.theme-emerald h1, 
+.theme-emerald h2, 
+.theme-emerald h3, 
+.theme-emerald h4, 
+.theme-emerald h5 {
+  color: #10b981 !important;
+}
+.theme-emerald .text-slate-100, 
+.theme-emerald .text-white {
+  color: #ecfdf5 !important;
+}
+.theme-emerald .text-slate-205, 
+.theme-emerald .text-slate-300, 
+.theme-emerald .text-slate-400 {
+  color: #a7f3d0 !important;
+}
+.theme-emerald input,
+.theme-emerald select,
+.theme-emerald textarea {
+  background-color: #050d08 !important;
+  border-color: #122c19 !important;
+  color: #dcfce7 !important;
+}
+.theme-emerald #gemini-sync-btn {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+}
+.theme-emerald #gemini-sync-btn:hover {
+  background-color: #047857 !important;
+}
+
+/* ==========================================================================
+   THEME CRIMSON (ROYAL CRIMSON) OVERRIDES
+   ========================================================================== */
+.theme-crimson {
+  background-color: #070103 !important;
+  color: #ffe4e6 !important;
+}
+.theme-crimson #quantum-app-container {
+  background-color: #070103 !important;
+}
+.theme-crimson #app-header,
+.theme-crimson footer {
+  background-color: #160509 !important;
+  border-color: #2e0e14 !important;
+}
+.theme-crimson div[class*="bg-[#0c0c0e]"],
+.theme-crimson div[class*="bg-[#070708]"],
+.theme-crimson div[class*="bg-[#09090b]"],
+.theme-crimson div[class*="bg-[#0b0c0f]"],
+.theme-crimson div[class*="bg-[#0b0f19]"] {
+  background-color: #110306 !important;
+  border-color: #2a0a0f !important;
+}
+.theme-crimson div[class*="bg-[#101012]"],
+.theme-crimson div[class*="bg-[#101014]"],
+.theme-crimson div[class*="bg-[#0b0c10]"],
+.theme-crimson div[class*="bg-[#16161a]"],
+.theme-crimson div[class*="bg-[#121215]"],
+.theme-crimson div[class*="bg-slate-900"],
+.theme-crimson #vola-sparkline-card,
+.theme-crimson #market-visualizer-section,
+.theme-crimson #calendar-container-panel,
+.theme-crimson #alerts-marquee-panel,
+.theme-crimson #gemini-dynamic-analysis-card,
+.theme-crimson blockquote,
+.theme-crimson #lexicon-modal-content,
+.theme-crimson #macro-modal-content {
+  background-color: #160509 !important;
+  border-color: #2e0e14 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+.theme-crimson .border-[#1b1b1e],
+.theme-crimson .border-[#222226],
+.theme-crimson .border-[#202024],
+.theme-crimson .border-slate-800,
+.theme-crimson .border-slate-850,
+.theme-crimson .border-slate-900,
+.theme-crimson section,
+.theme-crimson div,
+.theme-crimson li,
+.theme-crimson p {
+  border-color: #2e0e14 !important;
+}
+.theme-crimson h1, 
+.theme-crimson h2, 
+.theme-crimson h3, 
+.theme-crimson h4, 
+.theme-crimson h5 {
+  color: #f43f5e !important;
+}
+.theme-crimson .text-slate-100, 
+.theme-crimson .text-white {
+  color: #fff1f2 !important;
+}
+.theme-crimson .text-slate-205, 
+.theme-crimson .text-slate-300, 
+.theme-crimson .text-slate-400 {
+  color: #fecdd3 !important;
+}
+.theme-crimson input,
+.theme-crimson select,
+.theme-crimson textarea {
+  background-color: #110306 !important;
+  border-color: #2e0e14 !important;
+  color: #ffe4e6 !important;
+}
+.theme-crimson #gemini-sync-btn {
+  background-color: #e11d48 !important;
+  color: #ffffff !important;
+}
+.theme-crimson #gemini-sync-btn:hover {
+  background-color: #be123c !important;
+}
+
+/* ==========================================================================
+   THEME AMBER (CYBERPUNK AMBER) OVERRIDES
+   ========================================================================== */
+.theme-amber {
+  background-color: #050403 !important;
+  color: #fef3c7 !important;
+}
+.theme-amber #quantum-app-container {
+  background-color: #050403 !important;
+}
+.theme-amber #app-header,
+.theme-amber footer {
+  background-color: #120e09 !important;
+  border-color: #261d11 !important;
+}
+.theme-amber div[class*="bg-[#0c0c0e]"],
+.theme-amber div[class*="bg-[#070708]"],
+.theme-amber div[class*="bg-[#09090b]"],
+.theme-amber div[class*="bg-[#0b0c0f]"],
+.theme-amber div[class*="bg-[#0b0f19]"] {
+  background-color: #0f0b07 !important;
+  border-color: #22180c !important;
+}
+.theme-amber div[class*="bg-[#101012]"],
+.theme-amber div[class*="bg-[#101014]"],
+.theme-amber div[class*="bg-[#0b0c10]"],
+.theme-amber div[class*="bg-[#16161a]"],
+.theme-amber div[class*="bg-[#121215]"],
+.theme-amber div[class*="bg-slate-900"],
+.theme-amber #vola-sparkline-card,
+.theme-amber #market-visualizer-section,
+.theme-amber #calendar-container-panel,
+.theme-amber #alerts-marquee-panel,
+.theme-amber #gemini-dynamic-analysis-card,
+.theme-amber blockquote,
+.theme-amber #lexicon-modal-content,
+.theme-amber #macro-modal-content {
+  background-color: #120e09 !important;
+  border-color: #261d11 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+.theme-amber .border-[#1b1b1e],
+.theme-amber .border-[#222226],
+.theme-amber .border-[#202024],
+.theme-amber .border-slate-800,
+.theme-amber .border-slate-850,
+.theme-amber .border-slate-900,
+.theme-amber section,
+.theme-amber div,
+.theme-amber li,
+.theme-amber p {
+  border-color: #261d11 !important;
+}
+.theme-amber h1, 
+.theme-amber h2, 
+.theme-amber h3, 
+.theme-amber h4, 
+.theme-amber h5 {
+  color: #d97706 !important;
+}
+.theme-amber .text-slate-100, 
+.theme-amber .text-white {
+  color: #fffbeb !important;
+}
+.theme-amber .text-slate-205, 
+.theme-amber .text-slate-300, 
+.theme-amber .text-slate-400 {
+  color: #fde68a !important;
+}
+.theme-amber input,
+.theme-amber select,
+.theme-amber textarea {
+  background-color: #0f0b07 !important;
+  border-color: #261d11 !important;
+  color: #fef3c7 !important;
+}
+.theme-amber #gemini-sync-btn {
+  background-color: #d97706 !important;
+  color: #ffffff !important;
+}
+.theme-amber #gemini-sync-btn:hover {
+  background-color: #b45309 !important;
+}
+
+/* Animations for Slideover / Drawer Panel */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.18s ease-out forwards !important;
+}
+
 

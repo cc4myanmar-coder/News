@@ -32,7 +32,9 @@ import {
   DollarSign,
   BarChart2,
   Users,
-  LineChart
+  LineChart,
+  Sliders,
+  Check
 } from 'lucide-react';
 import { NewsItem, CalendarEvent, VolatilityAnalysis, TickData } from './types';
 import { BURMESE_LEXICON } from './components/BurmeseLexicon';
@@ -222,11 +224,14 @@ export default function App() {
   const [manualEs, setManualEs] = useState<string>('6432.75'); // Ticked baseline
   const [priceSyncStatus, setPriceSyncStatus] = useState<'idle' | 'fetching' | 'success' | 'error'>('idle');
 
-  // Light/Dark mode state with automatic default to dark and persistent storage
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+  // Color theme state with 5 choices (dark, light, emerald, crimson, amber)
+  const [theme, setTheme] = useState<'dark' | 'light' | 'emerald' | 'crimson' | 'amber'>(() => {
     try {
       const saved = localStorage.getItem('rtft-quantum-theme');
-      return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+      if (saved === 'light' || saved === 'dark' || saved === 'emerald' || saved === 'crimson' || saved === 'amber') {
+        return saved;
+      }
+      return 'dark';
     } catch {
       return 'dark';
     }
@@ -239,6 +244,45 @@ export default function App() {
       console.warn('Storage permission restricted:', e);
     }
   }, [theme]);
+
+  // Selected Font Family ('jakarta', 'inter', 'grotesk', 'jetbrains', 'myanmar')
+  const [fontFamily, setFontFamily] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('rtft-quantum-font-family');
+      return saved || 'jakarta';
+    } catch {
+      return 'jakarta';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('rtft-quantum-font-family', fontFamily);
+    } catch (e) {
+      console.warn('Storage permission restricted:', e);
+    }
+  }, [fontFamily]);
+
+  // Selected Font Size ('small', 'medium', 'large', 'xlarge')
+  const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large' | 'xlarge'>(() => {
+    try {
+      const saved = localStorage.getItem('rtft-quantum-font-size');
+      return (saved === 'small' || saved === 'medium' || saved === 'large' || saved === 'xlarge') ? saved : 'medium';
+    } catch {
+      return 'medium';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('rtft-quantum-font-size', fontSize);
+    } catch (e) {
+      console.warn('Storage permission restricted:', e);
+    }
+  }, [fontSize]);
+
+  // Settings Panel Open State
+  const [showCustomizer, setShowCustomizer] = useState<boolean>(false);
 
   // Selected Timezone with automatic fallback and storage persistence
   const [selectedTimezone, setSelectedTimezone] = useState<string>(() => {
@@ -759,7 +803,12 @@ export default function App() {
   const activeZone = TIMEZONES.find(tz => tz.value === selectedTimezone) || TIMEZONES[0];
 
   return (
-    <div id="quantum-app-container" className={`min-h-screen bg-[#070708] text-slate-300 font-sans flex flex-col antialiased ${theme === 'light' ? 'theme-light' : ''}`}>
+    <div id="quantum-app-container" className={`min-h-screen bg-[#070708] text-slate-300 flex flex-col antialiased ${
+      theme === 'light' ? 'theme-light' : 
+      theme === 'emerald' ? 'theme-emerald' : 
+      theme === 'crimson' ? 'theme-crimson' : 
+      theme === 'amber' ? 'theme-amber' : ''
+    } font-${fontFamily} size-${fontSize}`}>
       
       {/* HEADER SECTION - Beautiful dark glowing control panel */}
       <header id="app-header" className="min-h-[74px] lg:h-[74px] bg-[#0c0c0e] border-b border-[#1b1b1e] flex flex-col lg:flex-row lg:items-center justify-between px-4 sm:px-6 py-4 lg:py-0 shrink-0 sticky top-0 z-50 shadow-md gap-4">
@@ -883,19 +932,22 @@ export default function App() {
             </div>
           </div>
 
-          {/* Theme Toggler with smooth transition */}
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="flex items-center justify-center w-9 h-9 rounded-lg border border-[#222226] bg-[#101012] hover:bg-slate-900 text-slate-400 hover:text-white transition-all shadow-md shrink-0 cursor-pointer"
-            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            id="theme-toggler-btn"
-          >
-            {theme === 'dark' ? (
-              <Sun className="w-4 h-4 text-amber-400" />
-            ) : (
-              <Moon className="w-4 h-4 text-indigo-500" />
-            )}
-          </button>
+          {/* Advanced Interface Customizer Control Panel Button - Triggers smooth right slide drawer */}
+          <div className="shrink-0">
+            <button
+              onClick={() => setShowCustomizer(true)}
+              className={`flex items-center gap-2 px-3.5 h-9 rounded-lg border transition-all shadow-md cursor-pointer text-xs font-bold font-mono uppercase select-none ${
+                showCustomizer 
+                  ? "bg-indigo-600 text-white border-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.4)]" 
+                  : "border-[#222226] bg-[#101012] hover:bg-slate-900 text-slate-300 hover:text-white"
+              }`}
+              title="Interface Settings (Theme, Font, Size) / အဆင်အပြင် ပြင်ဆင်ရန်"
+              id="customizer-panel-toggle-btn"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Settings / အဆင်အပြင်</span>
+            </button>
+          </div>
         </div>
 
       </header>
@@ -2372,7 +2424,145 @@ export default function App() {
         </div>
       )}
 
+      {/* GLOBAL SETTINGS DRAWER - Slide over from right to fit perfectly on any device, fully responsive */}
+      {showCustomizer && (
+        <div className="fixed inset-0 z-[9999] flex justify-end animate-fade-in text-slate-200">
+          {/* Backdrop with blurry glass mask */}
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity cursor-pointer"
+            onClick={() => setShowCustomizer(false)}
+          />
+          
+          {/* Drawer Panel */}
+          <div 
+            id="customizer-drawer-panel"
+            className="relative w-80 sm:w-96 h-full bg-[#0d0f14] border-l border-[#23252f] shadow-2xl p-6 flex flex-col justify-between overflow-y-auto z-10 animate-slide-in-right shrink-0"
+          >
+            <div>
+              <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-5">
+                <div className="flex flex-col">
+                  <h4 className="text-sm font-extrabold font-mono uppercase tracking-wider text-indigo-400 flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-indigo-400" />
+                    Layout Settings / ဆက်တင်များ
+                  </h4>
+                  <span className="text-[10px] text-slate-500 font-mono mt-0.5">Customize interface experience</span>
+                </div>
+                <button 
+                  onClick={() => setShowCustomizer(false)}
+                  className="text-slate-400 hover:text-white font-mono text-xs font-black uppercase hover:bg-slate-850 px-2.5 py-1 rounded transition-all cursor-pointer border border-[#23252f]"
+                >
+                  ✕
+                </button>
+              </div>
 
+              {/* Theme Selector */}
+              <div className="space-y-2 mb-6">
+                <label className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 flex justify-between">
+                  <span>🎨 Color Theme / စောင်းကွက်အရောင်</span>
+                  <span className="text-indigo-400 lowercase">({theme})</span>
+                </label>
+                <div className="space-y-1.5 pt-0.5">
+                  {[
+                    { key: 'dark', label: 'Cosmic Dark', desc: 'Default dark tech mode' },
+                    { key: 'light', label: 'Slate Light', desc: 'High-contrast light mode' },
+                    { key: 'emerald', label: 'Emerald Forest', desc: 'Calming matrix botanical green' },
+                    { key: 'crimson', label: 'Royal Crimson', desc: 'Bold power finance crimson red' },
+                    { key: 'amber', label: 'Amber Tactical', desc: 'Cyberpunk dashboard warm amber' }
+                  ].map((t) => (
+                    <button
+                      key={t.key}
+                      onClick={() => setTheme(t.key as any)}
+                      className={`w-full px-3 py-2 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer ${
+                        theme === t.key 
+                          ? 'border-indigo-500 bg-indigo-950/40 text-white font-bold ring-1 ring-indigo-500/30 shadow-[0_0_8px_rgba(99,102,241,0.25)]' 
+                          : 'border-slate-800 bg-[#12141c] text-slate-305 hover:bg-[#161a26]'
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-xs font-semibold">{t.label}</span>
+                        <span className="text-[9px] text-slate-500 font-normal">{t.desc}</span>
+                      </div>
+                      {theme === t.key && <Check className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Font Family Selector */}
+              <div className="space-y-2 mb-6">
+                <label className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 block">
+                  🔤 Font Style / စာလုံးပုံစံ
+                </label>
+                <div className="space-y-1.5">
+                  {[
+                    { key: 'jakarta', label: 'Plus Jakarta Sans', desc: 'Modern professional aesthetics' },
+                    { key: 'inter', label: 'Inter Sans-Serif', desc: 'Ultra-clean finance alignment' },
+                    { key: 'grotesk', label: 'Space Grotesk', desc: 'Tactical futuristic style' },
+                    { key: 'jetbrains', label: 'JetBrains Mono', desc: 'High density terminal code font' },
+                    { key: 'myanmar', label: 'Noto Myanmar', desc: 'Optimized Burmese reading layout' }
+                  ].map((f) => (
+                    <button
+                      key={f.key}
+                      onClick={() => setFontFamily(f.key)}
+                      className={`w-full px-3 py-2 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer ${
+                        fontFamily === f.key 
+                          ? 'border-indigo-500 bg-indigo-950/40 text-white font-bold ring-1 ring-indigo-500/30' 
+                          : 'border-slate-800 bg-[#12141c] text-slate-305 hover:bg-[#161a26]'
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-xs font-semibold">{f.label}</span>
+                        <span className="text-[9px] text-slate-500 font-normal">{f.desc}</span>
+                      </div>
+                      <span className="text-[9px] font-mono opacity-70 px-1.5 py-0.5 bg-slate-800/85 rounded border border-slate-700/60">
+                        {f.key === 'myanmar' ? 'မြန်မာ' : 'Abc'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Font Size Selector */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 block">
+                  🔎 Font Size / စာလုံးအရွယ်အစား
+                </label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[
+                    { key: 'small', label: 'Small', exp: '90%' },
+                    { key: 'medium', label: 'Medium', exp: '100%' },
+                    { key: 'large', label: 'Large', exp: '108%' },
+                    { key: 'xlarge', label: 'XL', exp: '118%' }
+                  ].map((sz) => (
+                    <button
+                      key={sz.key}
+                      onClick={() => setFontSize(sz.key as any)}
+                      className={`py-2 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
+                        fontSize === sz.key 
+                          ? 'border-indigo-500 bg-indigo-950/40 text-white font-bold ring-1 ring-indigo-500/30' 
+                          : 'border-slate-800 bg-[#12141c] text-slate-400 hover:bg-[#161a26]'
+                      }`}
+                    >
+                      <span className="text-[11px] font-semibold">{sz.label}</span>
+                      <span className="text-[8px] font-mono opacity-50 mt-0.5">{sz.exp}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-840 pt-4 mt-6">
+              <button 
+                onClick={() => setShowCustomizer(false)}
+                className="w-full text-white bg-indigo-600 hover:bg-indigo-505 font-bold font-mono uppercase text-xs py-2.5 rounded-lg transition-all shadow-lg cursor-pointer text-center"
+              >
+                Apply & Close / ပိတ်ပါ
+              </button>
+              <p className="text-[9px] text-slate-600 text-center font-mono mt-2">RTFT SYSTEM INTERFACE SETUP v1.1.2</p>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
