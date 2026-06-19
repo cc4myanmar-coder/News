@@ -38,6 +38,7 @@ import { NewsItem, CalendarEvent, VolatilityAnalysis, TickData } from './types';
 import { BURMESE_LEXICON } from './components/BurmeseLexicon';
 import { LiveFuturesChart } from './components/LiveFuturesChart';
 import { CentralBankRatesPanel } from './components/CentralBankRatesPanel';
+import { KnowledgeHub } from './components/KnowledgeHub';
 import { getMacroDetailsForEvent } from './components/MacroExplainerData';
 import { VolatilitySparkline, SparklinePoint } from './components/VolatilitySparkline';
 import { getRtftLogoUrl } from './lib/supabase';
@@ -1465,6 +1466,11 @@ export default function App() {
             <CentralBankRatesPanel onLexiconOpen={(key) => setSelectedLexiconKey(key)} />
           </div>
 
+          {/* SEC 1.8: KNOWLEDGE DISCOVERY & STUDY HUB */}
+          <div className="p-4 flex flex-col animate-fade-in">
+            <KnowledgeHub />
+          </div>
+
           {/* SEC 2: REAL-TIME VOLATILITY ALERTS */}
           <div className="p-4 flex flex-col">
             <div className="flex items-center justify-between mb-3">
@@ -1858,6 +1864,27 @@ export default function App() {
       {/* DETAILED DYNAMIC ECONOMIC CALENDAR SCENARIOS MODAL */}
       {selectedCalendarEvent && (() => {
         const details = getMacroDetailsForEvent(selectedCalendarEvent.event);
+        const nameLower = selectedCalendarEvent.event.toLowerCase();
+        const actualLower = (selectedCalendarEvent.actual || '').toLowerCase();
+        const forecastLower = (selectedCalendarEvent.forecast || '').toLowerCase();
+        const previousLower = (selectedCalendarEvent.previous || '').toLowerCase();
+
+        const isHoliday = nameLower.includes('holiday') || nameLower.includes('day off') || nameLower.includes('closed') || actualLower.includes('holiday') || forecastLower.includes('holiday') || previousLower.includes('holiday');
+        const isSpeechOrMeeting = nameLower.includes('speak') || nameLower.includes('speech') || nameLower.includes('testimony') || nameLower.includes('testifies') || nameLower.includes('audits') || nameLower.includes('meeting') || nameLower.includes('press conference') || nameLower.includes('minutes') || actualLower.includes('tentative') || forecastLower.includes('tentative');
+        const isNonNumerical = isHoliday || isSpeechOrMeeting || (!/\d/.test(selectedCalendarEvent.actual || '') && !/\d/.test(selectedCalendarEvent.forecast || '') && !/\d/.test(selectedCalendarEvent.previous || ''));
+
+        const displayMeaningBurmese = isHoliday 
+          ? "ဘဏ်ပိတ်ရက် (Bank Holiday) ဖြစ်သည်။ ယနေ့တွင် သက်ဆိုင်ရာ နိုင်ငံ၏ ငွေရေးကြေးရေးဌာနများနှင့် ဘဏ်လုပ်ငန်းများ ပိတ်ထားမည်ဖြစ်သဖြင့် စျေးကွက်အတွင်း အရောင်းအဝယ် ပမာဏ (Trading Volume) အလွန်နည်းပါးနေနိုင်ပြီး ကိန်းဂဏန်းအခြေပြု သောင်းပြောင်းလှုပ်ခတ် သတင်းထုတ်ပြန်ချက်များ ထွက်ပေါ်လာမည် မဟုတ်ပါ။"
+          : (isSpeechOrMeeting 
+              ? "ဗဟိုဘဏ်ဥက္ကဋ္ဌ သို့မဟုတ် ငွေကြေးပေါ်လစီ အကြံပေးအဖွဲ့ဝင်များ၏ နှုတ်ပြောကြားချက်/ဟောပြောပွဲ သို့မဟုတ် အစည်းအဝေးမှတ်တမ်း ဖြစ်သည်။ ကိန်းဂဏန်းအခြေပြု သတင်းမျိုးမဟုတ်သော်လည်း စကားလုံး တစ်လုံးချင်းစီ၏ အဓိပ္ပာယ် (Tone: Hawkish vs Dovish) အပေါ်မူတည်၍ စျေးကွက် ရုတ်တရက် လှုပ်ရှားပြောင်းလဲနိုင်သည်။"
+              : details.meaningBurmese);
+
+        const displayMeaningEnglish = isHoliday 
+          ? "Official Bank Holiday / Market closure. Trading participation and institutional desks are inactive, resulting in lower network depth. No numerical data release occurs."
+          : (isSpeechOrMeeting 
+              ? "Policy statement, panel discussion, or speech by central bankers. Systemic volatility depends on the speaker's tone and sentiment cueing, rather than numeric comparisons."
+              : details.meaningEnglish);
+
         return (
           <div id="macro-explainer-overlay" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
             <div className="bg-[#0b0c10] border border-[#23252f] text-slate-100 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]">
@@ -1893,23 +1920,27 @@ export default function App() {
                   <div className="text-center py-2 border-r border-slate-800/40">
                     <span className="text-[10px] font-mono text-slate-500 uppercase block tracking-wider">Actual (လက်ရှိ)</span>
                     <strong className={`text-sm font-mono mt-1 block ${
-                      selectedCalendarEvent.actual 
-                        ? (selectedCalendarEvent.impact === 'High' ? 'text-rose-400' : 'text-emerald-400') 
-                        : 'text-slate-500 font-normal italic'
+                      isHoliday 
+                        ? 'text-amber-500 font-bold' 
+                        : isSpeechOrMeeting 
+                          ? 'text-indigo-400 font-bold' 
+                          : selectedCalendarEvent.actual 
+                            ? (selectedCalendarEvent.impact === 'High' ? 'text-rose-400' : 'text-emerald-400') 
+                            : 'text-slate-500 font-normal italic'
                     }`}>
-                      {selectedCalendarEvent.actual || 'Pending Release'}
+                      {isHoliday ? 'HOLIDAY' : (isSpeechOrMeeting ? 'SPEECH / MEETING' : (selectedCalendarEvent.actual || 'Pending Release'))}
                     </strong>
                   </div>
                   <div className="text-center py-2 border-r border-slate-800/40">
                     <span className="text-[10px] font-mono text-slate-500 uppercase block tracking-wider">Forecast (စစ်တမ်း)</span>
                     <strong className="text-sm font-mono text-slate-300 mt-1 block">
-                      {selectedCalendarEvent.forecast || 'N/A'}
+                      {isHoliday ? 'N/A' : (isSpeechOrMeeting ? 'VERBAL INFO' : (selectedCalendarEvent.forecast || 'N/A'))}
                     </strong>
                   </div>
                   <div className="text-center py-2">
                     <span className="text-[10px] font-mono text-slate-500 uppercase block tracking-wider">Previous (ယခင်)</span>
                     <strong className="text-sm font-mono text-slate-400 mt-1 block">
-                      {selectedCalendarEvent.previous || 'N/A'}
+                      {isHoliday ? 'N/A' : (isSpeechOrMeeting ? 'N/A' : (selectedCalendarEvent.previous || 'N/A'))}
                     </strong>
                   </div>
                 </div>
@@ -1921,10 +1952,10 @@ export default function App() {
                   </span>
                   <div className="bg-[#11131c] rounded-xl p-4 border border-slate-850 space-y-2">
                     <p className="text-sm text-slate-100 font-semibold leading-relaxed Burmese tracking-wide">
-                      {details.meaningBurmese}
+                      {displayMeaningBurmese}
                     </p>
                     <p className="text-xs text-slate-400 font-normal leading-relaxed italic border-t border-slate-800/40 pt-2 font-sans">
-                      {details.meaningEnglish}
+                      {displayMeaningEnglish}
                     </p>
                   </div>
                 </div>
@@ -2003,213 +2034,269 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Part C: Scenario Analysis Columns */}
-                <div className="space-y-3">
-                  <span className="text-[10px] font-mono font-bold text-emerald-400 tracking-wider uppercase block">
-                    📊 Professional Expectation Scenarios / ခန့်မှန်းချက်ရလဒ်အလိုက် အတက်အကျ လမ်းညွှန်များ
-                  </span>
-
+                {/* Part C: Scenario Analysis Columns or Holiday/Speech Special Insights */}
+                {isNonNumerical ? (
                   <div className="space-y-3">
+                    <span className="text-[10px] font-mono font-bold text-indigo-400 tracking-wider uppercase block">
+                      💡 Non-Numerical Event Guidelines / နံပါတ်အခြေပြုမဟုတ်သော သတင်းလေ့လာဆန်းစစ်ချက်
+                    </span>
                     
-                    {/* Scenario 1: Greater than expected (> Forecast) */}
-                    {(() => {
-                      const sc = details.scenarios.greaterThanExpected;
-                      const isBullish = sc.nqBias === 'Bullish';
-                      const isBearish = sc.nqBias === 'Bearish';
-                      
-                      const cardStyle = isBullish 
-                        ? 'border-emerald-900/40 bg-[#0c1510]/50 hover:bg-[#0c1510]/70' 
-                        : isBearish 
-                          ? 'border-rose-950 bg-[#160b0d]/50 hover:bg-[#160b0d]/70' 
-                          : 'border-slate-800 bg-slate-900/10';
-                      
-                      const headerColor = isBullish 
-                        ? 'text-emerald-400' 
-                        : isBearish 
-                          ? 'text-rose-400' 
-                          : 'text-slate-300';
+                    <div className="p-4.5 rounded-xl border border-indigo-900/35 bg-indigo-950/5 hover:bg-slate-900/60 transition-colors">
+                      <div className="flex flex-wrap justify-between items-center gap-2 mb-2.5 border-b border-white/5 pb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                          <h4 className="text-xs font-bold font-mono tracking-wide text-indigo-300 uppercase">
+                            {isHoliday ? 'BANK HOLIDAY // MARKET LIQUIDITY ANALYSIS' : 'POLICY SPEECH & SENTIMENT CUE ANALYSIS'}
+                          </h4>
+                        </div>
+                        <span className="text-[9px] font-mono font-extrabold text-indigo-400 bg-indigo-950/45 px-2 py-0.5 rounded border border-indigo-900/30">
+                          {isHoliday ? 'LOW PARTICIPATION' : 'HIGH INTUITIVE VOLATILITY'}
+                        </span>
+                      </div>
 
-                      return (
-                        <div className={`p-4 rounded-xl border transition-colors ${cardStyle}`}>
-                          <div className="flex flex-wrap justify-between items-center gap-2 mb-2 border-b border-white/5 pb-1.5">
-                            <div className="flex items-center gap-1.5">
-                              <span className={`w-2 h-2 rounded-full ${isBullish ? 'bg-emerald-500 animate-pulse' : isBearish ? 'bg-rose-500' : 'bg-slate-500'}`}></span>
-                              <h4 className={`text-xs font-bold font-mono tracking-wide ${headerColor} uppercase`}>
-                                Greater than expected (&gt; Forecast) // မျှော်မှန်းသည်ထက် ပိုထွက်လျှင်
-                              </h4>
-                            </div>
-                            <span className="text-[10px] font-mono font-extrabold text-slate-500 uppercase tracking-tighter">
-                              {sc.marketImpact}
-                            </span>
-                          </div>
-                          
-                          <p className="text-[12px] text-slate-300 font-medium leading-relaxed mb-3 Burmese font-sans">
-                            {sc.descriptionBurmese}
+                      {isHoliday ? (
+                        <div className="space-y-3">
+                          <p className="text-[12px] text-slate-300 font-medium leading-relaxed Burmese font-sans">
+                            ယခုဖြစ်စဉ်သည် ဘဏ်ပိတ်ရက် (Bank Holiday) ဖြစ်သောကြောင့် နှိုင်းယှဉ်တွက်ချက်ရမည့် စီးပွားရေး ကိန်းဂဏန်း (Forecast/Expectation) များ မရှိပါ။ သို့သော်လည်း အရောင်းအဝယ်ပြုလုပ်သူ အဖွဲ့အစည်းကြီးများ (Institutional Desks) ပိတ်ထားသဖြင့် <strong>စျေးကွက်၏ အရည်အသွေး (Liquidity) အလွန် နိမ့်ပါးနေနိုင်ပါသည်။</strong> Spread များ ကြီးမားကျယ်ပြန့်လာခြင်း၊ ပုံမှန်မဟုတ်သော တစ်ဖက်သတ် စျေးခုန်ထွက်ခြင်း (Slippage) သို့မဟုတ် လုံးဝလှုပ်ရှားမှုမရှိဘဲ တန့်နေခြင်း (Sideways/Chop) ဖြစ်ပေါ်လာတတ်ပါသည်။ Traders များအနေဖြင့် Leverage ကို အတတ်နိုင်ဆုံး လျှော့ချကာ အန္တရာယ်ထိန်းသိမ်းရန် အထူးအကြံပြုအပ်ပါသည်။
                           </p>
-
-                          {/* Individual asset impact metrics */}
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[10px] font-mono">
-                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
-                              <span className="text-slate-400 block mb-0.5">NQ Bias</span>
-                              <span className={`font-bold ${
-                                sc.nqBias === 'Bullish' ? 'text-emerald-400' : sc.nqBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
-                              }`}>{sc.nqBias === 'Bullish' ? '🟢 BULLISH Surging' : sc.nqBias === 'Bearish' ? '🔴 BEARISH Falling' : '🟡 NEUTRAL Calm'}</span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-mono text-slate-400 pt-1.5">
+                            <div className="bg-slate-900/50 p-2.5 rounded border border-slate-800/40">
+                              <span className="text-indigo-400 font-bold block mb-1">📌 NQ / ES Futures:</span>
+                              <span className="leading-normal font-sans">Trading activity လျော့နည်းသဖြင့် သဘာဝမဟုတ်သော erratic spikes များ ဖြစ်ပေါ်တတ်သည်။</span>
                             </div>
-
-                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
-                              <span className="text-slate-400 block mb-0.5">ES Bias</span>
-                              <span className={`font-bold ${
-                                sc.esBias === 'Bullish' ? 'text-emerald-400' : sc.esBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
-                              }`}>{sc.esBias === 'Bullish' ? '🟢 BULLISH Robust' : sc.esBias === 'Bearish' ? '🔴 BEARISH Sluggish' : '🟡 NEUTRAL Calm'}</span>
+                            <div className="bg-slate-900/50 p-2.5 rounded border border-slate-800/40">
+                              <span className="text-emerald-400 font-bold block mb-1">📌 DXY Dollar Index:</span>
+                              <span className="leading-normal font-sans">ဒေါ်လာတန်ဖိုးသည် session ပိတ်ရက်အတိုင်း sideways range ဖြင့်သာ ငြိမ်နေလေ့ရှိသည်။</span>
                             </div>
-
-                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
-                              <span className="text-slate-400 block mb-0.5">DXY Bias</span>
-                              <span className={`font-bold ${
-                                sc.dxyBias === 'Bullish' ? 'text-emerald-400' : sc.dxyBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
-                              }`}>{sc.dxyBias === 'Bullish' ? '🟢 BULLISH Strong' : sc.dxyBias === 'Bearish' ? '🔴 BEARISH Soft' : '🟡 NEUTRAL Calm'}</span>
-                            </div>
-                          </div>
-
-                          {/* Dynamic Economist Relationship Note */}
-                          <div className="mt-2.5 pt-2 border-t border-white/5 flex gap-2 justify-between items-center text-[9px] text-slate-500 font-mono">
-                            <span className="flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                              <span className="uppercase text-[8px] tracking-wider text-slate-400">CORRELATION METRIC</span>
-                            </span>
-                            <span className="text-rose-400 font-extrabold text-right">
-                              {details.dxyCorrelation}% Negative Tracking (Reverse Correlation with DXY)
-                            </span>
                           </div>
                         </div>
-                      );
-                    })()}
-
-                    {/* Scenario 2: As Expected (= Forecast) */}
-                    {(() => {
-                      const sc = details.scenarios.asExpected;
-                      return (
-                        <div className="p-4 rounded-xl border border-slate-800 bg-[#0e0f14]/50 hover:bg-[#0e0f14]/75 transition-colors">
-                          <div className="flex flex-wrap justify-between items-center gap-2 mb-2 border-b border-white/5 pb-1.5">
-                            <div className="flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-slate-500"></span>
-                              <h4 className="text-xs font-bold font-mono tracking-wide text-slate-300 uppercase">
-                                As Expected (= Forecast) // မျှော်မှန်းချက်အတိုင်း ထွက်လျှင်
-                              </h4>
-                            </div>
-                            <span className="text-[10px] font-mono font-extrabold text-slate-500 uppercase tracking-tighter">
-                              {sc.marketImpact}
-                            </span>
-                          </div>
-                          
-                          <p className="text-[12px] text-slate-400 font-normal leading-relaxed mb-3 Burmese font-sans">
-                            {sc.descriptionBurmese}
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-[12px] text-slate-300 font-medium leading-relaxed Burmese font-sans">
+                            ယခုဖြစ်စဉ်သည် ဗဟိုဘဏ်အရာရှိများ၏ ဟောပြောပွဲ သို့မဟုတ် မူဝါဒဆွေးနွေးပွဲ (Speech / Conference) ဖြစ်သောကြောင့် နှိုင်းယှဉ်ရန် ကိန်းဂဏန်းများအတိအကျ မရှိပါ။ သို့သော်လည်း ၎င်းတို့ပြောကြားမည့် <strong>စကားလုံးတစ်လုံးချင်းစီ၏ လေသံ (Tone) က စျေးကွက်ကို တိုက်ရိုက်လှုပ်ခတ်စေပါမည်။</strong> အတိုးတိုးမြှင့်မည့်အရိပ်အယောင် (Hawkish - စတော့စျေးကွက် Bearish) သို့မဟုတ် အတိုးနှုန်းလျှော့ချမည့် အရိပ်အယောင် (Dovish - စတော့စျေးကွက် Bullish) အသုံးအနှုန်းများအပေါ် အယ်လ်ဂိုရစ်သမ်စနစ်များ (Algorithmic Trading Systems) က ချက်ချင်း တုံ့ပြန်ကုန်သွယ်လေ့ရှိသဖြင့် စကားပြောနေချိန်အတွင်း Volatility မြင့်မားမှုကို သတိပြုပါ။
                           </p>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[10px] font-mono">
-                            <div className="bg-slate-900/40 p-1.5 rounded border border-slate-800/20">
-                              <span className="text-slate-500 block mb-0.5">NQ Bias</span>
-                              <span className="font-bold text-amber-500/80">🟡 NEUTRAL Calm</span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-mono text-slate-400 pt-1.5">
+                            <div className="bg-slate-900/50 p-2.5 rounded border border-slate-800/40">
+                              <span className="text-rose-455 font-bold block mb-1">📣 Hawkish tone (တင်းကျပ်သောလေသံ)</span>
+                              <span className="leading-normal font-sans">အတိုးနှုန်း ဆက်လက်မြှင့်တင်ရန် ပြောလျှင် NQ/ES သို့ အရောင်းဖိအား ဝင်လာနိုင်ပြီး DXY ဒေါ်လာ တက်ပါမည်။</span>
                             </div>
-                            <div className="bg-slate-900/40 p-1.5 rounded border border-slate-800/20">
-                              <span className="text-slate-500 block mb-0.5">ES Bias</span>
-                              <span className="font-bold text-amber-500/80">🟡 NEUTRAL Calm</span>
+                            <div className="bg-slate-900/50 p-2.5 rounded border border-slate-800/40">
+                              <span className="text-emerald-400 font-bold block mb-1">📣 Dovish tone (ဖြေလျှော့သောလေသံ)</span>
+                              <span className="leading-normal font-sans">အတိုးနှုန်း အမြန်လျှော့ချရန် အရိပ်အယောင်ပေးပါက NQ/ES futures များ အပြင်းအထန် Rally တက်ပါမည်။</span>
                             </div>
-                            <div className="bg-slate-900/40 p-1.5 rounded border border-slate-800/20">
-                              <span className="text-slate-500 block mb-0.5">DXY Bias</span>
-                              <span className="font-bold text-amber-500/80">🟡 NEUTRAL Calm</span>
-                            </div>
-                          </div>
-
-                          {/* Dynamic Economist Relationship Note */}
-                          <div className="mt-2.5 pt-2 border-t border-white/5 flex gap-2 justify-between items-center text-[9px] text-slate-500 font-mono">
-                            <span className="flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-slate-500/60"></span>
-                              <span className="uppercase text-[8px] tracking-wider text-slate-400">CORRELATION METRIC</span>
-                            </span>
-                            <span className="text-amber-500/80 font-extrabold text-right">
-                              {details.dxyCorrelation}% Reverse Link established with DXY
-                            </span>
                           </div>
                         </div>
-                      );
-                    })()}
-
-                    {/* Scenario 3: Smaller than expected (< Forecast) */}
-                    {(() => {
-                      const sc = details.scenarios.smallerThanExpected;
-                      const isBullish = sc.nqBias === 'Bullish';
-                      const isBearish = sc.nqBias === 'Bearish';
-                      
-                      const cardStyle = isBullish 
-                        ? 'border-emerald-900/40 bg-[#0c1510]/50 hover:bg-[#0c1510]/70' 
-                        : isBearish 
-                          ? 'border-rose-950 bg-[#160b0d]/50 hover:bg-[#160b0d]/70' 
-                          : 'border-slate-800 bg-slate-900/10';
-                      
-                      const headerColor = isBullish 
-                        ? 'text-emerald-400' 
-                        : isBearish 
-                          ? 'text-rose-400' 
-                          : 'text-slate-300';
-
-                      return (
-                        <div className={`p-4 rounded-xl border transition-colors ${cardStyle}`}>
-                          <div className="flex flex-wrap justify-between items-center gap-2 mb-2 border-b border-white/5 pb-1.5">
-                            <div className="flex items-center gap-1.5">
-                              <span className={`w-2 h-2 rounded-full ${isBullish ? 'bg-emerald-500 animate-pulse' : isBearish ? 'bg-rose-500' : 'bg-slate-500'}`}></span>
-                              <h4 className={`text-xs font-bold font-mono tracking-wide ${headerColor} uppercase`}>
-                                Smaller than expected (&lt; Forecast) // မျှော်မှန်းချက်ထက် လျော့နည်းလျှင်
-                              </h4>
-                            </div>
-                            <span className="text-[10px] font-mono font-extrabold text-slate-500 uppercase tracking-tighter">
-                              {sc.marketImpact}
-                            </span>
-                          </div>
-                          
-                          <p className="text-[12px] text-slate-300 font-medium leading-relaxed mb-3 Burmese font-sans">
-                            {sc.descriptionBurmese}
-                          </p>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[10px] font-mono">
-                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
-                              <span className="text-slate-400 block mb-0.5">NQ Bias</span>
-                              <span className={`font-bold ${
-                                sc.nqBias === 'Bullish' ? 'text-emerald-400' : sc.nqBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
-                              }`}>{sc.nqBias === 'Bullish' ? '🟢 BULLISH Surging' : sc.nqBias === 'Bearish' ? '🔴 BEARISH Falling' : '🟡 NEUTRAL Calm'}</span>
-                            </div>
-
-                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
-                              <span className="text-slate-400 block mb-0.5">ES Bias</span>
-                              <span className={`font-bold ${
-                                sc.esBias === 'Bullish' ? 'text-emerald-400' : sc.esBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
-                              }`}>{sc.esBias === 'Bullish' ? '🟢 BULLISH Robust' : sc.esBias === 'Bearish' ? '🔴 BEARISH Sluggish' : '🟡 NEUTRAL Calm'}</span>
-                            </div>
-
-                            <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
-                              <span className="text-slate-400 block mb-0.5">DXY Bias</span>
-                              <span className={`font-bold ${
-                                sc.dxyBias === 'Bullish' ? 'text-emerald-400' : sc.dxyBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
-                              }`}>{sc.dxyBias === 'Bullish' ? '🟢 BULLISH Strong' : sc.dxyBias === 'Bearish' ? '🔴 BEARISH Soft' : '🟡 NEUTRAL Calm'}</span>
-                            </div>
-                          </div>
-
-                          {/* Dynamic Economist Relationship Note */}
-                          <div className="mt-2.5 pt-2 border-t border-white/5 flex gap-2 justify-between items-center text-[9px] text-slate-500 font-mono">
-                            <span className="flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                              <span className="uppercase text-[8px] tracking-wider text-slate-400">CORRELATION METRIC</span>
-                            </span>
-                            <span className="text-emerald-400 font-extrabold text-right">
-                              {details.dxyCorrelation}% Negative Tracking (Reverse Correlation with DXY)
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
+                      )}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-3">
+                    <span className="text-[10px] font-mono font-bold text-emerald-400 tracking-wider uppercase block">
+                      📊 Professional Expectation Scenarios / ခန့်မှန်းချက်ရလဒ်အလိုက် အတက်အကျ လမ်းညွှန်များ
+                    </span>
+
+                    <div className="space-y-3">
+                      
+                      {/* Scenario 1: Greater than expected (> Forecast) */}
+                      {(() => {
+                        const sc = details.scenarios.greaterThanExpected;
+                        const isBullish = sc.nqBias === 'Bullish';
+                        const isBearish = sc.nqBias === 'Bearish';
+                        
+                        const cardStyle = isBullish 
+                          ? 'border-emerald-900/40 bg-[#0c1510]/50 hover:bg-[#0c1510]/70' 
+                          : isBearish 
+                            ? 'border-rose-950 bg-[#160b0d]/50 hover:bg-[#160b0d]/70' 
+                            : 'border-slate-800 bg-slate-900/10';
+                        
+                        const headerColor = isBullish 
+                          ? 'text-emerald-400' 
+                          : isBearish 
+                            ? 'text-rose-400' 
+                            : 'text-slate-300';
+
+                        return (
+                          <div className={`p-4 rounded-xl border transition-colors ${cardStyle}`}>
+                            <div className="flex flex-wrap justify-between items-center gap-2 mb-2 border-b border-white/5 pb-1.5">
+                              <div className="flex items-center gap-1.5">
+                                <span className={`w-2 h-2 rounded-full ${isBullish ? 'bg-emerald-500 animate-pulse' : isBearish ? 'bg-rose-500' : 'bg-slate-500'}`}></span>
+                                <h4 className={`text-xs font-bold font-mono tracking-wide ${headerColor} uppercase`}>
+                                  Greater than expected (&gt; Forecast) // မျှော်မှန်းသည်ထက် ပိုထွက်လျှင်
+                                </h4>
+                              </div>
+                              <span className="text-[10px] font-mono font-extrabold text-slate-500 uppercase tracking-tighter">
+                                {sc.marketImpact}
+                              </span>
+                            </div>
+                            
+                            <p className="text-[12px] text-slate-300 font-medium leading-relaxed mb-3 Burmese font-sans">
+                              {sc.descriptionBurmese}
+                            </p>
+
+                            {/* Individual asset impact metrics */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[10px] font-mono">
+                              <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                                <span className="text-slate-400 block mb-0.5">NQ Bias</span>
+                                <span className={`font-bold ${
+                                  sc.nqBias === 'Bullish' ? 'text-emerald-400' : sc.nqBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                                }`}>{sc.nqBias === 'Bullish' ? '🟢 BULLISH Surging' : sc.nqBias === 'Bearish' ? '🔴 BEARISH Falling' : '🟡 NEUTRAL Calm'}</span>
+                              </div>
+
+                              <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                                <span className="text-slate-400 block mb-0.5">ES Bias</span>
+                                <span className={`font-bold ${
+                                  sc.esBias === 'Bullish' ? 'text-emerald-400' : sc.esBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                                }`}>{sc.esBias === 'Bullish' ? '🟢 BULLISH Robust' : sc.esBias === 'Bearish' ? '🔴 BEARISH Sluggish' : '🟡 NEUTRAL Calm'}</span>
+                              </div>
+
+                              <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                                <span className="text-slate-400 block mb-0.5">DXY Bias</span>
+                                <span className={`font-bold ${
+                                  sc.dxyBias === 'Bullish' ? 'text-emerald-400' : sc.dxyBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                                }`}>{sc.dxyBias === 'Bullish' ? '🟢 BULLISH Strong' : sc.dxyBias === 'Bearish' ? '🔴 BEARISH Soft' : '🟡 NEUTRAL Calm'}</span>
+                              </div>
+                            </div>
+
+                            {/* Dynamic Economist Relationship Note */}
+                            <div className="mt-2.5 pt-2 border-t border-white/5 flex gap-2 justify-between items-center text-[9px] text-slate-500 font-mono">
+                              <span className="flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                                <span className="uppercase text-[8px] tracking-wider text-slate-400">CORRELATION METRIC</span>
+                              </span>
+                              <span className="text-rose-400 font-extrabold text-right">
+                                {details.dxyCorrelation}% Negative Tracking (Reverse Correlation with DXY)
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Scenario 2: As Expected (= Forecast) */}
+                      {(() => {
+                        const sc = details.scenarios.asExpected;
+                        return (
+                          <div className="p-4 rounded-xl border border-slate-800 bg-[#0e0f14]/50 hover:bg-[#0e0f14]/75 transition-colors">
+                            <div className="flex flex-wrap justify-between items-center gap-2 mb-2 border-b border-white/5 pb-1.5">
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+                                <h4 className="text-xs font-bold font-mono tracking-wide text-slate-300 uppercase">
+                                  As Expected (= Forecast) // မျှော်မှန်းချက်အတိုင်း ထွက်လျှင်
+                                </h4>
+                              </div>
+                              <span className="text-[10px] font-mono font-extrabold text-slate-500 uppercase tracking-tighter">
+                                {sc.marketImpact}
+                              </span>
+                            </div>
+                            
+                            <p className="text-[12px] text-slate-400 font-normal leading-relaxed mb-3 Burmese font-sans">
+                              {sc.descriptionBurmese}
+                            </p>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[10px] font-mono">
+                              <div className="bg-slate-900/40 p-1.5 rounded border border-slate-800/20">
+                                <span className="text-slate-500 block mb-0.5">NQ Bias</span>
+                                <span className="font-bold text-amber-500/80">🟡 NEUTRAL Calm</span>
+                              </div>
+                              <div className="bg-slate-900/40 p-1.5 rounded border border-slate-800/20">
+                                <span className="text-slate-500 block mb-0.5">ES Bias</span>
+                                <span className="font-bold text-amber-500/80">🟡 NEUTRAL Calm</span>
+                              </div>
+                              <div className="bg-slate-900/40 p-1.5 rounded border border-slate-800/20">
+                                <span className="text-slate-500 block mb-0.5">DXY Bias</span>
+                                <span className="font-bold text-amber-500/80">🟡 NEUTRAL Calm</span>
+                              </div>
+                            </div>
+
+                            {/* Dynamic Economist Relationship Note */}
+                            <div className="mt-2.5 pt-2 border-t border-white/5 flex gap-2 justify-between items-center text-[9px] text-slate-500 font-mono">
+                              <span className="flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-500/60"></span>
+                                <span className="uppercase text-[8px] tracking-wider text-slate-400">CORRELATION METRIC</span>
+                              </span>
+                              <span className="text-amber-500/80 font-extrabold text-right">
+                                {details.dxyCorrelation}% Reverse Link established with DXY
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Scenario 3: Smaller than expected (< Forecast) */}
+                      {(() => {
+                        const sc = details.scenarios.smallerThanExpected;
+                        const isBullish = sc.nqBias === 'Bullish';
+                        const isBearish = sc.nqBias === 'Bearish';
+                        
+                        const cardStyle = isBullish 
+                          ? 'border-emerald-900/40 bg-[#0c1510]/50 hover:bg-[#0c1510]/70' 
+                          : isBearish 
+                            ? 'border-rose-950 bg-[#160b0d]/50 hover:bg-[#160b0d]/70' 
+                            : 'border-slate-800 bg-slate-900/10';
+                        
+                        const headerColor = isBullish 
+                          ? 'text-emerald-400' 
+                          : isBearish 
+                            ? 'text-rose-400' 
+                            : 'text-slate-300';
+
+                        return (
+                          <div className={`p-4 rounded-xl border transition-colors ${cardStyle}`}>
+                            <div className="flex flex-wrap justify-between items-center gap-2 mb-2 border-b border-white/5 pb-1.5">
+                              <div className="flex items-center gap-1.5">
+                                <span className={`w-2 h-2 rounded-full ${isBullish ? 'bg-emerald-500 animate-pulse' : isBearish ? 'bg-rose-500' : 'bg-slate-500'}`}></span>
+                                <h4 className={`text-xs font-bold font-mono tracking-wide ${headerColor} uppercase`}>
+                                  Smaller than expected (&lt; Forecast) // မျှော်မှန်းချက်ထက် လျော့နည်းလျှင်
+                                </h4>
+                              </div>
+                              <span className="text-[10px] font-mono font-extrabold text-slate-500 uppercase tracking-tighter">
+                                {sc.marketImpact}
+                              </span>
+                            </div>
+                            
+                            <p className="text-[12px] text-slate-300 font-medium leading-relaxed mb-3 Burmese font-sans">
+                              {sc.descriptionBurmese}
+                            </p>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[10px] font-mono">
+                              <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                                <span className="text-slate-400 block mb-0.5">NQ Bias</span>
+                                <span className={`font-bold ${
+                                  sc.nqBias === 'Bullish' ? 'text-emerald-400' : sc.nqBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                                }`}>{sc.nqBias === 'Bullish' ? '🟢 BULLISH Surging' : sc.nqBias === 'Bearish' ? '🔴 BEARISH Falling' : '🟡 NEUTRAL Calm'}</span>
+                              </div>
+
+                              <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                                <span className="text-slate-400 block mb-0.5">ES Bias</span>
+                                <span className={`font-bold ${
+                                  sc.esBias === 'Bullish' ? 'text-emerald-400' : sc.esBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                                }`}>{sc.esBias === 'Bullish' ? '🟢 BULLISH Robust' : sc.esBias === 'Bearish' ? '🔴 BEARISH Sluggish' : '🟡 NEUTRAL Calm'}</span>
+                              </div>
+
+                              <div className="bg-slate-900/60 p-1.5 rounded border border-slate-800/40">
+                                <span className="text-slate-400 block mb-0.5">DXY Bias</span>
+                                <span className={`font-bold ${
+                                  sc.dxyBias === 'Bullish' ? 'text-emerald-400' : sc.dxyBias === 'Bearish' ? 'text-rose-400' : 'text-amber-400'
+                                }`}>{sc.dxyBias === 'Bullish' ? '🟢 BULLISH Strong' : sc.dxyBias === 'Bearish' ? '🔴 BEARISH Soft' : '🟡 NEUTRAL Calm'}</span>
+                              </div>
+                            </div>
+
+                            {/* Dynamic Economist Relationship Note */}
+                            <div className="mt-2.5 pt-2 border-t border-white/5 flex gap-2 justify-between items-center text-[9px] text-slate-500 font-mono">
+                              <span className="flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span className="uppercase text-[8px] tracking-wider text-slate-400">CORRELATION METRIC</span>
+                              </span>
+                              <span className="text-emerald-400 font-extrabold text-right">
+                                {details.dxyCorrelation}% Negative Tracking (Reverse Correlation with DXY)
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                    </div>
+                  </div>
+                )}
 
               </div>
 
@@ -2220,7 +2307,7 @@ export default function App() {
                 </span>
                 <button 
                   onClick={() => setSelectedCalendarEvent(null)}
-                  className="text-white bg-indigo-600 hover:bg-indigo-500 font-bold px-5 py-2 rounded-xl transition-all text-xs shadow-lg cursor-pointer"
+                  className="text-white bg-indigo-600 hover:bg-indigo-500 font-bold px-5 py-2 rounded-xl transition-all text-xs shadow-lg cursor-pointer animate-pulse"
                 >
                   Close / ပိတ်ပါ
                 </button>
