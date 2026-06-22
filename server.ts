@@ -512,11 +512,19 @@ function resolveCalendarActuals(items: any[]): any[] {
     "FOMC Statement": "Released",
     "FOMC Press Conference": "Completed",
     "Philly Fed Manufacturing Index": "11.2",
-    "Unemployment Claims": "224K",
+    "Unemployment Claims": "226K",
     "CB Leading Index m/m": "0.1%",
     "Natural Gas Storage": "112B",
     "TIC Long-Term Purchases": "78.2B",
-    "Bank Holiday": "Holiday"
+    "Bank Holiday": "Holiday",
+    "3-Month Bill Auction": "5.11%",
+    "Flash Manufacturing PMI": "54.6",
+    "Flash Services PMI": "51.0",
+    "Core PCE Price Index m/m": "0.3%",
+    "Final GDP q/q": "1.6%",
+    "Final GDP Price Index q/q": "3.5%",
+    "Revised UoM Consumer Sentiment": "50.0",
+    "Revised UoM Inflation Expectations": "4.6%"
   };
 
   return items.map(item => {
@@ -541,21 +549,405 @@ function resolveCalendarActuals(items: any[]): any[] {
 function getDynamicFallbackCalendar() {
   const { sunday, monday, tuesday, wednesday, thursday, friday, saturday } = getCurrentWeekRange();
 
-  return fallbackCalendar.map(item => {
-    let targetDate = item.date;
-    if (item.date === "2026-06-14") targetDate = sunday;
-    else if (item.date === "2026-06-15") targetDate = monday;
-    else if (item.date === "2026-06-16") targetDate = tuesday;
-    else if (item.date === "2026-06-17") targetDate = wednesday;
-    else if (item.date === "2026-06-18") targetDate = thursday;
-    else if (item.date === "2026-06-19") targetDate = friday;
-    else if (item.date === "2026-06-20") targetDate = saturday;
-    
-    return {
-      ...item,
-      date: targetDate
-    };
-  });
+  // If it's the specific June 14, 2026 week (original mock simulation week)
+  if (sunday === "2026-06-14") {
+    return fallbackCalendar.map(item => {
+      let targetDate = item.date;
+      if (item.date === "2026-06-14") targetDate = sunday;
+      else if (item.date === "2026-06-15") targetDate = monday;
+      else if (item.date === "2026-06-16") targetDate = tuesday;
+      else if (item.date === "2026-06-17") targetDate = wednesday;
+      else if (item.date === "2026-06-18") targetDate = thursday;
+      else if (item.date === "2026-06-19") targetDate = friday;
+      else if (item.date === "2026-06-20") targetDate = saturday;
+      
+      return {
+        ...item,
+        date: targetDate
+      };
+    });
+  }
+
+  // If it's the active week of June 21 - June 27, 2026 shown in user's screenshots
+  if (sunday === "2026-06-21") {
+    return [
+      {
+        id: "cur-usd-1",
+        time: "11:30 AM",
+        date: monday,
+        event: "3-Month Bill Auction",
+        country: "USD",
+        impact: "Low",
+        actual: null,
+        forecast: "5.12%",
+        previous: "5.15%"
+      },
+      {
+        id: "cur-usd-2",
+        time: "09:45 AM",
+        date: tuesday,
+        event: "Flash Manufacturing PMI",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "54.6",
+        previous: "55.1"
+      },
+      {
+        id: "cur-usd-3",
+        time: "09:45 AM",
+        date: tuesday,
+        event: "Flash Services PMI",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "51.0",
+        previous: "50.7"
+      },
+      {
+        id: "cur-usd-4",
+        time: "10:30 AM",
+        date: wednesday,
+        event: "Crude Oil Inventories",
+        country: "USD",
+        impact: "Low",
+        actual: null,
+        forecast: "-1.8M",
+        previous: "-2.5M"
+      },
+      {
+        id: "cur-usd-5",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Core PCE Price Index m/m",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "0.3%",
+        previous: "0.2%"
+      },
+      {
+        id: "cur-usd-6",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Final GDP q/q",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "1.6%",
+        previous: "1.6%"
+      },
+      {
+        id: "cur-usd-7",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Final GDP Price Index q/q",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "3.5%",
+        previous: "3.5%"
+      },
+      {
+        id: "cur-usd-8",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Unemployment Claims",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "226K",
+        previous: "229K"
+      },
+      {
+        id: "cur-usd-9",
+        time: "10:00 AM",
+        date: friday,
+        event: "Revised UoM Consumer Sentiment",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "50.0",
+        previous: "48.9"
+      },
+      {
+        id: "cur-usd-10",
+        time: "10:00 AM",
+        date: friday,
+        event: "Revised UoM Inflation Expectations",
+        country: "USD",
+        impact: "Low",
+        actual: null,
+        forecast: "N/A",
+        previous: "4.6%"
+      }
+    ];
+  }
+
+  // Generative weekly release logic for any and all perpetual future/past weeks!
+  // Uses Tuesday's date dayOfMonth to align logically with typical release schedules
+  const tuesdayDate = new Date(tuesday);
+  const dayOfMonth = tuesdayDate.getDate();
+
+  if (dayOfMonth <= 7) {
+    // Week 1 of any month (NFP Week)
+    return [
+      {
+        id: "gen-w1-1",
+        time: "10:00 AM",
+        date: monday,
+        event: "ISM Manufacturing PMI",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "48.2",
+        previous: "47.8"
+      },
+      {
+        id: "gen-w1-2",
+        time: "08:15 AM",
+        date: wednesday,
+        event: "ADP Weekly Employment Change",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "145K",
+        previous: "152K"
+      },
+      {
+        id: "gen-w1-3",
+        time: "10:00 AM",
+        date: wednesday,
+        event: "ISM Services PMI",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "52.4",
+        previous: "51.8"
+      },
+      {
+        id: "gen-w1-4",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Unemployment Claims",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "220K",
+        previous: "223K"
+      },
+      {
+        id: "gen-w1-5",
+        time: "08:30 AM",
+        date: friday,
+        event: "Non-Farm Employment Change",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "185K",
+        previous: "172K"
+      },
+      {
+        id: "gen-w1-6",
+        time: "08:30 AM",
+        date: friday,
+        event: "Unemployment Rate",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "3.9%",
+        previous: "4.0%"
+      }
+    ];
+  } else if (dayOfMonth <= 14) {
+    // Week 2 of any month (Inflation Focus: CPI / PPI)
+    return [
+      {
+        id: "gen-w2-1",
+        time: "08:30 AM",
+        date: tuesday,
+        event: "Core CPI m/m",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "0.2%",
+        previous: "0.3%"
+      },
+      {
+        id: "gen-w2-2",
+        time: "08:30 AM",
+        date: tuesday,
+        event: "CPI Price Index y/y",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "3.1%",
+        previous: "3.3%"
+      },
+      {
+        id: "gen-w2-3",
+        time: "08:30 AM",
+        date: wednesday,
+        event: "Core PPI m/m",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "0.2%",
+        previous: "0.1%"
+      },
+      {
+        id: "gen-w2-4",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Unemployment Claims",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "222K",
+        previous: "220K"
+      },
+      {
+        id: "gen-w2-5",
+        time: "10:30 AM",
+        date: wednesday,
+        event: "Crude Oil Inventories",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "-1.5M",
+        previous: "-2.1M"
+      }
+    ];
+  } else if (dayOfMonth <= 21) {
+    // Week 3 of any month (Sales & Orders Focus: Retail Sales, Empire State)
+    return [
+      {
+        id: "gen-w3-1",
+        time: "08:30 AM",
+        date: monday,
+        event: "Empire State Manufacturing Index",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "12.8",
+        previous: "19.6"
+      },
+      {
+        id: "gen-w3-2",
+        time: "08:30 AM",
+        date: tuesday,
+        event: "Retail Sales m/m",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "0.5%",
+        previous: "0.5%"
+      },
+      {
+        id: "gen-w3-3",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Philly Fed Manufacturing Index",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "11.4",
+        previous: "-0.4"
+      },
+      {
+        id: "gen-w3-4",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Unemployment Claims",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "224K",
+        previous: "222K"
+      },
+      {
+        id: "gen-w3-5",
+        time: "10:00 AM",
+        date: friday,
+        event: "Existing Home Sales",
+        country: "USD",
+        impact: "Low",
+        actual: null,
+        forecast: "3.85M",
+        previous: "3.91M"
+      }
+    ];
+  } else {
+    // Week 4 of any month (Late PMIs, GDP revisions, PCE print & final sentiments)
+    return [
+      {
+        id: "gen-w4-1",
+        time: "09:45 AM",
+        date: tuesday,
+        event: "Flash Manufacturing PMI",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "54.6",
+        previous: "55.1"
+      },
+      {
+        id: "gen-w4-2",
+        time: "09:45 AM",
+        date: tuesday,
+        event: "Flash Services PMI",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "51.0",
+        previous: "50.7"
+      },
+      {
+        id: "gen-w4-3",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Core PCE Price Index m/m",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "0.3%",
+        previous: "0.2%"
+      },
+      {
+        id: "gen-w4-4",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Final GDP q/q",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "1.6%",
+        previous: "1.6%"
+      },
+      {
+        id: "gen-w4-5",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Unemployment Claims",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "226K",
+        previous: "229K"
+      },
+      {
+        id: "gen-w4-6",
+        time: "10:00 AM",
+        date: friday,
+        event: "Revised UoM Consumer Sentiment",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "50.0",
+        previous: "48.9"
+      }
+    ];
+  }
 }
 
 // In-memory cache structures to avoid hitting Gemini API quotas repeatedly
