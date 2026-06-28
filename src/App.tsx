@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -34,7 +34,9 @@ import {
   Users,
   LineChart,
   Sliders,
-  Check
+  Check,
+  ShieldAlert,
+  Lock
 } from 'lucide-react';
 import { NewsItem, CalendarEvent, VolatilityAnalysis, TickData } from './types';
 import { BURMESE_LEXICON } from './components/BurmeseLexicon';
@@ -281,9 +283,6 @@ export default function App() {
     }
   }, [fontSize]);
 
-  // Settings Panel Open State
-  const [showCustomizer, setShowCustomizer] = useState<boolean>(false);
-
   // Selected Timezone with automatic fallback and storage persistence
   const [selectedTimezone, setSelectedTimezone] = useState<string>(() => {
     try {
@@ -337,6 +336,130 @@ export default function App() {
       console.warn('Storage permission restricted for column config:', e);
     }
   }, [isColumnSwapped]);
+
+  // Interactive click particle bloom states (glowing flower petal feedback)
+  const [clickParticles, setClickParticles] = useState<{
+    id: number;
+    x: number;
+    y: number;
+    color: string;
+    tx: number;
+    ty: number;
+    size: number;
+    shape: 'circle' | 'petal' | 'diamond';
+    rotation: number;
+  }[]>([]);
+
+  // Automatically prune old particles to keep the document lightweight and fast
+  useEffect(() => {
+    if (clickParticles.length > 0) {
+      const timer = setTimeout(() => {
+        setClickParticles(prev => prev.filter(p => Date.now() - Math.floor(p.id) < 850));
+      }, 900);
+      return () => clearTimeout(timer);
+    }
+  }, [clickParticles.length]);
+
+  // Global mouse down listener (handles left and right clicks seamlessly)
+  useEffect(() => {
+    const handleGlobalMouseDown = (e: MouseEvent) => {
+      const count = 16; // Number of blooming petals per click
+      const baseColors = [
+        '#6366f1', // Indigo
+        '#818cf8', // Soft indigo
+        '#c084fc', // Bright purple
+        '#f43f5e', // Vibrant rose/pink
+        '#fbbf24', // Warm gold/amber
+        '#34d399', // Mint emerald
+        '#22d3ee', // Cyber cyan
+      ];
+
+      const now = Date.now();
+      const newParticles = [];
+
+      for (let i = 0; i < count; i++) {
+        // Distribute angles evenly with subtle random variations to give a natural, fluffy look
+        const angle = (i * 2 * Math.PI) / count + (Math.random() * 0.3 - 0.15);
+        const distance = 30 + Math.random() * 60; // Spread radius
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        const size = 5 + Math.random() * 7;
+        const color = baseColors[Math.floor(Math.random() * baseColors.length)];
+        
+        const shapes: ('circle' | 'petal' | 'diamond')[] = ['petal', 'circle', 'diamond'];
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        const rotation = Math.random() * 360;
+
+        newParticles.push({
+          id: now + i + Math.random(),
+          x: e.clientX,
+          y: e.clientY,
+          color,
+          tx,
+          ty,
+          size,
+          shape,
+          rotation
+        });
+      }
+
+      setClickParticles(prev => [...prev.slice(-60), ...newParticles]);
+    };
+
+    window.addEventListener("mousedown", handleGlobalMouseDown, { capture: true });
+    return () => {
+      window.removeEventListener("mousedown", handleGlobalMouseDown, { capture: true });
+    };
+  }, []);
+
+  // Silent inspection/source block logic (stealthy protection without visual modals)
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F12 key
+      if (e.key === "F12" || e.keyCode === 123) {
+        e.preventDefault();
+        return;
+      }
+
+      // Detect OS (macOS vs Windows/Linux)
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+      const shift = e.shiftKey;
+      const alt = e.altKey;
+
+      // Ctrl+Shift+I / Cmd+Opt+I (Developer Tools)
+      // Ctrl+Shift+J / Cmd+Opt+J (Console)
+      // Ctrl+Shift+C / Cmd+Opt+C (Inspect)
+      if (cmdOrCtrl && shift && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c" || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+        e.preventDefault();
+        return;
+      }
+
+      // Ctrl+U / Cmd+Opt+U (View Source)
+      if ((cmdOrCtrl && (e.key === "U" || e.key === "u" || e.keyCode === 85)) || (cmdOrCtrl && alt && (e.key === "U" || e.key === "u" || e.keyCode === 85))) {
+        e.preventDefault();
+        return;
+      }
+
+      // Ctrl+S / Cmd+S (Save Page)
+      if (cmdOrCtrl && (e.key === "S" || e.key === "s" || e.keyCode === 83)) {
+        e.preventDefault();
+        return;
+      }
+    };
+
+    window.addEventListener("contextmenu", handleContextMenu, { capture: true });
+    window.addEventListener("keydown", handleKeyDown, { capture: true });
+
+    return () => {
+      window.removeEventListener("contextmenu", handleContextMenu, { capture: true });
+      window.removeEventListener("keydown", handleKeyDown, { capture: true });
+    };
+  }, []);
 
   // Drag-and-drop state trackers for workspace columns
   const [draggedColumn, setDraggedColumn] = useState<'news' | 'calendar' | null>(null);
@@ -932,22 +1055,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* Advanced Interface Customizer Control Panel Button - Triggers smooth right slide drawer */}
-          <div className="shrink-0">
-            <button
-              onClick={() => setShowCustomizer(true)}
-              className={`flex items-center gap-2 px-3.5 h-9 rounded-lg border transition-all shadow-md cursor-pointer text-xs font-bold font-mono uppercase select-none ${
-                showCustomizer 
-                  ? "bg-indigo-600 text-white border-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.4)]" 
-                  : "border-[#222226] bg-[#101012] hover:bg-slate-900 text-slate-300 hover:text-white"
-              }`}
-              title="Interface Settings (Theme, Font, Size) / အဆင်အပြင် ပြင်ဆင်ရန်"
-              id="customizer-panel-toggle-btn"
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>Settings / အဆင်အပြင်</span>
-            </button>
-          </div>
+
         </div>
 
       </header>
@@ -2335,10 +2443,10 @@ export default function App() {
                             {/* Dynamic Economist Relationship Note */}
                             <div className="mt-2.5 pt-2 border-t border-white/5 flex gap-2 justify-between items-center text-[9px] text-slate-500 font-mono">
                               <span className="flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span className={`w-1.5 h-1.5 rounded-full ${isBullish ? 'bg-emerald-500 animate-pulse' : isBearish ? 'bg-rose-500' : 'bg-slate-500'}`}></span>
                                 <span className="uppercase text-[8px] tracking-wider text-slate-400">CORRELATION METRIC</span>
                               </span>
-                              <span className="text-emerald-400 font-extrabold text-right">
+                              <span className={`${isBullish ? 'text-emerald-400' : isBearish ? 'text-rose-400' : 'text-slate-300'} font-extrabold text-right`}>
                                 {details.dxyCorrelation}% Negative Tracking (Reverse Correlation with DXY)
                               </span>
                             </div>
@@ -2424,145 +2532,32 @@ export default function App() {
         </div>
       )}
 
-      {/* GLOBAL SETTINGS DRAWER - Slide over from right to fit perfectly on any device, fully responsive */}
-      {showCustomizer && (
-        <div className="fixed inset-0 z-[9999] flex justify-end animate-fade-in text-slate-200">
-          {/* Backdrop with blurry glass mask */}
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity cursor-pointer"
-            onClick={() => setShowCustomizer(false)}
+      {/* CLICK PARTICLE BLOOM OVERLAY */}
+      <div className="fixed inset-0 pointer-events-none z-[1000000] overflow-hidden">
+        {clickParticles.map(p => (
+          <div
+            key={p.id}
+            className={`absolute animate-particle-bloom ${
+              p.shape === 'petal' 
+                ? 'rounded-tl-[80%] rounded-br-[80%] rounded-tr-[20%] rounded-bl-[20%]' 
+                : p.shape === 'diamond'
+                ? 'rotate-45'
+                : 'rounded-full'
+            }`}
+            style={{
+              '--tx': `${p.tx}px`,
+              '--ty': `${p.ty}px`,
+              '--rot': `${p.rotation}deg`,
+              left: `${p.x}px`,
+              top: `${p.y}px`,
+              width: `${p.size}px`,
+              height: `${p.shape === 'petal' ? p.size * 1.45 : p.size}px`,
+              backgroundColor: p.color,
+              boxShadow: `0 0 10px ${p.color}, 0 0 3px rgba(255, 255, 255, 0.9)`,
+            } as React.CSSProperties}
           />
-          
-          {/* Drawer Panel */}
-          <div 
-            id="customizer-drawer-panel"
-            className="relative w-80 sm:w-96 h-full bg-[#0d0f14] border-l border-[#23252f] shadow-2xl p-6 flex flex-col justify-between overflow-y-auto z-10 animate-slide-in-right shrink-0"
-          >
-            <div>
-              <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-5">
-                <div className="flex flex-col">
-                  <h4 className="text-sm font-extrabold font-mono uppercase tracking-wider text-indigo-400 flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-indigo-400" />
-                    Layout Settings / ဆက်တင်များ
-                  </h4>
-                  <span className="text-[10px] text-slate-500 font-mono mt-0.5">Customize interface experience</span>
-                </div>
-                <button 
-                  onClick={() => setShowCustomizer(false)}
-                  className="text-slate-400 hover:text-white font-mono text-xs font-black uppercase hover:bg-slate-850 px-2.5 py-1 rounded transition-all cursor-pointer border border-[#23252f]"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Theme Selector */}
-              <div className="space-y-2 mb-6">
-                <label className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 flex justify-between">
-                  <span>🎨 Color Theme / စောင်းကွက်အရောင်</span>
-                  <span className="text-indigo-400 lowercase">({theme})</span>
-                </label>
-                <div className="space-y-1.5 pt-0.5">
-                  {[
-                    { key: 'dark', label: 'Cosmic Dark', desc: 'Default dark tech mode' },
-                    { key: 'light', label: 'Slate Light', desc: 'High-contrast light mode' },
-                    { key: 'emerald', label: 'Emerald Forest', desc: 'Calming matrix botanical green' },
-                    { key: 'crimson', label: 'Royal Crimson', desc: 'Bold power finance crimson red' },
-                    { key: 'amber', label: 'Amber Tactical', desc: 'Cyberpunk dashboard warm amber' }
-                  ].map((t) => (
-                    <button
-                      key={t.key}
-                      onClick={() => setTheme(t.key as any)}
-                      className={`w-full px-3 py-2 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer ${
-                        theme === t.key 
-                          ? 'border-indigo-500 bg-indigo-950/40 text-white font-bold ring-1 ring-indigo-500/30 shadow-[0_0_8px_rgba(99,102,241,0.25)]' 
-                          : 'border-slate-800 bg-[#12141c] text-slate-305 hover:bg-[#161a26]'
-                      }`}
-                    >
-                      <div className="flex flex-col">
-                        <span className="text-xs font-semibold">{t.label}</span>
-                        <span className="text-[9px] text-slate-500 font-normal">{t.desc}</span>
-                      </div>
-                      {theme === t.key && <Check className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Font Family Selector */}
-              <div className="space-y-2 mb-6">
-                <label className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 block">
-                  🔤 Font Style / စာလုံးပုံစံ
-                </label>
-                <div className="space-y-1.5">
-                  {[
-                    { key: 'jakarta', label: 'Plus Jakarta Sans', desc: 'Modern professional aesthetics' },
-                    { key: 'inter', label: 'Inter Sans-Serif', desc: 'Ultra-clean finance alignment' },
-                    { key: 'grotesk', label: 'Space Grotesk', desc: 'Tactical futuristic style' },
-                    { key: 'jetbrains', label: 'JetBrains Mono', desc: 'High density terminal code font' },
-                    { key: 'myanmar', label: 'Noto Myanmar', desc: 'Optimized Burmese reading layout' }
-                  ].map((f) => (
-                    <button
-                      key={f.key}
-                      onClick={() => setFontFamily(f.key)}
-                      className={`w-full px-3 py-2 rounded-lg border text-left flex items-center justify-between transition-all cursor-pointer ${
-                        fontFamily === f.key 
-                          ? 'border-indigo-500 bg-indigo-950/40 text-white font-bold ring-1 ring-indigo-500/30' 
-                          : 'border-slate-800 bg-[#12141c] text-slate-305 hover:bg-[#161a26]'
-                      }`}
-                    >
-                      <div className="flex flex-col">
-                        <span className="text-xs font-semibold">{f.label}</span>
-                        <span className="text-[9px] text-slate-500 font-normal">{f.desc}</span>
-                      </div>
-                      <span className="text-[9px] font-mono opacity-70 px-1.5 py-0.5 bg-slate-800/85 rounded border border-slate-700/60">
-                        {f.key === 'myanmar' ? 'မြန်မာ' : 'Abc'}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Font Size Selector */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 block">
-                  🔎 Font Size / စာလုံးအရွယ်အစား
-                </label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {[
-                    { key: 'small', label: 'Small', exp: '90%' },
-                    { key: 'medium', label: 'Medium', exp: '100%' },
-                    { key: 'large', label: 'Large', exp: '108%' },
-                    { key: 'xlarge', label: 'XL', exp: '118%' }
-                  ].map((sz) => (
-                    <button
-                      key={sz.key}
-                      onClick={() => setFontSize(sz.key as any)}
-                      className={`py-2 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
-                        fontSize === sz.key 
-                          ? 'border-indigo-500 bg-indigo-950/40 text-white font-bold ring-1 ring-indigo-500/30' 
-                          : 'border-slate-800 bg-[#12141c] text-slate-400 hover:bg-[#161a26]'
-                      }`}
-                    >
-                      <span className="text-[11px] font-semibold">{sz.label}</span>
-                      <span className="text-[8px] font-mono opacity-50 mt-0.5">{sz.exp}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-slate-840 pt-4 mt-6">
-              <button 
-                onClick={() => setShowCustomizer(false)}
-                className="w-full text-white bg-indigo-600 hover:bg-indigo-505 font-bold font-mono uppercase text-xs py-2.5 rounded-lg transition-all shadow-lg cursor-pointer text-center"
-              >
-                Apply & Close / ပိတ်ပါ
-              </button>
-              <p className="text-[9px] text-slate-600 text-center font-mono mt-2">RTFT SYSTEM INTERFACE SETUP v1.1.2</p>
-            </div>
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
 
     </div>
   );
