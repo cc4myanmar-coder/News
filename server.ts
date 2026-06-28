@@ -2151,6 +2151,73 @@ app.get("/api/central-bank-rates", async (req, res) => {
 });
 
 
+// SSE Real-time Inflation and Macro Metric Live Data Stream Pipeline
+app.get("/api/inflation-stream", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
+  // Send successful connection event
+  res.write(`data: ${JSON.stringify({ type: 'connected', timestamp: Date.now(), pipeline: "GLOBAL_MACRO_CPI_FEED" })}\n\n`);
+
+  // Active bank configurations to generate ticks for
+  const bankIds = ["fed", "ecb", "boe", "boj", "rba", "boc", "snb", "rbnz"];
+  const logos: Record<string, string> = {
+    fed: "🇺🇸", ecb: "🇪🇺", boe: "🇬🇧", boj: "🇯🇵", rba: "🇦🇺", boc: "🇨🇦", snb: "🇨🇭", rbnz: "🇳🇿"
+  };
+  const baseInflationValues: Record<string, { headline: number; core?: number }> = {
+    fed: { headline: 4.2, core: 2.9 },
+    ecb: { headline: 2.4, core: 2.6 },
+    boe: { headline: 2.8, core: 3.1 },
+    boj: { headline: 2.5, core: 2.2 },
+    rba: { headline: 3.6, core: 3.8 },
+    boc: { headline: 2.6, core: 2.3 },
+    snb: { headline: 1.1 },
+    rbnz: { headline: 2.7 }
+  };
+
+  const intervalId = setInterval(() => {
+    // Randomly select a central bank to update
+    const randomBankId = bankIds[Math.floor(Math.random() * bankIds.length)];
+    const base = baseInflationValues[randomBankId];
+    
+    // Simulate real-time pipeline macro variation (-0.08% to +0.08%)
+    const diffHeadline = Number((Math.random() * 0.16 - 0.08).toFixed(2));
+    const newHeadline = Number((base.headline + diffHeadline).toFixed(2));
+    
+    let newCore: number | undefined = undefined;
+    if (base.core) {
+      const diffCore = Number((Math.random() * 0.10 - 0.05).toFixed(2));
+      newCore = Number((base.core + diffCore).toFixed(2));
+    }
+
+    // Format new rate string
+    const inflationRateStr = newCore 
+      ? `${newHeadline.toFixed(1)}% (Core: ${newCore.toFixed(1)}%)`
+      : `${newHeadline.toFixed(1)}%`;
+
+    const payload = {
+      type: 'tick',
+      bankId: randomBankId,
+      logo: logos[randomBankId],
+      inflationRate: inflationRateStr,
+      headline: newHeadline,
+      core: newCore,
+      change: diffHeadline > 0 ? `+${diffHeadline.toFixed(2)}%` : `${diffHeadline.toFixed(2)}%`,
+      timestamp: Date.now()
+    };
+
+    res.write(`data: ${JSON.stringify(payload)}\n\n`);
+  }, 4000); // Send a live tick every 4 seconds to maintain active high-frequency updates
+
+  req.on("close", () => {
+    clearInterval(intervalId);
+    res.end();
+  });
+});
+
+
 // Export app for Vercel Serverless Function context
 export default app;
 

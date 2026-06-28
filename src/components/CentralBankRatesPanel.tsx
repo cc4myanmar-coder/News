@@ -27,6 +27,19 @@ export const CentralBankRatesPanel: React.FC<CentralBankRatesPanelProps> = ({ on
   const [syncSource, setSyncSource] = useState<string>('local_system');
   const [isGeminiStandby, setIsGeminiStandby] = useState<boolean>(false);
 
+  // Live Data Stream Pipeline state
+  const [streamTicks, setStreamTicks] = useState<Array<{
+    id: string;
+    timestamp: string;
+    logo: string;
+    bankId: string;
+    inflationRate: string;
+    change: string;
+  }>>([]);
+  const [recentFlashBankId, setRecentFlashBankId] = useState<string | null>(null);
+  const [flashDirection, setFlashDirection] = useState<'up' | 'down' | null>(null);
+  const [pipelineConnected, setPipelineConnected] = useState<boolean>(false);
+
   const fetchRates = async () => {
     setIsLoading(true);
     setError(null);
@@ -57,6 +70,70 @@ export const CentralBankRatesPanel: React.FC<CentralBankRatesPanelProps> = ({ on
 
   useEffect(() => {
     fetchRates();
+
+    // Establish live SSE connection for high-frequency inflation ticks pipeline
+    console.log("Connecting client to inflation live data stream pipeline...");
+    const eventSource = new EventSource('/api/inflation-stream');
+
+    eventSource.onopen = () => {
+      console.log("Inflation SSE stream pipeline connected successfully.");
+      setPipelineConnected(true);
+    };
+
+    eventSource.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload.type === 'connected') {
+          setPipelineConnected(true);
+        } else if (payload.type === 'tick') {
+          const { bankId, logo, inflationRate, change, timestamp } = payload;
+          
+          setRates(prevRates => 
+            prevRates.map(bank => {
+              if (bank.id === bankId) {
+                return {
+                  ...bank,
+                  inflationRate: inflationRate
+                };
+              }
+              return bank;
+            })
+          );
+
+          // Trigger dynamic visual update highlight
+          setRecentFlashBankId(bankId);
+          setFlashDirection(change.startsWith('+') ? 'up' : 'down');
+          setTimeout(() => {
+            setRecentFlashBankId(null);
+            setFlashDirection(null);
+          }, 2000);
+
+          // Add to log
+          const timeString = new Date(timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          setStreamTicks(prev => [
+            {
+              id: `${timestamp}-${bankId}`,
+              timestamp: timeString,
+              logo,
+              bankId,
+              inflationRate,
+              change
+            },
+            ...prev.slice(0, 4) // max 5 records
+          ]);
+        }
+      } catch (err) {
+        console.error("SSE stream parse error:", err);
+      }
+    };
+
+    eventSource.onerror = () => {
+      setPipelineConnected(false);
+    };
+
+    return () => {
+      eventSource.close();
+    };
   }, []);
 
   const selectedBank = rates.find(r => r.id === selectedBankId);
@@ -122,23 +199,30 @@ export const CentralBankRatesPanel: React.FC<CentralBankRatesPanelProps> = ({ on
             </span>
             {rates.map((bank) => {
               const isSelected = bank.id === selectedBankId;
+              const isFlashing = bank.id === recentFlashBankId;
               let stanceColor = 'bg-slate-900 border-slate-800 text-slate-400';
               if (bank.stance === 'Hawkish') stanceColor = 'bg-red-950/40 border-red-900/30 text-red-400';
               if (bank.stance === 'Dovish') stanceColor = 'bg-emerald-950/40 border-emerald-900/30 text-emerald-400';
               if (bank.stance === 'Neutral') stanceColor = 'bg-indigo-950/40 border-indigo-900/30 text-indigo-400';
 
+              let borderFlashClass = isSelected 
+                ? 'bg-indigo-950/20 border-indigo-500/40 shadow-inner text-white' 
+                : 'bg-slate-950/30 border-slate-900 hover:bg-slate-900/50 hover:border-slate-800 text-slate-400';
+
+              if (isFlashing) {
+                borderFlashClass = flashDirection === 'up'
+                  ? 'border-rose-500/80 bg-rose-950/20 text-rose-200 animate-pulse'
+                  : 'border-emerald-500/80 bg-emerald-950/20 text-emerald-200 animate-pulse';
+              }
+
               return (
                 <button
                   key={bank.id}
                   onClick={() => setSelectedBankId(bank.id)}
-                  className={`w-full text-left p-2.5 rounded-lg border flex items-center justify-between transition-all cursor-pointer ${
-                    isSelected 
-                      ? 'bg-indigo-950/20 border-indigo-500/40 shadow-inner text-white' 
-                      : 'bg-slate-950/30 border-slate-900 hover:bg-slate-900/50 hover:border-slate-800 text-slate-400'
-                  }`}
+                  className={`w-full text-left p-2.5 rounded-lg border flex items-center justify-between transition-all duration-300 cursor-pointer ${borderFlashClass}`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-base leading-none select-none shrink-0">{bank.logo || '🌐'}</span>
+                    <span className={`text-base leading-none select-none shrink-0 ${isFlashing ? 'scale-125 animate-bounce' : ''}`}>{bank.logo || '🌐'}</span>
                     <div className="min-w-0">
                       <span className={`text-[11px] font-bold block truncate tracking-wide ${isSelected ? 'text-white' : 'text-slate-300'}`}>
                         {bank.name.split(' - ')[0]}
@@ -149,9 +233,18 @@ export const CentralBankRatesPanel: React.FC<CentralBankRatesPanelProps> = ({ on
                       </div>
                     </div>
                   </div>
-                  <span className={`text-[8px] font-mono font-black uppercase px-1.5 py-0.5 rounded border ${stanceColor} shrink-0`}>
-                    {bank.stance}
-                  </span>
+                  <div className="flex flex-col items-end gap-0.5 shrink-0">
+                    <span className={`text-[8px] font-mono font-black uppercase px-1.5 py-0.5 rounded border ${stanceColor}`}>
+                      {bank.stance}
+                    </span>
+                    {isFlashing && (
+                      <span className={`text-[8px] font-mono font-bold px-1 rounded animate-pulse ${
+                        flashDirection === 'up' ? 'text-rose-400' : 'text-emerald-400'
+                      }`}>
+                        {flashDirection === 'up' ? '▲ CPI' : '▼ CPI'}
+                      </span>
+                    )}
+                  </div>
                 </button>
               );
             })}
@@ -192,9 +285,26 @@ export const CentralBankRatesPanel: React.FC<CentralBankRatesPanelProps> = ({ on
                     <span className="text-[9px] text-slate-500 uppercase block tracking-wider">Previous Rate</span>
                     <strong className="text-xs text-slate-400 mt-0.5 block">{selectedBank.previousRate}</strong>
                   </div>
-                  <div className="p-2 bg-[#0d0e14] border border-slate-900 rounded-lg text-center font-mono">
-                    <span className="text-[9px] text-slate-500 uppercase block tracking-wider">Inflation (CPI)</span>
-                    <strong className="text-xs text-rose-400 mt-0.5 block">{selectedBank.inflationRate}</strong>
+                  <div className={`p-2 bg-[#0d0e14] border rounded-lg text-center font-mono transition-all duration-500 ${
+                    selectedBank.id === recentFlashBankId 
+                      ? flashDirection === 'up' 
+                        ? 'border-rose-500/50 bg-rose-950/20 shadow-[0_0_10px_rgba(239,68,68,0.15)]' 
+                        : 'border-emerald-500/50 bg-emerald-950/20 shadow-[0_0_10px_rgba(16,185,129,0.15)]'
+                      : 'border-slate-900'
+                  }`}>
+                    <span className="text-[9px] text-slate-500 uppercase block tracking-wider flex items-center justify-center gap-1">
+                      <span>Inflation (CPI)</span>
+                      {selectedBank.id === recentFlashBankId && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                      )}
+                    </span>
+                    <strong className={`text-xs mt-0.5 block transition-colors duration-300 ${
+                      selectedBank.id === recentFlashBankId 
+                        ? flashDirection === 'up' ? 'text-rose-400 font-bold scale-105' : 'text-emerald-400 font-bold scale-105'
+                        : 'text-rose-400'
+                    }`}>
+                      {selectedBank.inflationRate}
+                    </strong>
                   </div>
                   <div className="p-2 bg-[#0d0e14] border border-slate-900 rounded-lg text-center font-mono">
                     <span className="text-[9px] text-slate-500 uppercase block tracking-wider">Target / GDP</span>
@@ -249,6 +359,56 @@ export const CentralBankRatesPanel: React.FC<CentralBankRatesPanelProps> = ({ on
 
         </div>
       )}
+
+      {/* Live Data Stream Pipeline Status Tracker */}
+      <div className="bg-[#08090d] border-t border-[#1b1b1e] p-3 flex flex-col md:flex-row gap-3 items-stretch justify-between font-mono text-[10px]">
+        
+        {/* Active connection metrics */}
+        <div className="flex flex-col justify-center min-w-[220px] shrink-0 md:border-r border-[#1b1b1e]/60 pr-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="relative flex h-2 w-2">
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${pipelineConnected ? 'bg-cyan-400' : 'bg-red-400'}`}></span>
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${pipelineConnected ? 'bg-cyan-500' : 'bg-red-500'}`}></span>
+            </span>
+            <span className="font-bold text-slate-300">INFLATION LIVE STREAM PIPELINE</span>
+          </div>
+          <p className="text-[9px] text-slate-500 leading-normal font-sans">
+            {pipelineConnected 
+              ? "ငွေကြေးဖောင်းပွမှုနှုန်းများကို Server-Sent Events (SSE) Pipeline ဖြင့် စက္ကန့်မလပ် ဆွဲယူတင်ပြနေပါသည်။" 
+              : "Live Pipeline ချိတ်ဆက်မှုကို စောင့်ဆိုင်းနေပါသည်..."}
+          </p>
+        </div>
+
+        {/* Live stream scrolling tick log */}
+        <div className="flex-1 overflow-hidden relative flex items-center bg-[#050508] border border-[#1b1b1e]/50 rounded p-2 min-h-[44px]">
+          {streamTicks.length === 0 ? (
+            <div className="text-slate-600 flex items-center gap-1.5 animate-pulse w-full justify-center text-[9px]">
+              <span>● Pipeline active. Waiting for next macro CPI telemetry tick...</span>
+            </div>
+          ) : (
+            <div className="w-full space-y-1 overflow-y-auto max-h-[55px] scrollbar-none">
+              {streamTicks.map((tick) => (
+                <div key={tick.id} className="flex items-center justify-between text-[9px] leading-relaxed">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="text-slate-600">[{tick.timestamp}]</span>
+                    <span className="text-slate-400 select-none">{tick.logo}</span>
+                    <span className="text-slate-300 font-bold uppercase shrink-0">{tick.bankId} CPI Feed:</span>
+                    <span className="text-[#39ff14] font-bold">{tick.inflationRate}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`font-black shrink-0 ${tick.change.startsWith('+') ? 'text-rose-500' : 'text-emerald-500'}`}>
+                      {tick.change}
+                    </span>
+                    <span className="text-[8px] bg-[#12131b] text-cyan-400 border border-cyan-900/50 px-1 rounded uppercase scale-90 shrink-0 select-none">
+                      Live Telemetry
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Warnings & standby indicators */}
       {isGeminiStandby && (
