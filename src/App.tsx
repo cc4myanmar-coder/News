@@ -171,7 +171,46 @@ const formatCalendarDate = (dateStr: string): string => {
   }
 };
 
+// Standard FOMC meetings for 2026 and 2027
+export const FOMC_MEETINGS = [
+  { start: "2026-01-27", end: "2026-01-28", label: "January 27-28, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၁ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-03-17", end: "2026-03-18", label: "March 17-18, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၂ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-04-28", end: "2026-04-29", label: "April 28-29, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၃ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-06-16", end: "2026-06-17", label: "June 16-17, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၄ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-07-28", end: "2026-07-29", label: "July 28-29, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၅ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-09-15", end: "2026-09-16", label: "September 15-16, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၆ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-11-03", end: "2026-11-04", label: "November 3-4, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၇ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-12-15", end: "2026-12-16", label: "December 15-16, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၈ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  
+  { start: "2027-01-26", end: "2027-01-27", label: "January 26-27, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၁ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-03-16", end: "2027-03-17", label: "March 16-17, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၂ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-04-27", end: "2027-04-28", label: "April 27-28, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၃ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-06-15", end: "2027-06-16", label: "June 15-16, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၄ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-07-27", end: "2027-07-28", label: "July 27-28, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၅ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-09-21", end: "2027-09-22", label: "September 21-22, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၆ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-11-02", end: "2027-11-03", label: "November 2-3, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၇ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-12-14", end: "2027-12-15", label: "December 14-15, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၈ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+];
+
+export function getFomcStatus(nowDate: Date = new Date()) {
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  const todayStr = `${nowDate.getFullYear()}-${pad(nowDate.getMonth() + 1)}-${pad(nowDate.getDate())}`;
+  
+  const completed = FOMC_MEETINGS.filter(m => m.end < todayStr);
+  const upcoming = FOMC_MEETINGS.filter(m => m.end >= todayStr);
+  
+  const lastCompleted = completed.length > 0 ? completed[completed.length - 1] : FOMC_MEETINGS[3];
+  const nextUpcoming = upcoming.length > 0 ? upcoming[0] : FOMC_MEETINGS[4];
+  
+  return {
+    lastCompleted,
+    nextUpcoming
+  };
+}
+
 export default function App() {
+  const { lastCompleted: clientLastCompleted, nextUpcoming: clientNextUpcoming } = getFomcStatus();
+
   // Real-time market tick state initialized to correct June 2026 baseline
   const [nqPrice, setNqPrice] = useState<number>(28883.50);
   const [nqChange, setNqChange] = useState<number>(1.25);
@@ -1471,9 +1510,12 @@ export default function App() {
                   </span>
                   <span className="text-[10px] font-bold tracking-widest text-slate-300">FOMC PORTAL</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-[9px] font-mono bg-indigo-950/80 border border-indigo-800/40 text-indigo-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                    MEETING: JUN 16-17, 2026
+                <div className="flex flex-col items-end gap-1">
+                  <span className="text-[9px] font-mono bg-[#110e11] border border-red-950/30 text-rose-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider" title="ပြီးသွားသော အစည်းအဝေး">
+                    COMPLETED: {clientLastCompleted.label}
+                  </span>
+                  <span className="text-[9px] font-mono bg-indigo-950/80 border border-indigo-800/40 text-indigo-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider" title="လာမည့် အစည်းအဝေး">
+                    COMING: {clientNextUpcoming.label} ({clientNextUpcoming.days})
                   </span>
                 </div>
               </div>
@@ -1482,7 +1524,7 @@ export default function App() {
                 FOMC Meeting Result & Analytical Bias
               </h4>
               <p className="text-[11px] text-slate-400 leading-relaxed mb-3.5 font-sans">
-                ဒီနေ့ FOMC (Federal Open Market Committee) အတိုးနှုန်း ဆုံးဖြတ်ချက်များ၊ FED ဥက္ကဋ္ဌ (FED Chair) ၏ အမြင်နှင့် Dot Plot ကို မြန်မာလို အသေးစိတ် ရလဒ်များ ဆန်းစစ်သုံးသပ်ချက်။
+                ပြီးသွားသော {clientLastCompleted.label} အစည်းအဝေး၏ အတိုးနှုန်း ဆုံးဖြတ်ချက်များ၊ FED ဥက္ကဋ္ဌ၏ အမြင်နှင့် Dot Plot ကို မြန်မာလို အသေးစိတ် ရလဒ်များ ဆန်းစစ်သုံးသပ်ချက်။ လာမည့်အစည်းအဝေးမှာ {clientNextUpcoming.label} ({clientNextUpcoming.mmDays}) ဖြစ်ပါသည်။
               </p>
               
               <button
@@ -1917,14 +1959,16 @@ export default function App() {
               ) : (
                 <div className="space-y-6">
                   {/* Meeting Metadata Banner */}
-                  <div className="bg-[#0e0f15] border border-slate-800/50 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                  <div className="bg-[#0e0f15] border border-slate-800/50 p-4 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <span className="text-[10px] font-mono text-slate-500 block uppercase">Meeting Date / ရက်စွဲ</span>
-                      <strong className="text-sm text-indigo-455 font-mono">{fomcAnalysis.meetingDate}</strong>
+                      <span className="text-[10px] font-mono text-slate-500 block uppercase">ပြီးသွားသော အစည်းအဝေး (Completed Meeting)</span>
+                      <strong className="text-xs text-indigo-400 font-mono block">{fomcAnalysis.meetingDate}</strong>
                     </div>
-                    <div className="flex items-center gap-2 bg-indigo-950/40 px-3 py-1.5 rounded border border-indigo-900/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                      <span className="text-[10px] font-mono font-bold text-indigo-300">DATA GROUNDING VERIFIED</span>
+                    <div>
+                      <span className="text-[10px] font-mono text-slate-500 block uppercase">လာမည့် အစည်းအဝေး (Upcoming Meeting)</span>
+                      <strong className="text-xs text-emerald-400 font-mono block">
+                        {clientNextUpcoming.label} ({clientNextUpcoming.mmDays} / {clientNextUpcoming.days})
+                      </strong>
                     </div>
                   </div>
 

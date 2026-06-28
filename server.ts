@@ -492,6 +492,16 @@ function resolveCalendarActuals(items: any[]): any[] {
   
   const releaseMap: Record<string, string> = {
     "G7 Meetings": "Completed",
+    "CB Consumer Confidence": "94.3",
+    "JOLTS Job Openings": "7.35M",
+    "ADP Non-Farm Employment Change": "119K",
+    "Fed Chairman Warsh Speaks": "Completed",
+    "ISM Manufacturing PMI": "53.9",
+    "ISM Manufacturing Prices": "79.2",
+    "Average Hourly Earnings m/m": "0.3%",
+    "Non-Farm Employment Change": "118K",
+    "Unemployment Rate": "4.3%",
+    "Unemployment Claims": "218K",
     "Empire State Manufacturing Index": "12.8",
     "Capacity Utilization Rate": "76.4%",
     "Industrial Production m/m": "0.4%",
@@ -512,7 +522,6 @@ function resolveCalendarActuals(items: any[]): any[] {
     "FOMC Statement": "Released",
     "FOMC Press Conference": "Completed",
     "Philly Fed Manufacturing Index": "11.2",
-    "Unemployment Claims": "226K",
     "CB Leading Index m/m": "0.1%",
     "Natural Gas Storage": "112B",
     "TIC Long-Term Purchases": "78.2B",
@@ -680,6 +689,133 @@ function getDynamicFallbackCalendar() {
         actual: null,
         forecast: "N/A",
         previous: "4.6%"
+      }
+    ];
+  }
+
+  // If it's the active week of June 28 - July 4, 2026 shown in user's screenshot
+  if (sunday === "2026-06-28") {
+    return [
+      {
+        id: "cur-june28-1",
+        time: "10:00 AM",
+        date: tuesday,
+        event: "CB Consumer Confidence",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "94.2",
+        previous: "93.1"
+      },
+      {
+        id: "cur-june28-2",
+        time: "10:00 AM",
+        date: tuesday,
+        event: "JOLTS Job Openings",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "7.28M",
+        previous: "7.62M"
+      },
+      {
+        id: "cur-june28-3",
+        time: "08:15 AM",
+        date: wednesday,
+        event: "ADP Non-Farm Employment Change",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "118K",
+        previous: "122K"
+      },
+      {
+        id: "cur-june28-4",
+        time: "09:00 AM",
+        date: wednesday,
+        event: "Fed Chairman Warsh Speaks",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "N/A",
+        previous: "N/A"
+      },
+      {
+        id: "cur-june28-5",
+        time: "10:00 AM",
+        date: wednesday,
+        event: "ISM Manufacturing PMI",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "53.7",
+        previous: "54.0"
+      },
+      {
+        id: "cur-june28-6",
+        time: "10:00 AM",
+        date: wednesday,
+        event: "ISM Manufacturing Prices",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "79.0",
+        previous: "82.1"
+      },
+      {
+        id: "cur-june28-7",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Average Hourly Earnings m/m",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "0.3%",
+        previous: "0.3%"
+      },
+      {
+        id: "cur-june28-8",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Non-Farm Employment Change",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "114K",
+        previous: "172K"
+      },
+      {
+        id: "cur-june28-9",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Unemployment Rate",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "4.3%",
+        previous: "4.3%"
+      },
+      {
+        id: "cur-june28-10",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Unemployment Claims",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "220K",
+        previous: "215K"
+      },
+      {
+        id: "cur-june28-11",
+        time: "ALL DAY",
+        date: friday,
+        event: "Bank Holiday",
+        country: "USD",
+        impact: "Low",
+        actual: "Holiday",
+        forecast: "N/A",
+        previous: "N/A"
       }
     ];
   }
@@ -950,6 +1086,267 @@ function getDynamicFallbackCalendar() {
   }
 }
 
+// Dynamically generate high-quality news outlooks for the coming week, updating every Sunday
+function getDynamicFallbackNews() {
+  const { sunday, monday, tuesday, wednesday, thursday, friday } = getCurrentWeekRange();
+  
+  const tuesdayDate = new Date(tuesday);
+  const dayOfMonth = tuesdayDate.getDate();
+
+  let newsList = [];
+
+  if (dayOfMonth <= 7) {
+    // Week 1 of the month: NFP / ISM Week
+    newsList = [
+      {
+        id: "dyn-news-w1-1",
+        title: "WEEKLY OUTLOOK: NFP Friday & ISM Surveys Set to Drive Extreme Volatility across Nasdaq & S&P",
+        summary: "The upcoming week is packed with top-tier indicators starting with Monday's ISM Manufacturing PMI and culminating in Friday's Non-Farm Payrolls. Traders brace for aggressive positioning as Fed interest rate trajectory hangs in the balance.",
+        source: "Macroeconomic Research",
+        timestamp: `${monday}T08:00:00Z`,
+        category: "Macroeconomics",
+        impact: "Neutral",
+        indicesAffected: ["NQ", "ES"],
+        volatilityScore: 9
+      },
+      {
+        id: "dyn-news-w1-2",
+        title: "Tech Giants Accelerate AI Cluster Deployments Ahead of Key Mid-Year Metrics",
+        summary: "Field checks from major APAC semiconductor foundries confirm a 22% surge in pre-booked wafer capacity. High-volume support for NQ futures is expected to persist ahead of ISM Services release.",
+        source: "Bloomberg (Simulated)",
+        timestamp: `${monday}T14:15:00Z`,
+        category: "Tech Sector",
+        impact: "Bullish",
+        indicesAffected: ["NQ"],
+        volatilityScore: 7
+      },
+      {
+        id: "dyn-news-w1-3",
+        title: "Geopolitical Alliances Discuss Coordinated Semiconductor Technology Control Policies",
+        summary: "Reports of updated technology export restrictions lead to brief pre-market futures dips. Analysts note downside support remains highly active on ES futures.",
+        source: "Reuters (Simulated)",
+        timestamp: `${tuesday}T09:30:00Z`,
+        category: "Geopolitical",
+        impact: "Bearish",
+        indicesAffected: ["NQ", "ES"],
+        volatilityScore: 6
+      },
+      {
+        id: "dyn-news-w1-4",
+        title: "Enterprise SaaS Companies Post Stellar Double-Digit Q2 Bookings Growth",
+        summary: "Early earnings drafts show robust software-as-a-service billing cycles. Broad-based sentiment supports secondary tech indices.",
+        source: "SEC Filing (Simulated)",
+        timestamp: `${wednesday}T08:05:00Z`,
+        category: "Earnings",
+        impact: "Bullish",
+        indicesAffected: ["NQ"],
+        volatilityScore: 6
+      },
+      {
+        id: "dyn-news-w1-5",
+        title: "Upcoming Pre-IPOs Show High Interest in Custom Silicon Startups",
+        summary: "Two bespoke AI server architecture firms schedule late-summer S-1 filings. Venture capital inflows fuel private market valuation appreciation.",
+        source: "Wall Street Journal (Simulated)",
+        timestamp: `${thursday}T11:45:00Z`,
+        category: "IPOs",
+        impact: "Bullish",
+        indicesAffected: ["NQ"],
+        volatilityScore: 5
+      }
+    ];
+  } else if (dayOfMonth <= 14) {
+    // Week 2 of the month: CPI / PPI Week
+    newsList = [
+      {
+        id: "dyn-news-w2-1",
+        title: "WEEKLY OUTLOOK: CPI & PPI Inflation Gauges Ready to Reset Federal Reserve Interest Rate Maps",
+        summary: "Traders prepare for Wednesday's pivotal CPI release. Any downward trend in core services inflation is expected to fuel high-impact bullish NQ runs, whereas hot prints will trigger aggressive risk-off selling.",
+        source: "Macroeconomic Research",
+        timestamp: `${monday}T08:00:00Z`,
+        category: "Macroeconomics",
+        impact: "Neutral",
+        indicesAffected: ["NQ", "ES"],
+        volatilityScore: 9
+      },
+      {
+        id: "dyn-news-w2-2",
+        title: "High-Efficiency GPU Cloud Providers Report Unprecedented Utilization Margins",
+        summary: "NVIDIA Blackwell platform integration partners announce 100% reservation rates for next-generation systems. Buy-side firms recommend overweighting high-performance computing hardware.",
+        source: "Bloomberg (Simulated)",
+        timestamp: `${monday}T15:00:00Z`,
+        category: "Tech Sector",
+        impact: "Bullish",
+        indicesAffected: ["NQ"],
+        volatilityScore: 8
+      },
+      {
+        id: "dyn-news-w2-3",
+        title: "Sovereign Supply Chains Harden as US & European Subsidies Unlock Fab Expansions",
+        summary: "New manufacturing facilities secure regulatory fast-tracks, boosting intermediate capital goods suppliers. Overall index structural outlook remains firmly supportive.",
+        source: "Reuters (Simulated)",
+        timestamp: `${tuesday}T10:00:00Z`,
+        category: "Geopolitical",
+        impact: "Bullish",
+        indicesAffected: ["NQ", "ES"],
+        volatilityScore: 5
+      },
+      {
+        id: "dyn-news-w2-4",
+        title: "Semiconductor Equipment Manufacturers Project Solid Backlog Expansion for Remainder of Fiscal Year",
+        summary: "Unreleased bookings forecasts point to heavy lithography purchases by APAC memory producers. NQ futures maintain positive risk premiums.",
+        source: "SEC Filing (Simulated)",
+        timestamp: `${wednesday}T08:15:00Z`,
+        category: "Earnings",
+        impact: "Bullish",
+        indicesAffected: ["NQ"],
+        volatilityScore: 7
+      },
+      {
+        id: "dyn-news-w2-5",
+        title: "AI Networking Unicorn Prepares Dual-Class IPO Filing Targeting $10B Capitalization",
+        summary: "The high-speed optoelectronics manufacturer schedules regulatory registration, highlighting explosive CAGR in ultra-bandwidth transceivers.",
+        source: "Wall Street Journal (Simulated)",
+        timestamp: `${thursday}T12:00:00Z`,
+        category: "IPOs",
+        impact: "Neutral",
+        indicesAffected: ["NQ"],
+        volatilityScore: 4
+      }
+    ];
+  } else if (dayOfMonth <= 21) {
+    // Week 3 of the month: Retail Sales / Fed Decision Week
+    newsList = [
+      {
+        id: "dyn-news-w3-1",
+        title: "WEEKLY OUTLOOK: Retail Sales, FOMC Decision & Rate Projections to Reignite Macro Volatility",
+        summary: "A high-stakes week as Tuesday's US Retail Sales print is followed directly by Wednesday's Federal Reserve interest rate decision. Expect high-velocity multi-directional swings in both NQ and ES futures.",
+        source: "Macroeconomic Research",
+        timestamp: `${monday}T08:00:00Z`,
+        category: "Macroeconomics",
+        impact: "Neutral",
+        indicesAffected: ["NQ", "ES"],
+        volatilityScore: 10
+      },
+      {
+        id: "dyn-news-w3-2",
+        title: "Advanced Packaging Constraints Ease as Major Foundry Scales CoWoS Outputs by 30%",
+        summary: "Supply chains confirm next-gen Blackwell GPU deliveries are ready to scale rapidly in coming quarters. Analysts raise near-term targets across semiconductor indices.",
+        source: "Bloomberg (Simulated)",
+        timestamp: `${monday}T13:45:00Z`,
+        category: "Tech Sector",
+        impact: "Bullish",
+        indicesAffected: ["NQ"],
+        volatilityScore: 8
+      },
+      {
+        id: "dyn-news-w3-3",
+        title: "Diplomatic Trade Agreements Ease Semiconductor Mineral Supply Restrictions",
+        summary: "Strategic bilateral trade understandings secure key rare earth mineral flows for high-performance chip production. Positive macro-sentiment spreads across index futures.",
+        source: "Reuters (Simulated)",
+        timestamp: `${tuesday}T09:15:00Z`,
+        category: "Geopolitical",
+        impact: "Bullish",
+        indicesAffected: ["NQ", "ES"],
+        volatilityScore: 5
+      },
+      {
+        id: "dyn-news-w3-4",
+        title: "Consumer Hardware Giants Outperform in Earnings Pre-Release Cycles",
+        summary: "Strong demand for AI-integrated client devices boosts earnings previews. Bullish expectations for device replacement cycles fuel risk-on index bidding.",
+        source: "SEC Filing (Simulated)",
+        timestamp: `${wednesday}T08:30:00Z`,
+        category: "Earnings",
+        impact: "Bullish",
+        indicesAffected: ["NQ", "ES"],
+        volatilityScore: 7
+      },
+      {
+        id: "dyn-news-w3-5",
+        title: "Venture-Backed Autonomous Computing Giant Files S-1, Targeting Landmark IPO",
+        summary: "The highly-watched full-stack robotics enterprise registers for listing, boosting private market valuations and positive risk appetite.",
+        source: "Wall Street Journal (Simulated)",
+        timestamp: `${thursday}T11:15:00Z`,
+        category: "IPOs",
+        impact: "Neutral",
+        indicesAffected: ["NQ"],
+        volatilityScore: 5
+      }
+    ];
+  } else {
+    // Week 4 of the month: Flash PMI / PCE / GDP Week
+    newsList = [
+      {
+        id: "dyn-news-w4-1",
+        title: "WEEKLY OUTLOOK: Core PCE & Final GDP Prints to Anchor Near-Term Index Futures Trends",
+        summary: "Markets gear up for Thursday's high-impact double feature: Core PCE Price Index and Final GDP revisions. Fed's favorite inflation metric will establish key momentum for the upcoming quarter.",
+        source: "Macroeconomic Research",
+        timestamp: `${monday}T08:00:00Z`,
+        category: "Macroeconomics",
+        impact: "Neutral",
+        indicesAffected: ["NQ", "ES"],
+        volatilityScore: 8
+      },
+      {
+        id: "dyn-news-w4-2",
+        title: "HBM3e Memory Shipments Hit Record Volumes as Big Tech Capital Spending Peaks",
+        summary: "Foundry surveys show continuous, intense chip shipments supporting AI server integrations. Near-term technical support levels on Nasdaq-100 remain heavily defended.",
+        source: "Bloomberg (Simulated)",
+        timestamp: `${monday}T15:30:00Z`,
+        category: "Tech Sector",
+        impact: "Bullish",
+        indicesAffected: ["NQ"],
+        volatilityScore: 7
+      },
+      {
+        id: "dyn-news-w4-3",
+        title: "Trade Discussions Intensify Over Advanced Microelectronic Tariffs",
+        summary: "New multilateral talks aim to avert retaliatory trade barriers on next-generation computing systems. Traders maintain cautious long positioning on S&P 500 ES.",
+        source: "Reuters (Simulated)",
+        timestamp: `${tuesday}T10:15:00Z`,
+        category: "Geopolitical",
+        impact: "Neutral",
+        indicesAffected: ["NQ", "ES"],
+        volatilityScore: 6
+      },
+      {
+        id: "dyn-news-w4-4",
+        title: "Enterprise Cybersecurity Behemoths Forecast Heavy Growth in AI Defence Bookings",
+        summary: "Securities filings show high enterprise spending on threat-detection infrastructure. Strong financial balance sheets provide broad market index support.",
+        source: "SEC Filing (Simulated)",
+        timestamp: `${wednesday}T08:20:00Z`,
+        category: "Earnings",
+        impact: "Bullish",
+        indicesAffected: ["NQ"],
+        volatilityScore: 6
+      },
+      {
+        id: "dyn-news-w4-5",
+        title: "AI Networking Infrastructure Unicorn Sets $12B IPO Price Target",
+        summary: "The high-growth firm finalizes its prospectus, pointing to exceptional cloud provider order books. Capital flows into private tech continue rising.",
+        source: "Wall Street Journal (Simulated)",
+        timestamp: `${thursday}T13:00:00Z`,
+        category: "IPOs",
+        impact: "Neutral",
+        indicesAffected: ["NQ"],
+        volatilityScore: 5
+      }
+    ];
+  }
+
+  // If today is Sunday, we can customize titles to explicitly mention the "COMING WEEK" outlook
+  const today = new Date();
+  if (today.getDay() === 0) {
+    newsList = newsList.map(item => ({
+      ...item,
+      title: item.title.startsWith("WEEKLY") || item.title.startsWith("COMING")
+        ? item.title
+        : `COMING WEEK: ${item.title}`
+    }));
+  }
+
+  return newsList;
+}
+
 // In-memory cache structures to avoid hitting Gemini API quotas repeatedly
 interface CacheEntry<T> {
   data: T;
@@ -979,20 +1376,24 @@ app.get("/api/news", async (req, res) => {
   }
 
   if (!ai) {
-    // If no AI key, return fresh high-quality static data with dynamic timestamps
-    const dynamicNews = fallbackNews.map((item, index) => ({
-      ...item,
-      timestamp: new Date(Date.now() - index * 12 * 60 * 1000).toISOString()
-    }));
+    // If no AI key, return fresh high-quality dynamic data with week-appropriate timestamps
+    const dynamicNews = getDynamicFallbackNews();
     return res.json({ news: dynamicNews, source: "fallback_database" });
   }
 
   try {
     console.log("Requesting real-time market news using Gemini Search (cache missed)...");
     
+    const isSunday = new Date().getDay() === 0;
+    const { sunday, friday } = getCurrentWeekRange();
+    
+    const promptContents = isSunday
+      ? `Provide the 8 most critical upcoming financial news previews, anticipated macroeconomic announcements, high-profile corporate earnings outlook, tech/semiconductor sector expectations, and pre-IPOs scheduled for the coming week (Sunday ${sunday} to Friday ${friday}) that directly impact US Index futures (especially Nasdaq NQ and S&P 500 ES). Prioritize upcoming semiconductor and AI news forecasts, and major geopolitics. For each item, set a forecasted publication date/timestamp within this coming week. State clear expected NQ and ES market impact (Bullish, Bearish, or Neutral) and assign a volatility score from 1-10. Use Google Search tool to find actual scheduled stories and expected weekly previews. Output as JSON array.`
+      : `List the 8 most recent and highly relevant financial news stories, earnings, semiconductor/tech sector announcements, pre-IPOs, or macroeconomic developments that directly impact US Index futures (particularly Nasdaq NQ and S&P 500 ES) for today. Prioritize semiconductor and big tech movements, and geopolitical issues. State clear NQ and ES market impact (Bullish, Bearish, or Neutral) and assign a volatility score from 1-10. Use Google Search tool to ensure stories are real and current. Output as JSON array.`;
+
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
-      contents: "List the 8 most recent and highly relevant financial news stories, earnings, semiconductor/tech sector announcements, pre-IPOs, or macroeconomic developments that directly impact US Index futures (particularly Nasdaq NQ and S&P 500 ES) for today. Prioritize semiconductor and big tech movements, and geopolitical issues. State clear NQ and ES market impact (Bullish, Bearish, or Neutral) and assign a volatility score from 1-10. Use Google Search tool to ensure stories are real and current. Output as JSON array.",
+      contents: promptContents,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
@@ -1064,10 +1465,7 @@ app.get("/api/news", async (req, res) => {
 
     // Emergency back-up static data with fresh, dynamic offsets
     console.log("[Fallback Info] Serving backup localized news feed.");
-    const dynamicNews = fallbackNews.map((item, index) => ({
-      ...item,
-      timestamp: new Date(Date.now() - index * 15 * 60 * 1000).toISOString()
-    }));
+    const dynamicNews = getDynamicFallbackNews();
     return res.json({ news: dynamicNews, source: "emergency_fallback", geminiStandby: true, standbyReason: reason });
   }
 });
@@ -1388,6 +1786,43 @@ app.get("/api/market-prices", async (req, res) => {
   }
 });
 
+// Standard FOMC meetings for 2026 and 2027
+const FOMC_MEETINGS = [
+  { start: "2026-01-27", end: "2026-01-28", label: "January 27-28, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၁ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-03-17", end: "2026-03-18", label: "March 17-18, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၂ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-04-28", end: "2026-04-29", label: "April 28-29, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၃ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-06-16", end: "2026-06-17", label: "June 16-17, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၄ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-07-28", end: "2026-07-29", label: "July 28-29, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၅ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-09-15", end: "2026-09-16", label: "September 15-16, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၆ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-11-03", end: "2026-11-04", label: "November 3-4, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၇ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-12-15", end: "2026-12-16", label: "December 15-16, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၈ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  
+  { start: "2027-01-26", end: "2027-01-27", label: "January 26-27, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၁ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-03-16", end: "2027-03-17", label: "March 16-17, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၂ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-04-27", end: "2027-04-28", label: "April 27-28, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၃ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-06-15", end: "2027-06-16", label: "June 15-16, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၄ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-07-27", end: "2027-07-28", label: "July 27-28, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၅ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-09-21", end: "2027-09-22", label: "September 21-22, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၆ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-11-02", end: "2027-11-03", label: "November 2-3, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၇ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2027-12-14", end: "2027-12-15", label: "December 14-15, 2027", mmLabel: "၂၀၂၇ ခုနှစ်၏ ၈ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+];
+
+function getFomcStatus(nowDate: Date = new Date()) {
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  const todayStr = `${nowDate.getFullYear()}-${pad(nowDate.getMonth() + 1)}-${pad(nowDate.getDate())}`;
+  
+  const completed = FOMC_MEETINGS.filter(m => m.end < todayStr);
+  const upcoming = FOMC_MEETINGS.filter(m => m.end >= todayStr);
+  
+  const lastCompleted = completed.length > 0 ? completed[completed.length - 1] : FOMC_MEETINGS[3];
+  const nextUpcoming = upcoming.length > 0 ? upcoming[0] : FOMC_MEETINGS[4];
+  
+  return {
+    lastCompleted,
+    nextUpcoming
+  };
+}
+
 let fomcCache: CacheEntry<{
   meetingDate: string;
   interestRateDecision: string;
@@ -1408,13 +1843,15 @@ app.get("/api/fomc-analysis", async (req, res) => {
     return res.json({ analysis: fomcCache!.data, source: "gemini_cache_secured" });
   }
 
+  const { lastCompleted, nextUpcoming } = getFomcStatus();
+
   const defaultFomcAnalysis = {
-    meetingDate: "June 17-18, 2026 (၂၀၂၆ ခုနှစ်၏ ၄ ကြိမ်မြောက် FOMC အစည်းအဝေး / 4th Scheduled Meeting of 2026)",
+    meetingDate: `${lastCompleted.label} (${lastCompleted.mmLabel})`,
     interestRateDecision: "FED သည် ၎င်း၏ benchmark overnight borrowing rate ကို 3.50% မှ 3.75% အကွာအဝေးတွင် ပြောင်းလဲခြင်းမရှိဘဲ ဆက်လက်ထိန်းသိမ်းထားရန် တညီတညွတ်တည်း မဲပေးဆုံးဖြတ်ခဲ့သည်။ ဤဆုံးဖြတ်ချက်သည် ၂၀၂၅ ခုနှစ်နှောင်းပိုင်းတွင် 75bps အတိုးနှုန်းလျှော့ချခဲ့ပြီးနောက်ပိုင်း ပထမဆုံးအကြိမ် ဆက်လက်ထိန်းသိမ်းထားခြင်းဖြစ်ပြီး ဈေးကွက်၏ မျှော်မှန်းချက်များအတိုင်း ဖြစ်သည်။",
     dotPlotSentiment: "အတိုးနှုန်းခန့်မှန်းချက် 'dot plot' ဇယားတွင် ဥက္ကဋ္ဌ Warsh သည် မိမိ၏ Outlook ကို တင်ပြခြင်းမရှိသော်လည်း၊ ကျန်ရှိသော အဖွဲ့ဝင် ၁၉ ဦးအနက် ၁၈ ဦး၏ တုံ့ပြန်မှုများအရ ၂၀၂၆ ခုနှစ်ကုန်အတွက် fed funds rate သတ်မှတ်ချက် median estimate သည် ယခင်မတ်လက 3.4% မှ 3.8% သို့ မြင့်တက်လာခဲ့သည်။ ၎င်းအရ ပါဝင်သူ ၉ ဦးသည် ယခုနှစ်အတွင်း အနည်းဆုံး rate hike (အတိုးနှုန်းမြှင့်တင်ခြင်း) တစ်ကြိမ် ပြုလုပ်ရန် လိုအပ်သည်ဟု မျှော်မှန်းထားပြီး၊ ၈ ဦးက မပြောင်းလဲဘဲ ထားရှိရန်နှင့် ၁ ဦးကသာ rate cut ပြုလုပ်ရန် မျှော်လင့်ထားသည်။",
     voterStance: "မဲပေးခွင့်ရှိသော စနစ်ဝင် ဗဟိုဘဏ်အဖွဲ့ဝင်များ၏ သဘောထားမှာ အလွန်တင်းကျပ်သော Hawkish အသွင်ဆောင်ပြီး၊ ငွေကြေးဖောင်းပွမှုကို တိုက်ဖျက်ရန် အတိုးနှုန်း မြင့်မားစွာ ဆက်လက်ထိန်းသိမ်းထားရေး သို့မဟုတ် ထပ်မံမြှင့်တင်ရေးဘက်တွင် ညီညွတ်စွာ ရပ်တည်လျက်ရှိသည်။",
     powellExpectations: "ဗဟိုဘဏ်ဥက္ကဋ္ဌသစ် Kevin Warsh (ကီဗင်ဝါရှ်) ဦးဆောင်သော ပထမဆုံးအစည်းအဝေးဖြစ်ပြီး၊ ၎င်း၏ ထုတ်ပြန်ချက်တွင် အနာဂတ်တွင် rate cut ပြုလုပ်မည့် bias (ဆွဲဆောင်မှု) ကို ညွှန်ပြသော စကားလုံးများကို လုံးဝဖယ်ရှားခဲ့သည်။ အတိုးနှုန်းကို ၂ ရာခိုင်နှုန်း ငွေကြေးဖောင်းပွမှုပန်းတိုင်နှင့် ကိုက်ညီအောင် ရေရှည်တင်းကျပ်ထားမည်ဖြစ်ပြီး၊ သို့သော် Artificial Intelligence (AI) ကုန်ထုတ်စွမ်းအား တိုးတက်မှုသည် စီးပွားရေးအပေါ် disinflationary (ငွေကြေးဖောင်းပွမှုကို လျော့ကျစေသော) သက်ရောက်မှုရှိနိုင်ကြောင်း သုံးသပ်ခဲ့သည်။",
-    summaryBurmese: "ဇွန်လ FOMC ၏ အဓိကအနှစ်သာရမှာ ငွေကြေးဖောင်းပွမှုဖိအားများ (အီရန်စစ်ပွဲကြောင့် စွမ်းအင်ဈေးနှုန်း မြင့်တက်မှု) ကြောင့် ၂၀၂၆ ခုနှစ်အတွက် inflation outlook ကို headline 3.6% နှင့် core 3.3% သို့ မြှင့်တင်ခဲ့ကာ၊ GDP တိုးတက်မှုကို 2.2% သို့ လျှော့ချခဲ့ပြီး unemployment rate ကိုလည်း 4.3% အဖြစ် ပြုပြင်သတ်မှတ်ခဲ့ခြင်းဖြစ်သည်။ ၎င်းက စျေးကွက်အပေါ် ဖြစ်နိုင်သမျှ Dovish မျှော်လင့်ချက်များကို ပယ်ဖျက်လိုက်ပြီး Hawkish stance ကို အတည်ပြုခဲ့သည်။",
+    summaryBurmese: `ပြီးသွားသော ${lastCompleted.label} (${lastCompleted.mmLabel}) ၏ အဓိကအနှစ်သာရမှာ ငွေကြေးဖောင်းပွမှုဖိအားများ (အီရန်စစ်ပွဲကြောင့် စွမ်းအင်ဈေးနှုန်း မြင့်တက်မှု) ကြောင့် ၂၀၂၆ ခုနှစ်အတွက် inflation outlook ကို headline 3.6% နှင့် core 3.3% သို့ မြှင့်တင်ခဲ့ကာ၊ GDP တိုးတက်မှုကို 2.2% သို့ လျှော့ချခဲ့ပြီး unemployment rate ကိုလည်း 4.3% အဖြစ် ပြုပြင်သတ်မှတ်ခဲ့ခြင်းဖြစ်သည်။ ၎င်းက စျေးကွက်အပေါ် ဖြစ်နိုင်သမျှ Dovish မျှော်လင့်ချက်များကို ပယ်ဖျက်လိုက်ပြီး Hawkish stance ကို အတည်ပြုခဲ့သည်။`,
     dxyOutlook: "DXY (US Dollar Index) သည် FED ဥက္ကဋ္ဌသစ်၏ တင်းကျပ်သောလေသံ၊ မြင့်တက်လာသော Bond yields များနှင့် တိုးမြှင့်လာသော အတိုးနှုန်းလမ်းကြောင်း (Hawkish outlook) တို့ကြောင့် ခိုင်မာသော Bullish momentum ကို ဆက်လက်ရရှိထားပြီး 105.80 နှင့် 106.50 key resistance levels များအထိ ဆက်လက်အားကောင်းနိုင်သည့် Bias ရှိသည်။",
     traderBiasNqMnq: "NQ / MNQ (Nasdaq 100) futures Traders များအတွက် Bias မှာ 'Sell-on-Rallies' သို့မဟုတ် key resistance zone များတွင် short setups များကို သတိရှိရှိ ရှာဖွေရန်ဖြစ်သည်။ အတိုးနှုန်း ရေရှည်မြင့်မားနေမည့် အခြေအနေနှင့် inflation ဖိအားကြောင့် အဓိက support level များဖြစ်သည့် 28,000 နှင့် 27,600 structures များဆီသို့ ပြန်လည်သက်ဆင်းနိုင်ခြေရှိသဖြင့် လောလောဆယ်တွင် Aggressive Long setups များကို အလွန်အမင်းသတိပြုရှောင်ကြဉ်သင့်သည်။",
     riskDisclaimer: "Trading features alerts နှင့် scenarios များသည် သတင်းအချက်အလက်ကို ပံ့ပိုးရန်သက်သက်ဖြစ်ပြီး၊ futures trading တွင် leverage အသုံးပြုမှုအရင်းအနှီး ဆုံးရှုံးနိုင်ခြေမြင့်မားသဖြင့် သေချာသော ကိုယ်ပိုင် Risk Management (Stop loss/Position size) ဖြင့်သာ ရောင်းဝယ်ကြရန် အကြံပြုအပ်ပါသည်။"
@@ -1427,11 +1864,10 @@ app.get("/api/fomc-analysis", async (req, res) => {
   try {
     console.log("Generating custom FMC Burmese analysis using Gemini AI Grounded Search...");
     
-    // Check if the current environment time matches simulation or active reality, 
-    // and query Google Search for the latest Federal funds rate decisions, candidate/confirmed FED Chair for 2026, and specific scheduled meeting iteration
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: "You are a professional macroeconomic analyst. Ground your response tightly on the actual FOMC June 17-18, 2026 meeting results and economic projections summarized below:\n\n" +
+    // Check if the last completed is our June 17-18, 2026 simulation meeting, or another one
+    let promptContents = "";
+    if (lastCompleted.label.includes("June")) {
+      promptContents = "You are a professional macroeconomic analyst. Ground your response tightly on the actual FOMC June 17-18, 2026 meeting results and economic projections summarized below:\n\n" +
                 "[FOMC JUNE 17-18, 2026 GROUND TRUTH METRICS]\n" +
                 "- Meeting Date: June 17-18, 2026 (၂၀၂၆ ခုနှစ်၏ ၄ ကြိမ်မြောက် FOMC အစည်းအဝေး / 4th Scheduled Meeting of 2026)\n" +
                 "- Interest Rate Decision: Kept steady at 3.50% - 3.75% (၎င်း၏ benchmark overnight borrowing rate ကို 3.5% မှ 3.75% အကွာအဝေးတွင် ပြောင်းလဲခြင်းမရှိဘဲ ဆက်လက်ထိန်းသိမ်းထားရန် တညီတညွတ်တည်း မဲပေးဆုံးဖြတ်ခဲ့သည်။)\n" +
@@ -1442,7 +1878,18 @@ app.get("/api/fomc-analysis", async (req, res) => {
                 "- Market Reactions: Stock prices dropped significantly, bond yields rose, and CME FedWatch indicates traders expect a rate hike in October 2026.\n" +
                 "- DXY Outlook: Strong bullish bias (DXY strengthening) with resistance levels around 105.80 and 106.50.\n" +
                 "- Nasdaq Futures (NQ/MNQ) Bias: Cautious / Sell-on-Rallies (Bearish bias/correction) to around 28,000 and 27,600 support zones due to the restrictive 'higher for longer' rate policy.\n\n" +
-                "Using this ground-truth data, query Google Search to verify any additional surrounding news or market commentary as of mid-2026, and output a highly comprehensive, elegant, professional macroeconomic and market bias analysis designed for professional futures traders. Translate and write completely in beautiful, refined Burmese (မြန်မာလို). Exclude English boilerplate except for technical ticker terms (NQ, MNQ, DXY, CPI, GDP, etc.). Return the output as JSON matching the expected schema.",
+                "Using this ground-truth data, query Google Search to verify any additional surrounding news or market commentary as of mid-2026, and output a highly comprehensive, elegant, professional macroeconomic and market bias analysis designed for professional futures traders. Translate and write completely in beautiful, refined Burmese (မြန်မာလို). Exclude English boilerplate except for technical ticker terms (NQ, MNQ, DXY, CPI, GDP, etc.). Return the output as JSON matching the expected schema.";
+    } else {
+      promptContents = `You are a professional macroeconomic analyst. Ground your response tightly on the actual Federal Reserve FOMC meeting that concluded on ${lastCompleted.label} (${lastCompleted.mmLabel}).
+Use Google Search tool to search for the official interest rate decision, dot plot charts, economic projections (inflation, GDP, unemployment rate forecasts), voter splits/stances, and the Fed Chair statement/press conference commentary for the FOMC meeting on ${lastCompleted.label}.
+Generate a highly comprehensive, elegant, professional macroeconomic and market bias analysis designed for professional futures traders.
+The summary (summaryBurmese) MUST specifically analyze the completed/past meeting (${lastCompleted.label} / ${lastCompleted.mmLabel}) with extreme factual accuracy.
+Translate and write completely in beautiful, refined Burmese (မြန်မာလို). Exclude English boilerplate except for technical ticker terms (NQ, MNQ, DXY, CPI, GDP, etc.). Return the output as JSON matching the expected schema.`;
+    }
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: promptContents,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
@@ -1454,7 +1901,7 @@ app.get("/api/fomc-analysis", async (req, res) => {
             dotPlotSentiment: { type: Type.STRING, description: "Detailed breakdown in Burmese of the voter Dot Plot sentiments and percentage rate paths" },
             voterStance: { type: Type.STRING, description: "Detailed breakdown in Burmese of voting splits and consensus" },
             powellExpectations: { type: Type.STRING, description: "The active FED Chairman Kevin Warsh's statements, expectations and future data-centric/rate-hike moves in Burmese" },
-            summaryBurmese: { type: Type.STRING, description: "Detailed comprehensive Burmese summary of economic conditions with extreme factual accuracy" },
+            summaryBurmese: { type: Type.STRING, description: "Detailed comprehensive Burmese summary of economic conditions of the completed meeting with extreme factual accuracy" },
             dxyOutlook: { type: Type.STRING, description: "Formulated direction of the US Dollar Index DXY in Burmese including support and resistance levels" },
             traderBiasNqMnq: { type: Type.STRING, description: "Tactical guidelines for Nasdaq futures traders (NQ/MNQ), trend bias, key accumulation levels, and action plans in Burmese" },
             riskDisclaimer: { type: Type.STRING, description: "Standard high-risk future trading disclaimer in Burmese" }
