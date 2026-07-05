@@ -2219,7 +2219,7 @@ app.get("/api/inflation-stream", (req, res) => {
 
 
 // SECURE ADMIN CONTROL & KNOWLEDGE HUB DATABASE ENDPOINTS
-const RTFT_ADMIN_PASSCODE = process.env.RTFT_ADMIN_PASSCODE || "rtftadmin2026";
+const RTFT_ADMIN_PASSCODE = process.env.RTFT_ADMIN_PASSCODE || "AdminHAK-RTFT2026";
 
 const DEFAULT_KNOWLEDGE_ITEMS = [
   {
