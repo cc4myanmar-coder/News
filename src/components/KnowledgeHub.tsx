@@ -21,7 +21,9 @@ import {
   LogOut,
   Check,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 interface ContentItem {
@@ -54,6 +56,7 @@ export const KnowledgeHub: React.FC = () => {
   const [adminToken, setAdminToken] = useState<string>('');
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [passcode, setPasscode] = useState<string>('');
+  const [showPasscode, setShowPasscode] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string>('');
   const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
 
@@ -560,7 +563,7 @@ export const KnowledgeHub: React.FC = () => {
                 <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">RTFT SECURE ADMIN GATEWAY</span>
               </div>
               <button 
-                onClick={() => { setShowAuthModal(false); setAuthError(''); setPasscode(''); }}
+                onClick={() => { setShowAuthModal(false); setAuthError(''); setPasscode(''); setShowPasscode(false); }}
                 className="text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -570,14 +573,28 @@ export const KnowledgeHub: React.FC = () => {
             <form onSubmit={handleAdminLogin} className="p-5 space-y-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block">ADMIN PASSCODE</label>
-                <input
-                  type="password"
-                  value={passcode}
-                  onChange={(e) => setPasscode(e.target.value)}
-                  placeholder="••••••••••••"
-                  autoFocus
-                  className="w-full bg-slate-950 border border-slate-900 focus:border-indigo-500 rounded px-3 py-2 text-sm text-center font-mono focus:outline-none transition-all placeholder-slate-850"
-                />
+                <div className="relative">
+                  <input
+                    type={showPasscode ? "text" : "password"}
+                    value={passcode}
+                    onChange={(e) => setPasscode(e.target.value)}
+                    placeholder={showPasscode ? "AdminHAK-RTFT2026" : "••••••••••••"}
+                    autoFocus
+                    className="w-full bg-slate-950 border border-slate-900 focus:border-indigo-500 rounded pl-3 pr-10 py-2 text-sm text-center font-mono focus:outline-none transition-all placeholder-slate-850"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasscode(!showPasscode)}
+                    className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 transition-colors focus:outline-none cursor-pointer"
+                    title={showPasscode ? "Hide passcode" : "Show passcode"}
+                  >
+                    {showPasscode ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {authError && (
@@ -591,7 +608,7 @@ export const KnowledgeHub: React.FC = () => {
               <div className="flex gap-2.5 pt-2">
                 <button
                   type="button"
-                  onClick={() => { setShowAuthModal(false); setAuthError(''); setPasscode(''); }}
+                  onClick={() => { setShowAuthModal(false); setAuthError(''); setPasscode(''); setShowPasscode(false); }}
                   className="flex-1 bg-slate-950 hover:bg-slate-900 border border-slate-900 text-slate-400 py-2 rounded text-xs font-semibold cursor-pointer transition-all"
                 >
                   မလုပ်တော့ပါ
