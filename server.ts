@@ -2218,6 +2218,172 @@ app.get("/api/inflation-stream", (req, res) => {
 });
 
 
+// SECURE ADMIN CONTROL & KNOWLEDGE HUB DATABASE ENDPOINTS
+const RTFT_ADMIN_PASSCODE = process.env.RTFT_ADMIN_PASSCODE || "rtftadmin2026";
+
+const DEFAULT_KNOWLEDGE_ITEMS = [
+  {
+    id: 'futures-vs-cfd',
+    title: "Future နဲ့ CFD (Contract For Difference) ကြားက Pros & Cons",
+    platform: 'Facebook',
+    url: "https://www.facebook.com/share/p/1J89PyJCcm/",
+    category: 'Trading Concepts',
+    description: "Futures ကန်ထရိုက်နှင့် CFD မြှင့်တင်ရောင်းဝယ်မှုတို့၏ အဓိကအားသာချက်၊ အားနည်းချက် နှိုင်းယှဉ်ချက်များကို မြန်မာလို အသေးစိတ် ရှင်းလင်းတင်ပြချက်။ Margin တွက်ချက်ပုံ၊ Regulation နှင့် အမှန်တကယ် ကုန်သွယ်မှုတွင် ထည့်သွင်းစဉ်းစားရမည့် အချက်များ ပါဝင်သည်။",
+    tags: ["Futures", "CFD", "Education", "Trading Concepts"],
+    date: "June 18, 2026",
+    readTime: "5 min read",
+    votes: 142,
+    featured: true
+  },
+  {
+    id: 'drawdown-rules',
+    title: "Prop Firm Drawdown Rules & Management / အရှုံးထိန်းသိမ်းပုံ မူဝါဒ များ",
+    platform: 'Facebook',
+    url: "https://www.facebook.com/RoadToFundedTrader/",
+    category: 'Risk Management',
+    description: "Prop Firm (ဥပမာ Apex, MyForexFunds သို့မဟုတ် အခြား Funding Programs များ) တွင် အရေးအကြီးဆုံးဖြစ်သော Daily Drawdown (နေ့စဉ် အမြင့်ဆုံး အရှုံးသတ်မှတ်ချက်) နှင့် Trailing Max Drawdown တွက်ချက်ပုံ အမှန်ကို လက်တွေ့ သာဓကများဖြင့် ရှင်းပြချက်။",
+    tags: ["Drawdown", "Prop Firm", "Risk Rules"],
+    date: "June 12, 2026",
+    readTime: "8 min read",
+    votes: 98,
+    featured: true
+  },
+  {
+    id: 'nq-vs-es-specs',
+    title: "Nasdaq (NQ) vs S&P 500 (ES) Futures: Point Value & Specs",
+    platform: 'Guide',
+    url: "https://discord.gg/zMNgEjNSGm",
+    category: 'Trading Concepts',
+    description: "NQ Futures (Nasdaq 100) နှင့် ES Futures (S&P 500) တို့၏ contract size များ၊ အနည်းဆုံး စျေးနှုန်းပြောင်းလဲမှု (Tick Size/Value) နှင့် trading hours များအကြောင်း သောင်းပြောင်းထွေလာ လမ်းညွှန်ချက်။ Micro (MNQ/MES) ကုန်သွယ်မည့်သူများ မဖြစ်မနေ သိထားသင့်သည်။",
+    tags: ["Contract Specs", "NQ", "ES", "Micro Futures"],
+    date: "May 28, 2026",
+    readTime: "6 min read",
+    votes: 74
+  },
+  {
+    id: 'prop-firm-mindset',
+    title: "Funded Account ရရှိပြီးနောက် အကောင့်မပျက်အောင် ထိန်းသိမ်းရမည့် စိတ္တဇ စည်းကမ်းများ",
+    platform: 'YouTube',
+    url: "https://www.youtube.com/@roadtofundedtrader",
+    category: 'Market Psychology',
+    description: "Trader များ Evaluation အောင်မြင်ပြီး Funded Account (PA accounts / Live Accounts) ရောက်လျှင် အများဆုံး အမိုက်မှား ဖြစ်တတ်သော ရောဂါများ (Overtrading, Revenge Trading) ကိုကျော်လွှားပြီး တည်ငြိမ်သော ဝင်ငွေ ထုတ်ယူနိုင်ရန် (Payouts) လိုက်နာရမည့် Mindset ပိုင်းဆိုင်ရာ လေ့ကျင့်ခန်း။",
+    tags: ["Mindset", "Payouts", "Psychology"],
+    date: "May 15, 2026",
+    readTime: "12 min video",
+    votes: 115
+  },
+  {
+    id: 'news-trading-avoidance',
+    title: "High-Impact News ဖြစ်ပေါ်ချိန်တွင် အရောင်းအဝယ် ရှောင်ရှားရမည့် Golden Rules များ",
+    platform: 'Guide',
+    url: "https://www.facebook.com/RoadToFundedTrader/",
+    category: 'Risk Management',
+    description: "FOMC Meeting, CPI Inflation data နှင့် Non-Farm Payrolls (NFP) ကဲ့သို့သော High impact တာဆွဲအား ပြင်းထန်လှသော သတင်းများ စျေးကွက်ထဲ မထွက်မီနှင့် ထွက်ပြီးနောက် ၅ မိနစ်အတွင်း အဘယ်ကြောင့် Order များ မတင်သင့်သနည်း။ Slip page နှင့် Liquidity gap များအကြောင်း သရုပ်ဖော်ချက်။",
+    tags: ["News Trading", "CPI", "FOMC", "Slippage"],
+    date: "April 05, 2026",
+    readTime: "4 min read",
+    votes: 83
+  }
+];
+
+function getKnowledgeItems() {
+  const KNOWLEDGE_DB_PATH = path.join(process.cwd(), "knowledge_hub_db.json");
+  if (!fs.existsSync(KNOWLEDGE_DB_PATH)) {
+    try {
+      fs.writeFileSync(KNOWLEDGE_DB_PATH, JSON.stringify(DEFAULT_KNOWLEDGE_ITEMS, null, 2), "utf8");
+    } catch (e) {
+      console.error("Failed to seed initial database items:", e);
+    }
+    return DEFAULT_KNOWLEDGE_ITEMS;
+  }
+  try {
+    const raw = fs.readFileSync(KNOWLEDGE_DB_PATH, "utf8");
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error("Error reading knowledge DB, falling back:", err);
+    return DEFAULT_KNOWLEDGE_ITEMS;
+  }
+}
+
+function saveKnowledgeItems(items: any) {
+  const KNOWLEDGE_DB_PATH = path.join(process.cwd(), "knowledge_hub_db.json");
+  try {
+    fs.writeFileSync(KNOWLEDGE_DB_PATH, JSON.stringify(items, null, 2), "utf8");
+  } catch (e) {
+    console.error("Failed to persist database file:", e);
+  }
+}
+
+app.get("/api/knowledge-hub", (req, res) => {
+  try {
+    const items = getKnowledgeItems();
+    res.json(items);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || "Internal Server Error" });
+  }
+});
+
+app.post("/api/admin-auth", (req, res) => {
+  const { passcode } = req.body;
+  if (passcode === RTFT_ADMIN_PASSCODE) {
+    res.json({ success: true, token: RTFT_ADMIN_PASSCODE });
+  } else {
+    res.status(401).json({ error: "Invalid passcode. Access denied." });
+  }
+});
+
+app.post("/api/knowledge-hub", (req, res) => {
+  const passcode = req.headers["x-admin-passcode"] || req.body.passcode;
+  if (passcode !== RTFT_ADMIN_PASSCODE) {
+    return res.status(401).json({ error: "Unauthorized: Invalid Admin passcode." });
+  }
+
+  try {
+    const items = getKnowledgeItems();
+    const newItem = req.body.item;
+    
+    if (!newItem.id) {
+      newItem.id = "kh-" + Date.now();
+    }
+    if (!newItem.date) {
+      newItem.date = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    }
+    if (newItem.votes === undefined || newItem.votes === null) {
+      newItem.votes = 0;
+    }
+
+    const index = items.findIndex((i: any) => i.id === newItem.id);
+    if (index >= 0) {
+      items[index] = { ...items[index], ...newItem };
+    } else {
+      items.push(newItem);
+    }
+
+    saveKnowledgeItems(items);
+    res.json({ success: true, item: newItem, items });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || "Internal Server Error" });
+  }
+});
+
+app.delete("/api/knowledge-hub/:id", (req, res) => {
+  const passcode = req.headers["x-admin-passcode"];
+  if (passcode !== RTFT_ADMIN_PASSCODE) {
+    return res.status(401).json({ error: "Unauthorized: Invalid Admin passcode." });
+  }
+
+  try {
+    const items = getKnowledgeItems();
+    const id = req.params.id;
+    const filtered = items.filter((i: any) => i.id !== id);
+    saveKnowledgeItems(filtered);
+    res.json({ success: true, id, items: filtered });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || "Internal Server Error" });
+  }
+});
+
+
 // Export app for Vercel Serverless Function context
 export default app;
 
