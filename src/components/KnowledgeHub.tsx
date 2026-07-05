@@ -578,7 +578,7 @@ export const KnowledgeHub: React.FC = () => {
                     type={showPasscode ? "text" : "password"}
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
-                    placeholder={showPasscode ? "AdminHAK-RTFT2026" : "••••••••••••"}
+                    placeholder="••••••••••••"
                     autoFocus
                     className="w-full bg-slate-950 border border-slate-900 focus:border-indigo-500 rounded pl-3 pr-10 py-2 text-sm text-center font-mono focus:outline-none transition-all placeholder-slate-850"
                   />
