@@ -808,10 +808,10 @@ export default function App() {
   };
 
   // Sync / Fetch live economic calendar
-  const fetchCalendarFeed = async () => {
+  const fetchCalendarFeed = async (force: boolean = false) => {
     setIsLoadingCalendar(true);
     try {
-      const res = await fetch('/api/calendar');
+      const res = await fetch(`/api/calendar${force ? '?force=true' : ''}`);
       const data = await res.json();
       if (data && data.calendar) {
         setCalendar(data.calendar);
@@ -915,11 +915,11 @@ export default function App() {
   };
 
   // Trigger FOMC Macro economic result & Burmese analyst report
-  const triggerFomcAnalysis = async () => {
+  const triggerFomcAnalysis = async (force: boolean = false) => {
     setIsLoadingFomc(true);
     setShowFomcModal(true);
     try {
-      const response = await fetch('/api/fomc-analysis');
+      const response = await fetch(`/api/fomc-analysis${force ? '?force=true' : ''}`);
       const data = await response.json();
       if (data && data.analysis) {
         setFomcAnalysis(data.analysis);
@@ -1490,10 +1490,10 @@ export default function App() {
                 <span className="text-xs font-mono font-extrabold text-slate-300 uppercase tracking-widest">LIVE ECONOMIC CALENDAR</span>
               </div>
               <button 
-                onClick={fetchCalendarFeed}
+                onClick={() => fetchCalendarFeed(true)}
                 disabled={isLoadingCalendar}
                 className="p-1 text-slate-400 hover:text-slate-200 cursor-pointer"
-                title="Refresh calendar data"
+                title="Refresh calendar data (Bypass Cache)"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isLoadingCalendar ? 'animate-spin' : ''}`} />
               </button>
@@ -1523,6 +1523,18 @@ export default function App() {
               <h4 className="text-xs font-black text-slate-100 mb-1.5 flex items-center gap-1 font-sans">
                 FOMC Meeting Result & Analytical Bias
               </h4>
+              
+              {/* Special live banner for today's FOMC minutes release! */}
+              <div className="mb-2.5 px-2.5 py-1.5 bg-rose-950/35 border border-rose-500/25 rounded text-[10px] text-rose-300 font-mono leading-relaxed flex items-center gap-2">
+                <span className="flex h-1.5 w-1.5 relative shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
+                </span>
+                <div>
+                  <strong>🚨 TONIGHT (JULY 8, 2026):</strong> FOMC Meeting Minutes (June Meeting) ထွက်ရှိမည်။ ရလဒ်များထွက်ပေါ်ပြီးပါက အလိုအလျောက် သုံးသပ်ချက်များ Live Update ဖြစ်ပါမည်။
+                </div>
+              </div>
+
               <p className="text-[11px] text-slate-400 leading-relaxed mb-3.5 font-sans">
                 ပြီးသွားသော {clientLastCompleted.label} အစည်းအဝေး၏ အတိုးနှုန်း ဆုံးဖြတ်ချက်များ၊ FED ဥက္ကဋ္ဌ၏ အမြင်နှင့် Dot Plot ကို မြန်မာလို အသေးစိတ် ရလဒ်များ ဆန်းစစ်သုံးသပ်ချက်။ လာမည့်အစည်းအဝေးမှာ {clientNextUpcoming.label} ({clientNextUpcoming.mmDays}) ဖြစ်ပါသည်။
               </p>
@@ -1930,12 +1942,23 @@ export default function App() {
                   </h3>
                 </div>
               </div>
-              <button 
-                onClick={() => setShowFomcModal(false)}
-                className="text-slate-400 hover:text-white text-xl font-mono font-bold hover:bg-slate-800/80 w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => triggerFomcAnalysis(true)}
+                  disabled={isLoadingFomc}
+                  className="p-2 text-slate-400 hover:text-white hover:bg-[#1a1b24] rounded-lg border border-[#23252f] transition-all cursor-pointer flex items-center gap-1.5 text-xs font-mono"
+                  title="Force Reload & Re-analyze Live Minutes Release"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isLoadingFomc ? 'animate-spin' : ''}`} />
+                  <span>REFRESH ANALYSIS</span>
+                </button>
+                <button 
+                  onClick={() => setShowFomcModal(false)}
+                  className="text-slate-400 hover:text-white text-xl font-mono font-bold hover:bg-slate-800/80 w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Scrollable Content */}

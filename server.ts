@@ -490,6 +490,12 @@ function hasEventPassed(dateStr: string, timeStr: string): boolean {
 function resolveCalendarActuals(items: any[]): any[] {
   if (!Array.isArray(items)) return [];
   
+  const { sunday } = getCurrentWeekRange();
+  // ONLY apply hardcoded simulation numbers if we are in the original June 14, 2026 mock week
+  if (sunday !== "2026-06-14") {
+    return items;
+  }
+
   const releaseMap: Record<string, string> = {
     "G7 Meetings": "Completed",
     "CB Consumer Confidence": "94.3",
@@ -816,6 +822,45 @@ function getDynamicFallbackCalendar() {
         actual: "Holiday",
         forecast: "N/A",
         previous: "N/A"
+      }
+    ];
+  }
+
+  // If it's the active week of July 5 - July 11, 2026 shown in user's Forex Factory screenshot
+  if (sunday === "2026-07-05") {
+    return [
+      {
+        id: "cur-july5-1",
+        time: "10:00 AM",
+        date: monday,
+        event: "ISM Services PMI",
+        country: "USD",
+        impact: "High",
+        actual: "54.0",
+        forecast: "54.2",
+        previous: "54.5"
+      },
+      {
+        id: "cur-july5-2",
+        time: "02:00 PM",
+        date: wednesday,
+        event: "FOMC Meeting Minutes",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: null,
+        previous: null
+      },
+      {
+        id: "cur-july5-3",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Unemployment Claims",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "218K",
+        previous: "215K"
       }
     ];
   }
@@ -1472,8 +1517,9 @@ app.get("/api/news", async (req, res) => {
 
 // 2. Real Live Economic Calendar API with Gemini Google Search Grounding for True Live Updates
 app.get("/api/calendar", async (req, res) => {
+  const force = req.query.force === "true";
   // Check if we have valid cached calendar data to save API quota
-  if (isCacheValid(calendarCache, CACHE_TTL_CALENDAR)) {
+  if (!force && isCacheValid(calendarCache, CACHE_TTL_CALENDAR)) {
     console.log("Serving Live Economic Calendar from cache...");
     return res.json({ calendar: resolveCalendarActuals(calendarCache!.data), source: "gemini_cache_secured" });
   }
@@ -1524,29 +1570,49 @@ app.get("/api/calendar", async (req, res) => {
       const gEvents = JSON.parse(parsedText);
       let finalEvents = [];
       const isJune2026Week = (sunday === "2026-06-14");
+      const isJuly2026Week = (sunday === "2026-07-05");
 
-      if (isJune2026Week) {
-        // High fidelity baseline presets for the mock June 14-20 simulation
+      if (isJune2026Week || isJuly2026Week) {
+        // High fidelity baseline presets for the mock June 14-20 simulation or July 5-11 real-time week
         const calendarBaseline = getDynamicFallbackCalendar();
-        finalEvents = calendarBaseline.map(item => {
-          const found = gEvents.find((g: any) => {
-            if (!g || !g.event) return false;
-            const aName = item.event.toLowerCase();
-            const bName = g.event.toLowerCase();
+        
+        // Start with all Google Search live events as primary to maintain a complete dynamic pipeline
+        const mergedEvents = gEvents.map((gItem: any, idx: number) => {
+          const baselineMatch = calendarBaseline.find(b => {
+            if (!b || !b.event) return false;
+            const aName = b.event.toLowerCase();
+            const bName = gItem.event.toLowerCase();
             return aName.includes(bName) || bName.includes(aName);
           });
 
-          if (found) {
-            return {
-              ...item,
-              actual: found.actual !== undefined && found.actual !== null && found.actual !== "Pending" ? found.actual : item.actual,
-              forecast: found.forecast !== undefined && found.forecast !== "N/A" ? found.forecast : item.forecast,
-              previous: found.previous !== undefined && found.previous !== "N/A" ? found.previous : item.previous
-            };
-          }
-          return item;
+          return {
+            id: gItem.id || baselineMatch?.id || `live-cal-${idx}-${Date.now()}`,
+            time: gItem.time || baselineMatch?.time || "ALL DAY",
+            date: gItem.date || baselineMatch?.date || dObj.toISOString().split('T')[0],
+            event: gItem.event,
+            country: gItem.country || "USD",
+            impact: gItem.impact || baselineMatch?.impact || "Medium",
+            actual: gItem.actual !== undefined && gItem.actual !== null && gItem.actual !== "Pending" ? gItem.actual : (baselineMatch ? baselineMatch.actual : null),
+            forecast: gItem.forecast || baselineMatch?.forecast || "N/A",
+            previous: gItem.previous || baselineMatch?.previous || "N/A"
+          };
         });
-        console.log(`[Calendar Engine] Successfully pipelined preset merge for simulation week: ${finalEvents.length} events active.`);
+
+        // Supplement with any critical baseline events that Google Search might have missed for the simulation/preset week
+        calendarBaseline.forEach(bItem => {
+          const alreadyExists = mergedEvents.some((f: any) => {
+            const aName = f.event.toLowerCase();
+            const bName = bItem.event.toLowerCase();
+            return aName.includes(bName) || bName.includes(aName);
+          });
+
+          if (!alreadyExists) {
+            mergedEvents.push(bItem);
+          }
+        });
+
+        finalEvents = mergedEvents;
+        console.log(`[Calendar Engine] Successfully pipelined preset merge for simulation/active week: ${finalEvents.length} events active.`);
       } else {
         // For any other dynamic future/past week, use Gemini's Google Search events directly so it shows exactly reality!
         finalEvents = gEvents.map((item: any, idx: number) => ({
@@ -1823,6 +1889,39 @@ function getFomcStatus(nowDate: Date = new Date()) {
   };
 }
 
+function getDefaultFomcAnalysisForMeeting(meeting: any) {
+  const isJune = meeting.label.includes("June");
+  const label = meeting.label;
+  const mmLabel = meeting.mmLabel;
+  
+  if (isJune) {
+    return {
+      meetingDate: `${label} (${mmLabel})`,
+      interestRateDecision: "FED သည် ၎င်း၏ benchmark overnight borrowing rate ကို 3.50% မှ 3.75% အကွာအဝေးတွင် ပြောင်းလဲခြင်းမရှိဘဲ ဆက်လက်ထိန်းသိမ်းထားရန် တညီတညွတ်တည်း မဲပေးဆုံးဖြတ်ခဲ့သည်။ ဤဆုံးဖြတ်ချက်သည် ၂၀၂၅ ခုနှစ်နှောင်းပိုင်းတွင် 75bps အတိုးနှုန်းလျှော့ချခဲ့ပြီးနောက်ပိုင်း ပထမဆုံးအကြိမ် ဆက်လက်ထိန်းသိမ်းထားခြင်းဖြစ်ပြီး ဈေးကွက်၏ မျှော်မှန်းချက်များအတိုင်း ဖြစ်သည်။",
+      dotPlotSentiment: "အတိုးနှုန်းခန့်မှန်းချက် 'dot plot' ဇယားတွင် ဥက္ကဋ္ဌ Warsh သည် မိမိ၏ Outlook ကို တင်ပြခြင်းမရှိသော်လည်း၊ ကျန်ရှိသော အဖွဲ့ဝင် ၁၉ ဦးအနက် ၁၈ ဦး၏ တုံ့ပြန်မှုများအရ ၂၀၂၆ ခုနှစ်ကုန်အတွက် fed funds rate သတ်မှတ်ချက် median estimate သည် ယခင်မတ်လက 3.4% မှ 3.8% သို့ မြင့်တက်လာခဲ့သည်။ ၎င်းအရ ပါဝင်သူ ၉ ဦးသည် ယခုနှစ်အတွင်း အနည်းဆုံး rate hike (အတိုးနှုန်းမြှင့်တင်ခြင်း) တစ်ကြိမ် ပြုလုပ်ရန် လိုအပ်သည်ဟု မျှော်မှန်းထားပြီး၊ ၈ ဦးက မပြောင်းလဲဘဲ ထားရှိရန်နှင့် ၁ ဦးကသာ rate cut ပြုလုပ်ရန် မျှော်လင့်ထားသည်။",
+      voterStance: "မဲပေးခွင့်ရှိသော စနစ်ဝင် ဗဟိုဘဏ်အဖွဲ့ဝင်များ၏ သဘောထားမှာ အလွန်တင်းကျပ်သော Hawkish အသွင်ဆောင်ပြီး၊ ငွေကြေးဖောင်းပွမှုကို တိုက်ဖျက်ရန် အတိုးနှုန်း မြင့်မားစွာ ဆက်လက်ထိန်းသိမ်းထားရေး သို့မဟုတ် ထပ်မံမြှင့်တင်ရေးဘက်တွင် ညီညွတ်စွာ ရပ်တည်လျက်ရှိသည်။",
+      powellExpectations: "ဗဟိုဘဏ်ဥက္ကဋ္ဌသစ် Kevin Warsh (ကီဗင်ဝါရှ်) ဦးဆောင်သော ပထမဆုံးအစည်းအဝေးဖြစ်ပြီး၊ ၎င်း၏ ထုတ်ပြန်ချက်တွင် အနာဂတ်တွင် rate cut ပြုလုပ်မည့် bias (ဆွဲဆောင်မှု) ကို ညွှန်ပြသော စကားလုံးများကို လုံးဝဖယ်ရှားခဲ့သည်။ အတိုးနှုန်းကို ၂ ရာခိုင်နှုန်း ငွေကြေးဖောင်းပွမှုပန်းတိုင်နှင့် ကိုက်ညီအောင် ရေရှည်တင်းကျပ်ထားမည်ဖြစ်ပြီး၊ သို့သော် Artificial Intelligence (AI) ကုန်ထုတ်စွမ်းအား တိုးတက်မှုသည် စီးပွားရေးအပေါ် disinflationary (ငွေကြေးဖောင်းပွမှုကို လျော့ကျစေသော) သက်ရောက်မှုရှိနိုင်ကြောင်း သုံးသပ်ခဲ့သည်။",
+      summaryBurmese: `ပြီးသွားသော ${label} (${mmLabel}) ၏ အဓိကအနှစ်သာရမှာ ငွေကြေးဖောင်းပွမှုဖိအားများ (အီရန်စစ်ပွဲကြောင့် စွမ်းအင်ဈေးနှုန်း မြင့်တက်မှု) ကြောင့် ၂၀၂၆ ခုနှစ်အတွက် inflation outlook ကို headline 3.6% နှင့် core 3.3% သို့ မြှင့်တင်ခဲ့ကာ၊ GDP တိုးတက်မှုကို 2.2% သို့ လျှော့ချခဲ့ပြီး unemployment rate ကိုလည်း 4.3% အဖြစ် ပြုပြင်သတ်မှတ်ခဲ့ခြင်းဖြစ်သည်။ ၎င်းက စျေးကွက်အပေါ် ဖြစ်နိုင်သမျှ Dovish မျှော်လင့်ချက်များကို ပယ်ဖျက်လိုက်ပြီး Hawkish stance ကို အတည်ပြုခဲ့သည်။`,
+      dxyOutlook: "DXY (US Dollar Index) သည် FED ဥက္ကဋ္ဌသစ်၏ တင်းကျပ်သောလေသံ၊ မြင့်တက်လာသော Bond yields များနှင့် တိုးမြှင့်လာသော အတိုးနှုန်းလမ်းကြောင်း (Hawkish outlook) တို့ကြောင့် ခိုင်မာသော Bullish momentum ကို ဆက်လက်ရရှိထားပြီး 105.80 နှင့် 106.50 key resistance levels များအထိ ဆက်လက်အားကောင်းနိုင်သည့် Bias ရှိသည်။",
+      traderBiasNqMnq: "NQ / MNQ (Nasdaq 100) futures Traders များအတွက် Bias မှာ 'Sell-on-Rallies' သို့မဟုတ် key resistance zone များတွင် short setups များကို သတိရှိရှိ ရှာဖွေရန်ဖြစ်သည်။ အတိုးနှုန်း ရေရှည်မြင့်မားနေမည့် အခြေအနေနှင့် inflation ဖိအားကြောင့် အဓိက support level များဖြစ်သည့် 28,000 နှင့် 27,600 structures များဆီသို့ ပြန်လည်သက်ဆင်းနိုင်ခြေရှိသဖြင့် လောလောဆယ်တွင် Aggressive Long setups များကို အလွန်အမင်းသတိပြုရှောင်ကြဉ်သင့်သည်။",
+      riskDisclaimer: "Trading features alerts နှင့် scenarios များသည် သတင်းအချက်အလက်ကို ပံ့ပိုးရန်သက်သက်ဖြစ်ပြီး၊ futures trading တွင် leverage အသုံးပြုမှုအရင်းအနှီး ဆုံးရှုံးနိုင်ခြေမြင့်မားသဖြင့် သေချာသော ကိုယ်ပိုင် Risk Management (Stop loss/Position size) ဖြင့်သာ ရောင်းဝယ်ကြရန် အကြံပြုအပ်ပါသည်။"
+    };
+  }
+
+  const meetingNumStr = mmLabel.match(/(\d+)\s*ကြိမ်မြောက်/)?.[1] || "သတ်မှတ်";
+  return {
+    meetingDate: `${label} (${mmLabel})`,
+    interestRateDecision: `FED သည် ၎င်း၏ benchmark overnight borrowing rate ကို ${label} အစည်းအဝေးတွင် ပြောင်းလဲခြင်းမရှိဘဲ လက်ရှိအတိုင်း ဆက်လက်ထိန်းသိမ်းထားရန် ဆုံးဖြတ်ခဲ့သည်။ ဤဆုံးဖြတ်ချက်သည် စီးပွားရေးအညွှန်းကိန်းများနှင့် ငွေကြေးဖောင်းပွမှု အခြေအနေများကို စောင့်ကြည့်ရန်အတွက် ဖြစ်ပြီး ဈေးကွက်၏ အထွေထွေမျှော်မှန်းချက်များနှင့် ကိုက်ညီပါသည်။`,
+    dotPlotSentiment: `အတိုးနှုန်း ခန့်မှန်းချက် 'dot plot' ဇယားများအရ အဖွဲ့ဝင်အများစုသည် လာမည့်ကာလများတွင် ငွေကြေးဖောင်းပွမှု လျော့ကျမှုနှုန်းအပေါ်မူတည်၍ အတိုးနှုန်းကို တဖြည်းဖြည်းချင်း ညှိနှိုင်းသွားရန် သဘောထားရှိကြပြီး စျေးကွက်အပေါ် Hawkish/Dovish အချိုးညီမျှသော သဘောထားရှိကြောင်း ပြသနေသည်။`,
+    voterStance: "ဗဟိုဘဏ်အဖွဲ့ဝင်များသည် လက်ရှိအတိုးနှုန်းအဆင့်သည် ငွေကြေးဖောင်းပွမှုကို ထိန်းချုပ်ရန် လုံလောက်သော တင်းကျပ်မှုရှိသည်ဟု ယူဆကြပြီး အနာဂတ်မူဝါဒလမ်းကြောင်းအတွက် Data-dependent ဖြစ်ရန် အလေးထားရပ်တည်နေကြသည်။",
+    powellExpectations: "ဗဟိုဘဏ်ဥက္ကဋ္ဌသည် စီးပွားရေး၏ ကုန်ထုတ်စွမ်းအားနှင့် အလုပ်အကိုင်စျေးကွက် အခြေအနေကောင်းမွန်မှုကို ချီးကျူးခဲ့ပြီး ငွေကြေးဖောင်းပွမှု ၂ ရာခိုင်နှုန်း ပန်းတိုင်သို့ မရောက်မချင်း မူဝါဒကို တင်းကျပ်စွာ ထိန်းသိမ်းထားမည်ဖြစ်ကြောင်း ထပ်လောင်းပြောကြားခဲ့သည်။",
+    summaryBurmese: `ပြီးသွားသော ${label} (${mmLabel}) ၏ အဓိကအနှစ်သာရမှာ စီးပွားရေး တည်ငြိမ်မှုနှင့်အတူ ငွေကြေးဖောင်းပွမှု တဖြည်းဖြည်းချင်း လျော့ကျလာခြင်းကို FED က အသိအမှတ်ပြုခဲ့ပြီး၊ အတိုးနှုန်းကို အလျင်စလို လျှော့ချခြင်း မပြုဘဲ စနစ်တကျ စောင့်ကြည့်သွားမည့် မူဝါဒလမ်းစဉ်ကို ချပြခဲ့ခြင်းဖြစ်သည်။`,
+    dxyOutlook: `DXY (US Dollar Index) သည် FED ၏ ပုံမှန်အရှိန်ဖြင့် ဆက်လက်ထိန်းသိမ်းထားသော မူဝါဒကြောင့် range-bound သို့မဟုတ် တည်ငြိမ်သောအဆင့်တွင် Momentum ကို ဆက်လက်ထိန်းထားနိုင်ပြီး support/resistance levels များအကြား လှုပ်ရှားနေမည်ဖြစ်သည်။`,
+    traderBiasNqMnq: "NQ / MNQ (Nasdaq 100) futures Traders များအတွက် Bias မှာ Support levels များတွင် 'Buy-on-Dips' သို့မဟုတ် dynamic range parameters များကို လိုက်နာ၍ သတိရှိရှိ ရောင်းဝယ်ရန်ဖြစ်သည်။",
+    riskDisclaimer: "Trading features alerts နှင့် scenarios များသည် သတင်းအချက်အလက်ကို ပံ့ပိုးရန်သက်သက်ဖြစ်ပြီး၊ futures trading တွင် leverage အသုံးပြုမှုအရင်းအနှီး ဆုံးရှုံးနိုင်ခြေမြင့်မားသဖြင့် သေချာသော ကိုယ်ပိုင် Risk Management (Stop loss/Position size) ဖြင့်သာ ရောင်းဝယ်ကြရန် အကြံပြုအပ်ပါသည်။"
+  };
+}
+
 let fomcCache: CacheEntry<{
   meetingDate: string;
   interestRateDecision: string;
@@ -1838,24 +1937,15 @@ const CACHE_TTL_FOMC = 45 * 60 * 1000; // 45 minutes
 
 // New route using Gemini to generate highly professional Vietnamese & Burmese trading insights for FOMC
 app.get("/api/fomc-analysis", async (req, res) => {
-  if (isCacheValid(fomcCache, CACHE_TTL_FOMC)) {
+  const force = req.query.force === "true";
+  if (!force && isCacheValid(fomcCache, CACHE_TTL_FOMC)) {
     console.log("Serving Live FOMC Analysis from Cache...");
     return res.json({ analysis: fomcCache!.data, source: "gemini_cache_secured" });
   }
 
   const { lastCompleted, nextUpcoming } = getFomcStatus();
 
-  const defaultFomcAnalysis = {
-    meetingDate: `${lastCompleted.label} (${lastCompleted.mmLabel})`,
-    interestRateDecision: "FED သည် ၎င်း၏ benchmark overnight borrowing rate ကို 3.50% မှ 3.75% အကွာအဝေးတွင် ပြောင်းလဲခြင်းမရှိဘဲ ဆက်လက်ထိန်းသိမ်းထားရန် တညီတညွတ်တည်း မဲပေးဆုံးဖြတ်ခဲ့သည်။ ဤဆုံးဖြတ်ချက်သည် ၂၀၂၅ ခုနှစ်နှောင်းပိုင်းတွင် 75bps အတိုးနှုန်းလျှော့ချခဲ့ပြီးနောက်ပိုင်း ပထမဆုံးအကြိမ် ဆက်လက်ထိန်းသိမ်းထားခြင်းဖြစ်ပြီး ဈေးကွက်၏ မျှော်မှန်းချက်များအတိုင်း ဖြစ်သည်။",
-    dotPlotSentiment: "အတိုးနှုန်းခန့်မှန်းချက် 'dot plot' ဇယားတွင် ဥက္ကဋ္ဌ Warsh သည် မိမိ၏ Outlook ကို တင်ပြခြင်းမရှိသော်လည်း၊ ကျန်ရှိသော အဖွဲ့ဝင် ၁၉ ဦးအနက် ၁၈ ဦး၏ တုံ့ပြန်မှုများအရ ၂၀၂၆ ခုနှစ်ကုန်အတွက် fed funds rate သတ်မှတ်ချက် median estimate သည် ယခင်မတ်လက 3.4% မှ 3.8% သို့ မြင့်တက်လာခဲ့သည်။ ၎င်းအရ ပါဝင်သူ ၉ ဦးသည် ယခုနှစ်အတွင်း အနည်းဆုံး rate hike (အတိုးနှုန်းမြှင့်တင်ခြင်း) တစ်ကြိမ် ပြုလုပ်ရန် လိုအပ်သည်ဟု မျှော်မှန်းထားပြီး၊ ၈ ဦးက မပြောင်းလဲဘဲ ထားရှိရန်နှင့် ၁ ဦးကသာ rate cut ပြုလုပ်ရန် မျှော်လင့်ထားသည်။",
-    voterStance: "မဲပေးခွင့်ရှိသော စနစ်ဝင် ဗဟိုဘဏ်အဖွဲ့ဝင်များ၏ သဘောထားမှာ အလွန်တင်းကျပ်သော Hawkish အသွင်ဆောင်ပြီး၊ ငွေကြေးဖောင်းပွမှုကို တိုက်ဖျက်ရန် အတိုးနှုန်း မြင့်မားစွာ ဆက်လက်ထိန်းသိမ်းထားရေး သို့မဟုတ် ထပ်မံမြှင့်တင်ရေးဘက်တွင် ညီညွတ်စွာ ရပ်တည်လျက်ရှိသည်။",
-    powellExpectations: "ဗဟိုဘဏ်ဥက္ကဋ္ဌသစ် Kevin Warsh (ကီဗင်ဝါရှ်) ဦးဆောင်သော ပထမဆုံးအစည်းအဝေးဖြစ်ပြီး၊ ၎င်း၏ ထုတ်ပြန်ချက်တွင် အနာဂတ်တွင် rate cut ပြုလုပ်မည့် bias (ဆွဲဆောင်မှု) ကို ညွှန်ပြသော စကားလုံးများကို လုံးဝဖယ်ရှားခဲ့သည်။ အတိုးနှုန်းကို ၂ ရာခိုင်နှုန်း ငွေကြေးဖောင်းပွမှုပန်းတိုင်နှင့် ကိုက်ညီအောင် ရေရှည်တင်းကျပ်ထားမည်ဖြစ်ပြီး၊ သို့သော် Artificial Intelligence (AI) ကုန်ထုတ်စွမ်းအား တိုးတက်မှုသည် စီးပွားရေးအပေါ် disinflationary (ငွေကြေးဖောင်းပွမှုကို လျော့ကျစေသော) သက်ရောက်မှုရှိနိုင်ကြောင်း သုံးသပ်ခဲ့သည်။",
-    summaryBurmese: `ပြီးသွားသော ${lastCompleted.label} (${lastCompleted.mmLabel}) ၏ အဓိကအနှစ်သာရမှာ ငွေကြေးဖောင်းပွမှုဖိအားများ (အီရန်စစ်ပွဲကြောင့် စွမ်းအင်ဈေးနှုန်း မြင့်တက်မှု) ကြောင့် ၂၀၂၆ ခုနှစ်အတွက် inflation outlook ကို headline 3.6% နှင့် core 3.3% သို့ မြှင့်တင်ခဲ့ကာ၊ GDP တိုးတက်မှုကို 2.2% သို့ လျှော့ချခဲ့ပြီး unemployment rate ကိုလည်း 4.3% အဖြစ် ပြုပြင်သတ်မှတ်ခဲ့ခြင်းဖြစ်သည်။ ၎င်းက စျေးကွက်အပေါ် ဖြစ်နိုင်သမျှ Dovish မျှော်လင့်ချက်များကို ပယ်ဖျက်လိုက်ပြီး Hawkish stance ကို အတည်ပြုခဲ့သည်။`,
-    dxyOutlook: "DXY (US Dollar Index) သည် FED ဥက္ကဋ္ဌသစ်၏ တင်းကျပ်သောလေသံ၊ မြင့်တက်လာသော Bond yields များနှင့် တိုးမြှင့်လာသော အတိုးနှုန်းလမ်းကြောင်း (Hawkish outlook) တို့ကြောင့် ခိုင်မာသော Bullish momentum ကို ဆက်လက်ရရှိထားပြီး 105.80 နှင့် 106.50 key resistance levels များအထိ ဆက်လက်အားကောင်းနိုင်သည့် Bias ရှိသည်။",
-    traderBiasNqMnq: "NQ / MNQ (Nasdaq 100) futures Traders များအတွက် Bias မှာ 'Sell-on-Rallies' သို့မဟုတ် key resistance zone များတွင် short setups များကို သတိရှိရှိ ရှာဖွေရန်ဖြစ်သည်။ အတိုးနှုန်း ရေရှည်မြင့်မားနေမည့် အခြေအနေနှင့် inflation ဖိအားကြောင့် အဓိက support level များဖြစ်သည့် 28,000 နှင့် 27,600 structures များဆီသို့ ပြန်လည်သက်ဆင်းနိုင်ခြေရှိသဖြင့် လောလောဆယ်တွင် Aggressive Long setups များကို အလွန်အမင်းသတိပြုရှောင်ကြဉ်သင့်သည်။",
-    riskDisclaimer: "Trading features alerts နှင့် scenarios များသည် သတင်းအချက်အလက်ကို ပံ့ပိုးရန်သက်သက်ဖြစ်ပြီး၊ futures trading တွင် leverage အသုံးပြုမှုအရင်းအနှီး ဆုံးရှုံးနိုင်ခြေမြင့်မားသဖြင့် သေချာသော ကိုယ်ပိုင် Risk Management (Stop loss/Position size) ဖြင့်သာ ရောင်းဝယ်ကြရန် အကြံပြုအပ်ပါသည်။"
-  };
+  const defaultFomcAnalysis = getDefaultFomcAnalysisForMeeting(lastCompleted);
 
   if (!ai) {
     return res.json({ analysis: defaultFomcAnalysis, source: "fallback_database" });
@@ -1867,7 +1957,7 @@ app.get("/api/fomc-analysis", async (req, res) => {
     // Check if the last completed is our June 17-18, 2026 simulation meeting, or another one
     let promptContents = "";
     if (lastCompleted.label.includes("June")) {
-      promptContents = "You are a professional macroeconomic analyst. Ground your response tightly on the actual FOMC June 17-18, 2026 meeting results and economic projections summarized below:\n\n" +
+      promptContents = "You are a professional macroeconomic analyst. Ground your response tightly on the actual FOMC June 17-18, 2026 meeting results, economic projections, AND the freshly released FOMC Meeting Minutes on July 8, 2026 summarized below:\n\n" +
                 "[FOMC JUNE 17-18, 2026 GROUND TRUTH METRICS]\n" +
                 "- Meeting Date: June 17-18, 2026 (၂၀၂၆ ခုနှစ်၏ ၄ ကြိမ်မြောက် FOMC အစည်းအဝေး / 4th Scheduled Meeting of 2026)\n" +
                 "- Interest Rate Decision: Kept steady at 3.50% - 3.75% (၎င်း၏ benchmark overnight borrowing rate ကို 3.5% မှ 3.75% အကွာအဝေးတွင် ပြောင်းလဲခြင်းမရှိဘဲ ဆက်လက်ထိန်းသိမ်းထားရန် တညီတညွတ်တည်း မဲပေးဆုံးဖြတ်ခဲ့သည်။)\n" +
@@ -1878,12 +1968,13 @@ app.get("/api/fomc-analysis", async (req, res) => {
                 "- Market Reactions: Stock prices dropped significantly, bond yields rose, and CME FedWatch indicates traders expect a rate hike in October 2026.\n" +
                 "- DXY Outlook: Strong bullish bias (DXY strengthening) with resistance levels around 105.80 and 106.50.\n" +
                 "- Nasdaq Futures (NQ/MNQ) Bias: Cautious / Sell-on-Rallies (Bearish bias/correction) to around 28,000 and 27,600 support zones due to the restrictive 'higher for longer' rate policy.\n\n" +
+                "IMPORTANT REAL-TIME MINUTES INSTRUCTION: Today's date is July 8, 2026. This is the exact release date of the FOMC Meeting Minutes for this June 17-18, 2026 meeting (usually released at 2:00 PM EST). Use Google Search to look for 'FOMC minutes June 16-17 2026' or 'FOMC meeting minutes released July 8 2026' to retrieve the freshly published details and market sentiment. Summarize the key findings, hawks vs doves voting split debate, and rate path expectations from these newly released minutes, and incorporate them into the Burmese results.\n\n" +
                 "Using this ground-truth data, query Google Search to verify any additional surrounding news or market commentary as of mid-2026, and output a highly comprehensive, elegant, professional macroeconomic and market bias analysis designed for professional futures traders. Translate and write completely in beautiful, refined Burmese (မြန်မာလို). Exclude English boilerplate except for technical ticker terms (NQ, MNQ, DXY, CPI, GDP, etc.). Return the output as JSON matching the expected schema.";
     } else {
       promptContents = `You are a professional macroeconomic analyst. Ground your response tightly on the actual Federal Reserve FOMC meeting that concluded on ${lastCompleted.label} (${lastCompleted.mmLabel}).
-Use Google Search tool to search for the official interest rate decision, dot plot charts, economic projections (inflation, GDP, unemployment rate forecasts), voter splits/stances, and the Fed Chair statement/press conference commentary for the FOMC meeting on ${lastCompleted.label}.
+Use Google Search tool to search for the official interest rate decision, dot plot charts, economic projections (inflation, GDP, unemployment rate forecasts), voter splits/stances, the Fed Chair statement/press conference commentary, and the subsequent FOMC Meeting Minutes release details for the FOMC meeting on ${lastCompleted.label}.
 Generate a highly comprehensive, elegant, professional macroeconomic and market bias analysis designed for professional futures traders.
-The summary (summaryBurmese) MUST specifically analyze the completed/past meeting (${lastCompleted.label} / ${lastCompleted.mmLabel}) with extreme factual accuracy.
+The summary (summaryBurmese) MUST specifically analyze the completed/past meeting (${lastCompleted.label} / ${lastCompleted.mmLabel}) and its released minutes with extreme factual accuracy.
 Translate and write completely in beautiful, refined Burmese (မြန်မာလို). Exclude English boilerplate except for technical ticker terms (NQ, MNQ, DXY, CPI, GDP, etc.). Return the output as JSON matching the expected schema.`;
     }
 
