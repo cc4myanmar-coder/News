@@ -1040,7 +1040,7 @@ export default function App() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full lg:w-auto lg:ml-auto">
           
           {/* Active pipeline status badge indicator */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#222226] bg-[#101012] select-none">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#222226] bg-[#101012] select-none">
             <div className="relative flex h-2 w-2 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -1052,7 +1052,7 @@ export default function App() {
           </div>
 
           {/* Crawler active status badge indicator */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#222226] bg-[#101012] select-none">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#222226] bg-[#101012] select-none">
             <div className="relative flex h-2 w-2 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
@@ -1102,7 +1102,7 @@ export default function App() {
 
 
       {/* SUB-HEADER INFOBAR */}
-      <div className="bg-[#09090b] border-b border-[#1b1b1e] px-6 py-2 flex flex-wrap items-center justify-between gap-4 text-xs">
+      <div className="hidden sm:flex bg-[#09090b] border-b border-[#1b1b1e] px-6 py-2 flex-wrap items-center justify-between gap-4 text-xs">
         <div className="flex items-center gap-4 text-slate-400">
           <div className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
