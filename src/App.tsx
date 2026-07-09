@@ -177,7 +177,7 @@ export const FOMC_MEETINGS = [
   { start: "2026-03-17", end: "2026-03-18", label: "March 17-18, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၂ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
   { start: "2026-04-28", end: "2026-04-29", label: "April 28-29, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၃ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
   { start: "2026-06-16", end: "2026-06-17", label: "June 16-17, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၄ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
-  { start: "2026-07-28", end: "2026-07-29", label: "July 28-29, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၅ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-07-07", end: "2026-07-08", label: "July 7-8, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၅ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
   { start: "2026-09-15", end: "2026-09-16", label: "September 15-16, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၆ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
   { start: "2026-11-03", end: "2026-11-04", label: "November 3-4, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၇ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
   { start: "2026-12-15", end: "2026-12-16", label: "December 15-16, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၈ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
@@ -196,8 +196,8 @@ export function getFomcStatus(nowDate: Date = new Date()) {
   const pad = (n: number) => n.toString().padStart(2, '0');
   const todayStr = `${nowDate.getFullYear()}-${pad(nowDate.getMonth() + 1)}-${pad(nowDate.getDate())}`;
   
-  const completed = FOMC_MEETINGS.filter(m => m.end < todayStr);
-  const upcoming = FOMC_MEETINGS.filter(m => m.end >= todayStr);
+  const completed = FOMC_MEETINGS.filter(m => m.end <= todayStr);
+  const upcoming = FOMC_MEETINGS.filter(m => m.end > todayStr);
   
   const lastCompleted = completed.length > 0 ? completed[completed.length - 1] : FOMC_MEETINGS[3];
   const nextUpcoming = upcoming.length > 0 ? upcoming[0] : FOMC_MEETINGS[4];
@@ -1524,16 +1524,6 @@ export default function App() {
                 FOMC Meeting Result & Analytical Bias
               </h4>
               
-              {/* Special live banner for today's FOMC minutes release! */}
-              <div className="mb-2.5 px-2.5 py-1.5 bg-rose-950/35 border border-rose-500/25 rounded text-[10px] text-rose-300 font-mono leading-relaxed flex items-center gap-2">
-                <span className="flex h-1.5 w-1.5 relative shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
-                </span>
-                <div>
-                  <strong>🚨 TONIGHT (JULY 8, 2026):</strong> FOMC Meeting Minutes (June Meeting) ထွက်ရှိမည်။ ရလဒ်များထွက်ပေါ်ပြီးပါက အလိုအလျောက် သုံးသပ်ချက်များ Live Update ဖြစ်ပါမည်။
-                </div>
-              </div>
 
               <p className="text-[11px] text-slate-400 leading-relaxed mb-3.5 font-sans">
                 ပြီးသွားသော {clientLastCompleted.label} အစည်းအဝေး၏ အတိုးနှုန်း ဆုံးဖြတ်ချက်များ၊ FED ဥက္ကဋ္ဌ၏ အမြင်နှင့် Dot Plot ကို မြန်မာလို အသေးစိတ် ရလဒ်များ ဆန်းစစ်သုံးသပ်ချက်။ လာမည့်အစည်းအဝေးမှာ {clientNextUpcoming.label} ({clientNextUpcoming.mmDays}) ဖြစ်ပါသည်။
