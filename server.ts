@@ -841,35 +841,13 @@ function getDynamicFallbackCalendar() {
         previous: "54.5"
       },
       {
-        id: "cur-july5-2a",
+        id: "cur-july5-2",
         time: "02:00 PM",
         date: wednesday,
-        event: "Federal Funds Rate",
-        country: "USD",
-        impact: "High",
-        actual: "3.75%",
-        forecast: "3.75%",
-        previous: "3.75%"
-      },
-      {
-        id: "cur-july5-2b",
-        time: "02:00 PM",
-        date: wednesday,
-        event: "FOMC Statement",
+        event: "FOMC Meeting Minutes",
         country: "USD",
         impact: "High",
         actual: "Released",
-        forecast: null,
-        previous: null
-      },
-      {
-        id: "cur-july5-2c",
-        time: "02:30 PM",
-        date: wednesday,
-        event: "FOMC Press Conference",
-        country: "USD",
-        impact: "High",
-        actual: "Completed",
         forecast: null,
         previous: null
       },
