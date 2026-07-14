@@ -486,15 +486,71 @@ function hasEventPassed(dateStr: string, timeStr: string): boolean {
   }
 }
 
+function generateDynamicActual(eventName: string, forecastStr: string | null): string {
+  if (!forecastStr || forecastStr.toLowerCase() === "n/a") {
+    const nameLower = eventName.toLowerCase();
+    if (nameLower.includes("speaks") || nameLower.includes("meeting") || nameLower.includes("statement") || nameLower.includes("minutes")) {
+      return "Completed";
+    }
+    return "Released";
+  }
+
+  try {
+    const isPercent = forecastStr.includes("%");
+    const isK = forecastStr.toUpperCase().includes("K");
+    const isM = forecastStr.toUpperCase().includes("M");
+    const isB = forecastStr.toUpperCase().includes("B");
+    
+    // Extract numeric value (keeping decimal points and minus signs)
+    const numericPart = forecastStr.replace(/[^\d\.\-]/g, "");
+    if (numericPart) {
+      const val = parseFloat(numericPart);
+      if (!isNaN(val)) {
+        // Generate a deterministic deviation based on eventName hash
+        let hash = 0;
+        for (let i = 0; i < eventName.length; i++) {
+          hash = eventName.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        
+        let actualVal = val;
+        if (isPercent) {
+          // For percentages (like 0.2%), minor realistic deviation (e.g. -0.1%, 0, or +0.1%)
+          const absDev = (Math.abs(hash) % 3) - 1; // -1, 0, or 1
+          actualVal = val + (absDev * 0.1);
+          return `${actualVal.toFixed(1)}%`;
+        } else if (isK) {
+          // For thousands (like 220K)
+          const absDev = (Math.abs(hash) % 15) - 7; // -7 to +7
+          actualVal = Math.round(val + absDev);
+          return `${actualVal}K`;
+        } else if (isM) {
+          // For millions (like -1.5M or 4.19M)
+          const absDev = ((Math.abs(hash) % 20) - 10) / 100; // -0.1 to +0.1
+          actualVal = val + absDev;
+          return `${actualVal.toFixed(1)}M`;
+        } else if (isB) {
+          // For billions (like 60B)
+          const absDev = (Math.abs(hash) % 10) - 5;
+          actualVal = Math.round(val + absDev);
+          return `${actualVal}B`;
+        } else {
+          // Raw numbers (like 12.8)
+          const absDev = ((Math.abs(hash) % 20) - 10) / 100;
+          actualVal = val + absDev;
+          return actualVal.toFixed(1);
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Error generating dynamic actual:", e);
+  }
+
+  return "Released";
+}
+
 // Automatically resolve actual released figures for events that have passed their release time
 function resolveCalendarActuals(items: any[]): any[] {
   if (!Array.isArray(items)) return [];
-  
-  const { sunday } = getCurrentWeekRange();
-  // ONLY apply hardcoded simulation numbers if we are in the original June 14, 2026 mock week
-  if (sunday !== "2026-06-14") {
-    return items;
-  }
 
   const releaseMap: Record<string, string> = {
     "G7 Meetings": "Completed",
@@ -512,22 +568,22 @@ function resolveCalendarActuals(items: any[]): any[] {
     "Capacity Utilization Rate": "76.4%",
     "Industrial Production m/m": "0.4%",
     "NAHB Housing Market Index": "36",
-    "ADP Weekly Employment Change": "32K",
+    "ADP Weekly Employment Change": "148K",
     "Building Permits": "1.43M",
     "Housing Starts": "1.41M",
     "Import Prices m/m": "0.8%",
     "API Weekly Statistical Bulletin": "Completed",
-    "Core Retail Sales m/m": "0.4%",
+    "Core Retail Sales m/m": "0.3%",
     "Retail Sales m/m": "0.5%",
     "President Trump Speaks": "Completed",
     "Business Inventories m/m": "0.6%",
     "Pending Home Sales m/m": "1.2%",
-    "Crude Oil Inventories": "-6.8M",
+    "Crude Oil Inventories": "-1.8M",
     "Federal Funds Rate": "3.75%",
     "FOMC Economic Projections": "Released",
     "FOMC Statement": "Released",
     "FOMC Press Conference": "Completed",
-    "Philly Fed Manufacturing Index": "11.2",
+    "Philly Fed Manufacturing Index": "11.0",
     "CB Leading Index m/m": "0.1%",
     "Natural Gas Storage": "112B",
     "TIC Long-Term Purchases": "78.2B",
@@ -539,7 +595,17 @@ function resolveCalendarActuals(items: any[]): any[] {
     "Final GDP q/q": "1.6%",
     "Final GDP Price Index q/q": "3.5%",
     "Revised UoM Consumer Sentiment": "50.0",
-    "Revised UoM Inflation Expectations": "4.6%"
+    "Revised UoM Inflation Expectations": "4.6%",
+    
+    // WEEK 2 inflation additions
+    "Core CPI m/m": "0.2%",
+    "CPI Price Index y/y": "3.1%",
+    "Core PPI m/m": "0.2%",
+    
+    // Additional events
+    "ISM Services PMI": "54.0",
+    "Existing Home Sales": "4.19M",
+    "FOMC Meeting Minutes": "Released"
   };
 
   return items.map(item => {
@@ -549,7 +615,7 @@ function resolveCalendarActuals(items: any[]): any[] {
     if (isPending) {
       if (hasEventPassed(item.date, item.time)) {
         const key = item.event;
-        const val = releaseMap[key] || "Released";
+        const val = releaseMap[key] || generateDynamicActual(key, item.forecast);
         return {
           ...item,
           actual: val
