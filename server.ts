@@ -2406,55 +2406,6 @@ const DEFAULT_KNOWLEDGE_ITEMS = [
     readTime: "5 min read",
     votes: 142,
     featured: true
-  },
-  {
-    id: 'drawdown-rules',
-    title: "Prop Firm Drawdown Rules & Management / အရှုံးထိန်းသိမ်းပုံ မူဝါဒ များ",
-    platform: 'Facebook',
-    url: "https://www.facebook.com/RoadToFundedTrader/",
-    category: 'Risk Management',
-    description: "Prop Firm (ဥပမာ Apex, MyForexFunds သို့မဟုတ် အခြား Funding Programs များ) တွင် အရေးအကြီးဆုံးဖြစ်သော Daily Drawdown (နေ့စဉ် အမြင့်ဆုံး အရှုံးသတ်မှတ်ချက်) နှင့် Trailing Max Drawdown တွက်ချက်ပုံ အမှန်ကို လက်တွေ့ သာဓကများဖြင့် ရှင်းပြချက်။",
-    tags: ["Drawdown", "Prop Firm", "Risk Rules"],
-    date: "June 12, 2026",
-    readTime: "8 min read",
-    votes: 98,
-    featured: true
-  },
-  {
-    id: 'nq-vs-es-specs',
-    title: "Nasdaq (NQ) vs S&P 500 (ES) Futures: Point Value & Specs",
-    platform: 'Guide',
-    url: "https://discord.gg/zMNgEjNSGm",
-    category: 'Trading Concepts',
-    description: "NQ Futures (Nasdaq 100) နှင့် ES Futures (S&P 500) တို့၏ contract size များ၊ အနည်းဆုံး စျေးနှုန်းပြောင်းလဲမှု (Tick Size/Value) နှင့် trading hours များအကြောင်း သောင်းပြောင်းထွေလာ လမ်းညွှန်ချက်။ Micro (MNQ/MES) ကုန်သွယ်မည့်သူများ မဖြစ်မနေ သိထားသင့်သည်။",
-    tags: ["Contract Specs", "NQ", "ES", "Micro Futures"],
-    date: "May 28, 2026",
-    readTime: "6 min read",
-    votes: 74
-  },
-  {
-    id: 'prop-firm-mindset',
-    title: "Funded Account ရရှိပြီးနောက် အကောင့်မပျက်အောင် ထိန်းသိမ်းရမည့် စိတ္တဇ စည်းကမ်းများ",
-    platform: 'YouTube',
-    url: "https://www.youtube.com/@roadtofundedtrader",
-    category: 'Market Psychology',
-    description: "Trader များ Evaluation အောင်မြင်ပြီး Funded Account (PA accounts / Live Accounts) ရောက်လျှင် အများဆုံး အမိုက်မှား ဖြစ်တတ်သော ရောဂါများ (Overtrading, Revenge Trading) ကိုကျော်လွှားပြီး တည်ငြိမ်သော ဝင်ငွေ ထုတ်ယူနိုင်ရန် (Payouts) လိုက်နာရမည့် Mindset ပိုင်းဆိုင်ရာ လေ့ကျင့်ခန်း။",
-    tags: ["Mindset", "Payouts", "Psychology"],
-    date: "May 15, 2026",
-    readTime: "12 min video",
-    votes: 115
-  },
-  {
-    id: 'news-trading-avoidance',
-    title: "High-Impact News ဖြစ်ပေါ်ချိန်တွင် အရောင်းအဝယ် ရှောင်ရှားရမည့် Golden Rules များ",
-    platform: 'Guide',
-    url: "https://www.facebook.com/RoadToFundedTrader/",
-    category: 'Risk Management',
-    description: "FOMC Meeting, CPI Inflation data နှင့် Non-Farm Payrolls (NFP) ကဲ့သို့သော High impact တာဆွဲအား ပြင်းထန်လှသော သတင်းများ စျေးကွက်ထဲ မထွက်မီနှင့် ထွက်ပြီးနောက် ၅ မိနစ်အတွင်း အဘယ်ကြောင့် Order များ မတင်သင့်သနည်း။ Slip page နှင့် Liquidity gap များအကြောင်း သရုပ်ဖော်ချက်။",
-    tags: ["News Trading", "CPI", "FOMC", "Slippage"],
-    date: "April 05, 2026",
-    readTime: "4 min read",
-    votes: 83
   }
 ];
 
@@ -2504,9 +2455,22 @@ app.post("/api/admin-auth", (req, res) => {
   }
 });
 
+function validateAdminPasscode(req: any): boolean {
+  const passcodeHeader = req.headers["x-admin-passcode"];
+  const authHeader = req.headers["authorization"];
+  let bearerToken = "";
+  if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
+    bearerToken = authHeader.substring(7);
+  }
+  const queryPasscode = req.query.passcode || req.query.token;
+  const bodyPasscode = req.body?.passcode || req.body?.token;
+
+  const provided = passcodeHeader || bearerToken || queryPasscode || bodyPasscode;
+  return provided === RTFT_ADMIN_PASSCODE;
+}
+
 app.post("/api/knowledge-hub", (req, res) => {
-  const passcode = req.headers["x-admin-passcode"] || req.body.passcode;
-  if (passcode !== RTFT_ADMIN_PASSCODE) {
+  if (!validateAdminPasscode(req)) {
     return res.status(401).json({ error: "Unauthorized: Invalid Admin passcode." });
   }
 
@@ -2539,8 +2503,7 @@ app.post("/api/knowledge-hub", (req, res) => {
 });
 
 app.delete("/api/knowledge-hub/:id", (req, res) => {
-  const passcode = req.headers["x-admin-passcode"];
-  if (passcode !== RTFT_ADMIN_PASSCODE) {
+  if (!validateAdminPasscode(req)) {
     return res.status(401).json({ error: "Unauthorized: Invalid Admin passcode." });
   }
 

@@ -195,10 +195,11 @@ export const KnowledgeHub: React.FC = () => {
     };
 
     try {
-      const res = await fetch('/api/knowledge-hub', {
+      const res = await fetch(`/api/knowledge-hub?passcode=${encodeURIComponent(adminToken)}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`,
           'x-admin-passcode': adminToken
         },
         body: JSON.stringify({ item: payload })
@@ -222,9 +223,10 @@ export const KnowledgeHub: React.FC = () => {
     if (!window.confirm('ဤပို့စ်ကို ဖျက်ပစ်ရန် သေချာပါသလား?')) return;
 
     try {
-      const res = await fetch(`/api/knowledge-hub/${id}`, {
+      const res = await fetch(`/api/knowledge-hub/${id}?passcode=${encodeURIComponent(adminToken)}`, {
         method: 'DELETE',
         headers: { 
+          'Authorization': `Bearer ${adminToken}`,
           'x-admin-passcode': adminToken
         }
       });
