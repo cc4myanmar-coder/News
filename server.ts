@@ -554,7 +554,7 @@ function resolveCalendarActuals(items: any[]): any[] {
 
   const releaseMap: Record<string, string> = {
     "G7 Meetings": "Completed",
-    "CB Consumer Confidence": "94.3",
+    "CB Consumer Confidence": "92.1",
     "JOLTS Job Openings": "7.35M",
     "ADP Non-Farm Employment Change": "119K",
     "Fed Chairman Warsh Speaks": "Completed",
@@ -563,7 +563,7 @@ function resolveCalendarActuals(items: any[]): any[] {
     "Average Hourly Earnings m/m": "0.3%",
     "Non-Farm Employment Change": "118K",
     "Unemployment Rate": "4.3%",
-    "Unemployment Claims": "218K",
+    "Unemployment Claims": "206K",
     "Empire State Manufacturing Index": "12.8",
     "Capacity Utilization Rate": "76.4%",
     "Industrial Production m/m": "0.4%",
@@ -591,18 +591,17 @@ function resolveCalendarActuals(items: any[]): any[] {
     "3-Month Bill Auction": "5.11%",
     "Flash Manufacturing PMI": "54.6",
     "Flash Services PMI": "51.0",
-    "Core PCE Price Index m/m": "0.3%",
+    "Core PCE Price Index m/m": "0.1%",
+    "Advance GDP q/q": "2.3%",
+    "Advance GDP Price Index q/q": "3.7%",
     "Final GDP q/q": "1.6%",
     "Final GDP Price Index q/q": "3.5%",
-    "Revised UoM Consumer Sentiment": "50.0",
-    "Revised UoM Inflation Expectations": "4.6%",
-    
-    // WEEK 2 inflation additions
+    "Employment Cost Index q/q": "0.8%",
+    "Revised UoM Consumer Sentiment": "54.2",
+    "Revised UoM Inflation Expectations": "4.2%",
     "Core CPI m/m": "0.2%",
     "CPI Price Index y/y": "3.1%",
     "Core PPI m/m": "0.2%",
-    
-    // Additional events
     "ISM Services PMI": "54.0",
     "Existing Home Sales": "4.19M",
     "FOMC Meeting Minutes": "Released"
@@ -927,6 +926,133 @@ function getDynamicFallbackCalendar() {
         actual: null,
         forecast: "218K",
         previous: "215K"
+      }
+    ];
+  }
+
+  // If it's the active week of July 26 - August 1, 2026 shown in user's Forex Factory screenshot
+  if (sunday === "2026-07-26") {
+    return [
+      {
+        id: "cur-july26-1",
+        time: "10:00 AM",
+        date: tuesday,
+        event: "CB Consumer Confidence",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "92.1",
+        previous: "91.2"
+      },
+      {
+        id: "cur-july26-2",
+        time: "02:00 PM",
+        date: wednesday,
+        event: "Federal Funds Rate",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "3.75%",
+        previous: "3.75%"
+      },
+      {
+        id: "cur-july26-3",
+        time: "02:00 PM",
+        date: wednesday,
+        event: "FOMC Statement",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: null,
+        previous: null
+      },
+      {
+        id: "cur-july26-4",
+        time: "02:30 PM",
+        date: wednesday,
+        event: "FOMC Press Conference",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: null,
+        previous: null
+      },
+      {
+        id: "cur-july26-5",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Advance GDP q/q",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "2.3%",
+        previous: "2.1%"
+      },
+      {
+        id: "cur-july26-6",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Core PCE Price Index m/m",
+        country: "USD",
+        impact: "High",
+        actual: null,
+        forecast: "0.1%",
+        previous: "0.3%"
+      },
+      {
+        id: "cur-july26-7",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Advance GDP Price Index q/q",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "3.7%",
+        previous: "3.6%"
+      },
+      {
+        id: "cur-july26-8",
+        time: "08:30 AM",
+        date: thursday,
+        event: "Unemployment Claims",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "206K",
+        previous: "187K"
+      },
+      {
+        id: "cur-july26-9",
+        time: "08:30 AM",
+        date: friday,
+        event: "Employment Cost Index q/q",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "0.8%",
+        previous: "0.9%"
+      },
+      {
+        id: "cur-july26-10",
+        time: "10:00 AM",
+        date: friday,
+        event: "Revised UoM Consumer Sentiment",
+        country: "USD",
+        impact: "Medium",
+        actual: null,
+        forecast: "54.2",
+        previous: "54.4"
+      },
+      {
+        id: "cur-july26-11",
+        time: "10:00 AM",
+        date: friday,
+        event: "Revised UoM Inflation Expectations",
+        country: "USD",
+        impact: "Low",
+        actual: null,
+        forecast: "4.2%",
+        previous: "4.2%"
       }
     ];
   }
@@ -1637,8 +1763,9 @@ app.get("/api/calendar", async (req, res) => {
       let finalEvents = [];
       const isJune2026Week = (sunday === "2026-06-14");
       const isJuly2026Week = (sunday === "2026-07-05");
+      const isJuly26Week = (sunday === "2026-07-26");
 
-      if (isJune2026Week || isJuly2026Week) {
+      if (isJune2026Week || isJuly2026Week || isJuly26Week) {
         // High fidelity baseline presets for the mock June 14-20 simulation or July 5-11 real-time week
         const calendarBaseline = getDynamicFallbackCalendar();
         
