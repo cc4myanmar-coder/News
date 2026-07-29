@@ -2051,7 +2051,7 @@ const FOMC_MEETINGS = [
   { start: "2026-03-17", end: "2026-03-18", label: "March 17-18, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၂ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
   { start: "2026-04-28", end: "2026-04-29", label: "April 28-29, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၃ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
   { start: "2026-06-16", end: "2026-06-17", label: "June 16-17, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၄ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
-  { start: "2026-07-07", end: "2026-07-08", label: "July 7-8, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၅ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
+  { start: "2026-07-28", end: "2026-07-29", label: "July 28-29, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၅ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
   { start: "2026-09-15", end: "2026-09-16", label: "September 15-16, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၆ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
   { start: "2026-11-03", end: "2026-11-04", label: "November 3-4, 2026", mmLabel: "၂၀၂၆ ခုနှစ်၏ ၇ ကြိမ်မြောက် အစည်းအဝေး", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
   { start: "2026-12-15", end: "2026-12-16", label: "December 15-16, 2026", mmLabel: "December 15-16, 2026 (၂၀၂၆ ခုနှစ်၏ ၈ ကြိမ်မြောက် အစည်းအဝေး)", days: "Tuesday - Wednesday", mmDays: "အင်္ဂါ - ဗုဒ္ဓဟူးနေ့" },
@@ -2073,8 +2073,8 @@ function getFomcStatus(nowDate: Date = new Date()) {
   const completed = FOMC_MEETINGS.filter(m => m.end <= todayStr);
   const upcoming = FOMC_MEETINGS.filter(m => m.end > todayStr);
   
-  const lastCompleted = completed.length > 0 ? completed[completed.length - 1] : FOMC_MEETINGS[3];
-  const nextUpcoming = upcoming.length > 0 ? upcoming[0] : FOMC_MEETINGS[4];
+  const lastCompleted = completed.length > 0 ? completed[completed.length - 1] : FOMC_MEETINGS[0];
+  const nextUpcoming = upcoming.length > 0 ? upcoming[0] : FOMC_MEETINGS[FOMC_MEETINGS.length - 1];
   
   return {
     lastCompleted,
@@ -2105,11 +2105,11 @@ function getDefaultFomcAnalysisForMeeting(meeting: any) {
   if (isJuly) {
     return {
       meetingDate: `${label} (${mmLabel})`,
-      interestRateDecision: "FED သည် ၎င်း၏ benchmark overnight borrowing rate ကို 3.50% မှ 3.75% အကွာအဝေးတွင် ပြောင်းလဲခြင်းမရှိဘဲ ဆက်လက်ထိန်းသိမ်းထားရန် တညီတညွတ်တည်း ဆုံးဖြတ်ခဲ့သည်။ ဥက္ကဋ္ဌ Kevin Warsh သည် စေးကပ်နေသော ငွေကြေးဖောင်းပွမှုကို ထိန်းချုပ်ရန်အတွက် အတိုးနှုန်းကို လက်ရှိတင်းကျပ်သောအဆင့်တွင် ရေရှည် ဆက်လက်ထိန်းသိမ်းထားမည်ဖြစ်ကြောင်း ထပ်လောင်းအတည်ပြုခဲ့သည်။",
+      interestRateDecision: "FED သည် ၎င်း၏ benchmark overnight borrowing rate ကို 3.50% မှ 3.75% (Target 3.75%) အကွာအဝေးတွင် ပြောင်းလဲခြင်းမရှိဘဲ ဆက်လက်ထိန်းသိမ်းထားရန် တညီတညွတ်တည်း ဆုံးဖြတ်ခဲ့သည်။ ဥက္ကဋ္ဌ Kevin Warsh သည် စေးကပ်နေသော ငွေကြေးဖောင်းပွမှုကို ထိန်းချုပ်ရန်အတွက် အတိုးနှုန်းကို လက်ရှိတင်းကျပ်သောအဆင့်တွင် ရေရှည် ဆက်လက်ထိန်းသိမ်းထားမည်ဖြစ်ကြောင်း ထပ်လောင်းအတည်ပြုခဲ့သည်။",
       dotPlotSentiment: "အတိုးနှုန်းခန့်မှန်းချက် 'dot plot' ဇယားအသစ်ကို ဤအစည်းအဝေးတွင် ထုတ်ပြန်ခဲ့ခြင်းမရှိသော်လည်း၊ မူဝါဒထုတ်ပြန်ချက်တွင် ဇွန်လကထုတ်ပြန်ခဲ့သော ၂၀၂၆ ခုနှစ်ကုန်အတွက် median estimate 3.8% (ယခုနှစ်အတွင်း အနည်းဆုံး rate hike တစ်ကြိမ် ပြုလုပ်ရန် မျှော်မှန်းချက်) ကို ဆက်လက်ထောက်ခံအတည်ပြုခဲ့ပြီး အဖွဲ့ဝင်အများစုမှာ ပြတ်သားသော Hawkish ရပ်တည်ချက်ကို ထိန်းသိမ်းထားကြသည်။",
       voterStance: "မဲပေးခွင့်ရှိသော ဗဟိုဘဏ်အဖွဲ့ဝင်များသည် လက်ရှိ ၄.၂% ရှိသော ငွေကြေးဖောင်းပွမှုကို ၂ ရာခိုင်နှုန်း ပစ်မှတ်သို့ ပြန်လည်ဆွဲချရန်အတွက် ရေရှည်ထိန်းသိမ်းရန် လိုအပ်သည့် 'Higher for Longer' မူဝါဒကို တညီတညွတ်တည်း အပြည့်အဝ ထောက်ခံကြသည်။",
       powellExpectations: "ဥက္ကဋ္ဌ Kevin Warsh သည် ၎င်း၏ သတင်းစာရှင်းလင်းပွဲတွင် ငွေကြေးတည်ငြိမ်မှုရရှိရေးကို အဓိကထားပြောကြားခဲ့ပြီး၊ အလုပ်အကိုင်စျေးကွက် ခိုင်မာနေဆဲဖြစ်သဖြင့် အတိုးနှုန်းကို အလျင်စလိုလျှော့ချမည်မဟုတ်ကြောင်း၊ သို့သော်လည်း Artificial Intelligence (AI) ကုန်ထုတ်စွမ်းအား တိုးတက်မှုသည် ရေရှည်တွင် disinflationary သက်ရောက်မှုရှိနိုင်ကြောင်း သုံးသပ်ခဲ့သည်။",
-      summaryBurmese: "ပြီးသွားသော ဇူလိုင် ၇-၈ (၅ ကြိမ်မြောက်) အစည်းအဝေး၏ အနှစ်သာရမှာ ငွေကြေးဖောင်းပွမှုမှာ ၄.၂% (Core 2.9%) တွင် ရှိနေဆဲဖြစ်ပြီး အလုပ်လက်မဲ့နှုန်း ၄.၃% ရှိနေသဖြင့် စီးပွားရေးမှာ တင်းကျပ်သော အတိုးနှုန်းကို ခံနိုင်ရည်ရှိကြောင်း သက်သေပြနေသည်။ FED အနေဖြင့် အနာဂတ်တွင် ထပ်မံအတိုးနှုန်းမြှင့်တင်ရန် bias ကို ဆက်လက်ကိုင်စွဲထားသည်။",
+      summaryBurmese: "ပြီးသွားသော ဇူလိုင် ၂၈-၂၉ (၅ ကြိမ်မြောက်) အစည်းအဝေး၏ အနှစ်သာရမှာ ငွေကြေးဖောင်းပွမှုမှာ ၄.၂% (Core 2.9%) တွင် ရှိနေဆဲဖြစ်ပြီး အလုပ်လက်မဲ့နှုန်း ၄.၃% ရှိနေသဖြင့် စီးပွားရေးမှာ တင်းကျပ်သော အတိုးနှုန်းကို ခံနိုင်ရည်ရှိကြောင်း သက်သေပြနေသည်။ FED အနေဖြင့် အနာဂတ်တွင် ထပ်မံအတိုးနှုန်းမြှင့်တင်ရန် bias ကို ဆက်လက်ကိုင်စွဲထားသည်။",
       dxyOutlook: "DXY (US Dollar Index) သည် FED ၏ ပြတ်သားသော တင်းကျပ်မှု Stance နှင့် ခိုင်မာသော စီးပွားရေးအခြေအနေကြောင့် ခိုင်မာသော Bullish momentum ကို ဆက်လက်ရရှိထားပြီး 106.00 နှင့် 106.80 resistance levels များအထိ ဆက်လက်အားကောင်းနိုင်သည်။",
       traderBiasNqMnq: "NQ / MNQ (Nasdaq 100) futures များအတွက် Bias မှာ 'Sell-on-Rallies' ဖြစ်ပြီး၊ ရေရှည်အတိုးနှုန်း မြင့်မားနေမည့်အရေးကြောင့် အဓိက support level များဖြစ်သည့် 28,100 နှင့် 27,800 structures များဆီသို့ သက်ဆင်းနိုင်သည်။",
       riskDisclaimer: "Trading features alerts နှင့် scenarios များသည် သတင်းအချက်အလက်ကို ပံ့ပိုးရန်သက်သက်ဖြစ်ပြီး၊ futures trading တွင် leverage အသုံးပြုမှုအရင်းအနှီး ဆုံးရှုံးနိုင်ခြေမြင့်မားသဖြင့် သေချာသော ကိုယ်ပိုင် Risk Management (Stop loss/Position size) ဖြင့်သာ ရောင်းဝယ်ကြရန် အကြံပြုအပ်ပါသည်။"
@@ -2146,12 +2146,12 @@ const CACHE_TTL_FOMC = 45 * 60 * 1000; // 45 minutes
 // New route using Gemini to generate highly professional Vietnamese & Burmese trading insights for FOMC
 app.get("/api/fomc-analysis", async (req, res) => {
   const force = req.query.force === "true";
-  if (!force && isCacheValid(fomcCache, CACHE_TTL_FOMC)) {
+  const { lastCompleted, nextUpcoming } = getFomcStatus();
+
+  if (!force && isCacheValid(fomcCache, CACHE_TTL_FOMC) && fomcCache?.data?.meetingDate?.includes(lastCompleted.label)) {
     console.log("Serving Live FOMC Analysis from Cache...");
     return res.json({ analysis: fomcCache!.data, source: "gemini_cache_secured" });
   }
-
-  const { lastCompleted, nextUpcoming } = getFomcStatus();
 
   const defaultFomcAnalysis = getDefaultFomcAnalysisForMeeting(lastCompleted);
 
@@ -2260,6 +2260,8 @@ app.get("/api/central-bank-rates", async (req, res) => {
     return res.json({ rates: cbRatesCache!.data, source: "gemini_cache_secured" });
   }
 
+  const { lastCompleted: fomcLastCompleted, nextUpcoming: fomcNextUpcoming } = getFomcStatus();
+
   const defaultCbRates = [
     {
       id: "fed",
@@ -2267,8 +2269,8 @@ app.get("/api/central-bank-rates", async (req, res) => {
       name: "Federal Reserve (FED) - ယူအက်စ်",
       rate: "3.50% - 3.75%",
       previousRate: "3.50% - 3.75%",
-      lastDecision: "June 18, 2026",
-      nextMeeting: "July 29, 2026",
+      lastDecision: fomcLastCompleted.label,
+      nextMeeting: fomcNextUpcoming.label,
       inflationRate: "4.2% (Core: 2.9%)",
       inflationTarget: "2.0%",
       gdpGrowth: "2.2%",
