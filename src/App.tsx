@@ -511,16 +511,41 @@ export default function App() {
 
   // Synchronize Tab Favicon dynamically with the customized brand/logo image
   useEffect(() => {
+    const updateFavicon = (href: string) => {
+      ['icon', 'shortcut icon', 'apple-touch-icon'].forEach((relType) => {
+        let link: HTMLLinkElement | null = document.querySelector(`link[rel="${relType}"]`);
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = relType;
+          document.getElementsByTagName('head')[0].appendChild(link);
+        }
+        link.href = href;
+      });
+    };
+
     try {
       const logoUrl = getRtftLogoUrl();
-      let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
-      link.type = 'image/jpeg';
-      link.href = logoUrl;
+      updateFavicon(`${logoUrl}?v=rtft2026`);
+
+      // Convert JPG logo to base64 PNG for instant browser tab rendering across all browsers
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = `${logoUrl}?v=rtft2026`;
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 64;
+          canvas.height = 64;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, 64, 64);
+            const dataUrl = canvas.toDataURL('image/png');
+            updateFavicon(dataUrl);
+          }
+        } catch (e) {
+          // CORS fallback already set
+        }
+      };
     } catch (e) {
       console.warn('Favicon synchronization failed:', e);
     }
