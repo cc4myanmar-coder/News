@@ -519,7 +519,7 @@ export default function App() {
         link.rel = 'icon';
         document.getElementsByTagName('head')[0].appendChild(link);
       }
-      link.type = 'image/png';
+      link.type = 'image/jpeg';
       link.href = logoUrl;
     } catch (e) {
       console.warn('Favicon synchronization failed:', e);
@@ -978,23 +978,12 @@ export default function App() {
         {/* Left corner branding & Mobile clock */}
         <div className="flex items-center justify-between lg:justify-start gap-4 w-full lg:w-auto">
           <div className="flex items-center gap-3 animate-fade-in">
-            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-indigo-950/45 border-2 border-indigo-500/40 text-indigo-400 shrink-0 overflow-hidden shadow-[0_0_12px_rgba(99,102,241,0.25)] hover:border-indigo-400/80 transition-all duration-300">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-900 border-2 border-indigo-500/50 text-indigo-400 shrink-0 overflow-hidden shadow-[0_0_12px_rgba(99,102,241,0.35)] hover:border-indigo-400 transition-all duration-300">
               <img 
-                src={getRtftLogoUrl()} 
+                src="https://ccsgfqstofavjjxjuxkk.supabase.co/storage/v1/object/public/assets/logo.jpg" 
                 alt="RTFT Logo" 
                 className="w-full h-full object-cover select-none"
                 referrerPolicy="no-referrer"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.style.display = 'none';
-                  const parent = target.parentElement;
-                  if (parent) {
-                    const fallbackSpan = document.createElement('span');
-                    fallbackSpan.className = 'text-xs font-black tracking-tighter text-indigo-400 font-mono select-none animate-pulse';
-                    fallbackSpan.innerText = 'RTFT';
-                    parent.appendChild(fallbackSpan);
-                  }
-                }}
               />
             </div>
             <div>

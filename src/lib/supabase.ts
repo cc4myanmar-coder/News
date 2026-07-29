@@ -44,6 +44,6 @@ export function getRtftLogoUrl(bucketName: string = 'assets', fileName: string =
     }
   }
 
-  // Reliable, real-time fallback to RTFT's live page logo
-  return 'https://graph.facebook.com/100084050294833/picture?type=large'; // FB ID node profile photo redirect
+  // Reliable fallback to RTFT's logo URL
+  return 'https://ccsgfqstofavjjxjuxkk.supabase.co/storage/v1/object/public/assets/logo.jpg';
 }
